@@ -62,12 +62,20 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 
 ### Purpose
 
-2-5 sentences describing what the system does
+𝕐 is a social media platform where users share short posts, containing text and optionally images. It can be used for sharing thoughts and media (images). People follow each other to see posts in their feed, and can like, repost, or reply to posts to engage in discussions.
 
 ### Pages
 
-* Home: 1-3 sentences describing what the page displays and what a user can do
-* Shopping cart: ...
+* **Feed:** The feed will be the start page of our application. It allows the user to view posts from accounts they follow. Every post can be liked, commented, or reposted, as well as opened to view all comments (see *Post* page). 
+
+* **Post:** When an individual post is opened, the post’s content is shown at the top of the page, followed by the comment thread. Each comment can be replied to and liked. If a comment has replies, ‘view replies’ button appears under the comment. If the user is viewing their own post, they can edit and delete the post.
+
+* **Profile:** On this page a user can view any profile on the platform, whether it's someone else’s or their own. At the top of the page the user’s information (such as name, profile picture, about section, etc.) is displayed. If the user is viewing their own profile, they can edit their information. Below the info section, the user’s posts, as well as re-posts, are put into a feed in chronological order (newest first). The profile feed has the same functionality as the home feed (liking, commenting, reposting). The user can also follow another user on this page.
+
+* **Login/Registration:** A page for login and registration of the user. Users will be able to login using their username and password. To register a new user will need to fill out their username, password, name and birthday.
+
+**NOTE:** On every page there will be a *persistent search bar* that allows user to search for other users.
+
 
 ### Entity-Relationship (ER) Diagram
 
