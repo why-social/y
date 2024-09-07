@@ -11,7 +11,7 @@ var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDevelopm
 var port = process.env.PORT || 3000;
 
 // Connect to MongoDB
-createDB.create(mongoURI);
+createDB.connect(mongoURI);
 
 // Create Express app
 var app = express();

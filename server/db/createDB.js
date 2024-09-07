@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 
+// Declare variables
 let schemas = {};
 let models = {};
 
+// Create schemas for each relation
 schemas = {
 	Users: new mongoose.Schema({
 		name: String,
@@ -17,7 +19,7 @@ schemas = {
 		commentsNo: Number,
 		profile_picture: String,
 		follows: [String],
-	}, {collection: 'users'}),
+	}, {collection: 'users'}), // collection name to use (by default mongodb adds 's' to the end of the name)
 	Images: new mongoose.Schema({
 		url: String,
 		id: String,
@@ -60,27 +62,40 @@ schemas = {
 	}, {collection: 'comments'}),
 };
 
+// Create models for each relation
 for(let key in schemas){
 	models[key] = mongoose.model(key, schemas[key]);
 }
 
-function create(dbUri){
-	mongoose.connect(dbUri).catch(err => {
+// Connect to MongoDB (if database doesn't exist, it will be created automatically)
+function connect(dbUri){
+	mongoose.connect(dbUri)
+	.catch(err => { // error handling
 		console.error(`DB: Failed to connect to MongoDB with URI: ${dbUri}`);
 		console.error(err.stack);
 		process.exit(1);
-	}).then(() => onSuccess(dbUri));
+	})
+	.then(() => onSuccess(dbUri)); // success handling
 }
 
+// on successful connection to MongoDB
 async function onSuccess(dbUri){
 	console.log(`DB: Connected to MongoDB with URI: ${dbUri}`);
 
+	// get database object
 	const db = mongoose.connection.db;
+
+	// get list of existing collections
 	const existingCollections = await db.listCollections().toArray();
 
-	for (let key in models) {
-		if (!existingCollections.some(col => col.name.toLowerCase() === key.toLowerCase())) {
-			await models[key].createCollection();
+	// create collections for each model if they don't exist
+	for (let key in models){
+		if (!existingCollections.some(col => col.name.toLowerCase() === key.toLowerCase())){
+			await models[key].createCollection().catch(err => {
+				console.error(`DB: Failed to create ${key} collection`);
+				console.error(err.stack);
+				process.exit(1);
+			});
 			console.log(`DB: ${key} collection created`);
 		} else {
 			console.log(`DB: ${key} collection already exists`);
@@ -88,4 +103,4 @@ async function onSuccess(dbUri){
 	}
 }
 
-module.exports = { create };
+module.exports = { connect };
