@@ -12,53 +12,40 @@ schemas = {
 		password_hash: String,
 		about_me: String,
 		username: String,
-		join_date: Date,
+		join_date: {type: "date", default: new Date()},
 		birthday: Date,
 		last_time_posted: Date,
-		postsNo: Number,
-		commentsNo: Number,
-		profile_picture: String,
-		follows: [String],
+		profile_picture: {type: mongoose.Types.ObjectId, ref: "Images"},
 	}, {collection: 'users'}), // collection name to use (by default mongodb adds 's' to the end of the name)
+	User_follows_user: new mongoose.Schema({
+		follower: {type: mongoose.Types.ObjectId, ref: "Users"},
+		follows: {type: mongoose.Types.ObjectId, ref: "Users"},
+	}, {collection: 'user_follows_user'}),
 	Images: new mongoose.Schema({
+		hash: {type: String, unique: true, index: true},
 		url: String,
-		id: String,
+		usageCount: Number,
 	}, {collection: 'images'}),
-	Likes: new mongoose.Schema({
-		user_id: String,
-	}, {collection: 'likes'}),
 	Posts: new mongoose.Schema({
-		id: String,
-		author: String,
+		author: {type: mongoose.Types.ObjectId, ref: "Users"},
 		is_edited: Boolean,
 		content: String,
-		timestamp: Date,
-		parent_id: String,
-		likes: [String],
-		comments: [String],
-		attachments: [String],
+		timestamp: {type: "date", default: new Date()},
+		original_post_id: {type: mongoose.Types.ObjectId, ref: "Posts", default: null},
+		likes: [{type: mongoose.Types.ObjectId, ref: "Users"}],
+		comments: [{type: mongoose.Types.ObjectId, ref: "Comments"}],
+		images: [{type: mongoose.Types.ObjectId, ref: "Images"}],
 	}, {collection: 'posts'}),
-	Reposts: new mongoose.Schema({
-		id: String,
-		author: String,
-		is_edited: Boolean,
-		content: String,
-		timestamp: Date,
-		parent_id: String,
-		original_post_id: String,
-		likes: [String],
-		comments: [String],
-		attachments: [String],
-	}, {collection: 'reposts'}),
 	Comments: new mongoose.Schema({
-		id: String,
-		author: String,
+		author: {type: mongoose.Types.ObjectId, ref: "Users"},
 		is_edited: Boolean,
 		content: String,
-		timestamp: Date,
+		timestamp: {type: "date", default: new Date()},
 		parent_id: String,
 		parent_is_post: Boolean,
-		attachments: [String],
+		likes: [{type: mongoose.Types.ObjectId, ref: "Users"}],
+		comments: [{type: mongoose.Types.ObjectId, ref: "Comments"}],
+		images: [{type: mongoose.Types.ObjectId, ref: "Images"}],
 	}, {collection: 'comments'}),
 };
 
@@ -90,16 +77,16 @@ async function onSuccess(dbUri){
 
 	// create collections for each model if they don't exist
 	for (let key in models){
-		if (!existingCollections.some(col => col.name.toLowerCase() === key.toLowerCase())){
-			await models[key].createCollection().catch(err => {
-				console.error(`DB: Failed to create ${key} collection`);
-				console.error(err.stack);
-				process.exit(1);
-			});
-			console.log(`DB: ${key} collection created`);
-		} else {
+		if(existingCollections.some(col => col.name.toLowerCase() === key.toLowerCase())){
 			console.log(`DB: ${key} collection already exists`);
+			continue;
 		}
+		await models[key].createCollection().catch(err => {
+			console.error(`DB: Failed to create ${key} collection`);
+			console.error(err.stack);
+			process.exit(1);
+		});
+		console.log(`DB: ${key} collection created`);
 	}
 }
 
