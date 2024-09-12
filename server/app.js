@@ -4,6 +4,7 @@ var morgan = require('morgan');
 var path = require('path');
 var cors = require('cors');
 var history = require('connect-history-api-fallback');
+var fs = require('fs');
 const createDB = require('./db/createDB');
 
 // Variables
@@ -50,6 +51,24 @@ app.get("/api/images/:hash", async function(req, res) {
             console.log('Sent:', url);
         }
     });
+});
+
+// Delete an image
+app.delete("/api/images/:hash", async function(req, res) {
+    // TODO: require authorization
+    const imageObject = await mongoose.models["Images"].findOne({hash : req.params.hash}).exec();
+    if (imageObject.usageCount != 0) {
+        res.status(400).json({'message' : 'Image still in use!'});
+        return;
+    }
+
+    
+    console.log("Deleting " + path.join(__dirname, imageObject.url));
+
+    fs.rmSync(path.join(__dirname, "/uploads/" + imageObject.hash), { recursive: true, force: true }); // delete the directory
+    await mongoose.models["Images"].deleteOne({_id : imageObject._id}).exec(); // delete the DB entry
+
+    res.status(200).send();
 });
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
