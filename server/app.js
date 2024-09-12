@@ -25,31 +25,8 @@ app.options('*', cors());
 app.use(cors());
 
 // Import routes
-// Get image from the server
-app.get("/api/images/:hash", async function(req, res) {
-    const options = {
-        root: path.join(__dirname)
-    };
-
-    const imageObject = await mongoose.models["Images"].findOne({hash : req.params.hash}, 'url').exec();
-    if (imageObject == null) {
-        // invalid hash supplied
-        res.status(404).json({ 'message': 'Not Found' });
-        return;
-    }
-
-    const url = imageObject.url;
-
-    res.sendFile(url, options, function(err) {
-        if (err) {
-            // hash directory exists, but is empty
-            // TODO: check if files present in directory, delete if empty or try fixing DB/file
-            res.status(404).json(err);
-            console.error('Error sending file:', err);
-        } else {
-            console.log('Sent:', url);
-        }
-    });
+app.get('/api', function(req, res) {
+    res.json({'message': 'Welcome to your DIT342 backend ExpressJS project!'});
 });
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
