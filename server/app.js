@@ -4,8 +4,10 @@ var morgan = require('morgan');
 var path = require('path');
 var cors = require('cors');
 var history = require('connect-history-api-fallback');
-var fs = require('fs')
 const createDB = require('./db/createDB');
+const imageRoute = require('./routes/imageRoute');
+
+global.appRoot = path.resolve(__dirname);
 
 // Variables
 var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDevelopmentDB';
@@ -29,52 +31,7 @@ app.use(cors());
 app.get('/api', function(req, res) {
     res.json({'message': 'Welcome to your DIT342 backend ExpressJS project!'});
 });
-
-
-// Get image from the server
-app.get("/api/images/:hash", async function(req, res) {
-    const options = {
-        root: path.join(__dirname)
-    };
-
-    const imageObject = await mongoose.models["Images"].findOne({hash : req.params.hash}, 'url').exec();
-    if (imageObject == null) {
-        // invalid hash supplied
-        res.status(404).json({ 'message': 'Not Found' });
-        return;
-    }
-
-    const url = imageObject.url;
-
-    res.sendFile(url, options, function(err) {
-        if (err) {
-            // hash directory exists, but is empty
-            // TODO: check if files present in directory, delete if empty or try fixing DB/file
-            res.status(404).json(err);
-            console.error('Error sending file:', err);
-        } else {
-            console.log('Sent:', url);
-        }
-    });
-});
-
-// Delete an image
-app.delete("/api/images/:hash", async function(req, res) {
-    // TODO: require authorization
-    const imageObject = await mongoose.models["Images"].findOne({hash : req.params.hash}).exec();
-    if (imageObject.usageCount != 0) {
-        res.status(400).json({'message' : 'Image still in use!'});
-        return;
-    }
-
-    
-    console.log("Deleting " + path.join(__dirname, imageObject.url));
-
-    fs.rmSync(path.join(__dirname, "/uploads/" + imageObject.hash), { recursive: true, force: true }); // delete the directory
-    await mongoose.models["Images"].deleteOne({_id : imageObject._id}).exec(); // delete the DB entry
-
-    res.status(200).send();
-});
+app.use('/', imageRoute);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use('/api/*', function (req, res) {
