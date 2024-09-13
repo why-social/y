@@ -5,6 +5,7 @@ var path = require('path');
 var cors = require('cors');
 var history = require('connect-history-api-fallback');
 const createDB = require('./db/createDB');
+const userRoute = require('./routes/userRoute');
 
 // Variables
 var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDevelopmentDB';
@@ -25,6 +26,8 @@ app.options('*', cors());
 app.use(cors());
 
 // Import routes
+app.use('/', userRoute);
+
 app.get('/api', function(req, res) {
     res.json({'message': 'Welcome to your DIT342 backend ExpressJS project!'});
 });

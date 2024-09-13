@@ -90,4 +90,4 @@ async function onSuccess(dbUri){
 	}
 }
 
-module.exports = { connect };
+module.exports = { mongoose, connect };
