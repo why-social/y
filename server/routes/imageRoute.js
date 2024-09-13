@@ -6,7 +6,7 @@ const mongoose = require("../db/createDB").mongoose;
 
 //#region GET
 // Get image from the server
-router.get("/api/images/:hash", async function(req, res) {
+router.get("/api/v1/images/:hash", async function(req, res) {
     const options = {
         root: appRoot
     };
@@ -35,7 +35,7 @@ router.get("/api/images/:hash", async function(req, res) {
 
 //#region DELETE
 // Delete an image
-router.delete("/api/images/:hash", async function(req, res) {
+router.delete("/api/v1/images/:hash", async function(req, res) {
     // TODO: require authorization
     const imageObject = await mongoose.models["Images"].findOne({hash : req.params.hash}).exec();
     if (!imageObject) {
