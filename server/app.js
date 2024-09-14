@@ -28,6 +28,10 @@ app.options('*', cors());
 app.use(cors());
 
 // Import routes
+app.get('/api', function(req, res) {
+    res.json({'message': 'Alive!'}); // needed for test script to see if the server booted up
+});
+
 app.use('/', imageRoute);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
