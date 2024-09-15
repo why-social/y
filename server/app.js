@@ -6,6 +6,7 @@ var cors = require('cors');
 var history = require('connect-history-api-fallback');
 const createDB = require('./db/createDB');
 const userRoute = require('./routes/userRoute');
+const checkDBAvailability = require('./middleware/checkDB');
 
 // Variables
 var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDevelopmentDB';
@@ -24,6 +25,8 @@ app.use(morgan('dev'));
 // Enable cross-origin resource sharing for frontend must be registered before api
 app.options('*', cors());
 app.use(cors());
+
+app.use(checkDBAvailability);
 
 // Import routes
 app.use('/', userRoute);
