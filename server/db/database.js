@@ -72,28 +72,23 @@ schemas.Posts.pre('validate', function(next) {
 })
 
 // Create models for each relation
-for (let key in schemas) {
+for(let key in schemas){
 	models[key] = mongoose.model(key, schemas[key]);
 }
 
 // Connect to MongoDB (if database doesn't exist, it will be created automatically)
-function connect(dbUri, failCallback, successCallback) {
-	if (mongoose.connection.readyState == 0) { // if disconnected, so that we do not renew the connection by mistake
-		mongoose.connect(dbUri)
-			.catch(err => { // error handling
-				console.error(`DB: Failed to connect to MongoDB with URI: ${dbUri}`);
-				console.error(err.stack);
-
-				failCallback();
-			})
-			.then(async () => { // success handling
-				await onSuccess(dbUri, failCallback, successCallback); // wait to create all collections
-			});
-	}
+function connect(dbUri){
+	mongoose.connect(dbUri)
+	.catch(err => { // error handling
+		console.error(`DB: Failed to connect to MongoDB with URI: ${dbUri}`);
+		console.error(err.stack);
+		process.exit(1);
+	})
+	.then(() => onSuccess(dbUri)); // success handling
 }
 
 // on successful connection to MongoDB
-async function onSuccess(dbUri, failCallback, successCallback) {
+async function onSuccess(dbUri){
 	console.log(`DB: Connected to MongoDB with URI: ${dbUri}`);
 
 	// get database object
@@ -103,22 +98,18 @@ async function onSuccess(dbUri, failCallback, successCallback) {
 	const existingCollections = await db.listCollections().toArray();
 
 	// create collections for each model if they don't exist
-	for (let key in models) {
-		if (existingCollections.some(col => col.name.toLowerCase() === key.toLowerCase())) {
+	for (let key in models){
+		if(existingCollections.some(col => col.name.toLowerCase() === key.toLowerCase())){
 			console.log(`DB: ${key} collection already exists`);
-		} else {
-			await models[key].createCollection().catch(err => {
-				console.error(`DB: Failed to create ${key} collection`);
-				console.error(err.stack);
-
-				failCallback();
-			});
-
-			console.log(`DB: ${key} collection created`);
+			continue;
 		}
+		await models[key].createCollection().catch(err => {
+			console.error(`DB: Failed to create ${key} collection`);
+			console.error(err.stack);
+			process.exit(1);
+		});
+		console.log(`DB: ${key} collection created`);
 	}
-
-	successCallback();
 }
 
-module.exports = { connect, models };
+module.exports = { mongoose, connect };

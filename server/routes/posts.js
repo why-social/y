@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const {models} = require("../db/createDB");
+const models = require("../db/database").mongoose.models;
 
 //GET endpoints region start
 router.get("/api/v1/posts/", function (req, res) {
