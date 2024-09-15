@@ -20,7 +20,7 @@ router.post("/api/v1/posts/", async function (req, res) {
                 comments: [],
                 images: req.body.images, // assuming array of ObjectID
             });
-            await newPost.save().then();
+            await newPost.save();
             res.status(200).send();
         } 
         catch (error) {

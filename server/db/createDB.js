@@ -28,7 +28,18 @@ schemas = {
 		usageCount: Number,
 	}, { collection: 'images' }),
 	Posts: new mongoose.Schema({
-		author: { type: mongoose.Types.ObjectId, ref: "Users", required: [true, 'Author missing'] },
+		author: { 
+			type: mongoose.Types.ObjectId, 
+			ref: "Users", 
+			required: [true, 'Author missing'],
+			validate: {
+				validator: async function (value) {
+					const user = await models.Users.findById(value);
+					return !!user; // Return true if user exists, otherwise false
+				},
+				message: 'Author does not exist.'
+			}
+		},
 		is_edited: Boolean,
 		content: String,
 		timestamp: { type: "date", default: new Date() },
@@ -36,8 +47,8 @@ schemas = {
 		likes: [{ type: mongoose.Types.ObjectId, ref: "Users" }],
 		comments: [{ type: mongoose.Types.ObjectId, ref: "Comments" }],
 		images: [{ type: mongoose.Types.ObjectId, ref: "Images" }],
-	}, { 
-		collection: 'posts'}),
+	}, 
+	{ collection: 'posts' }),
 	Comments: new mongoose.Schema({
 		author: { type: mongoose.Types.ObjectId, ref: "Users" },
 		is_edited: Boolean,
@@ -52,15 +63,13 @@ schemas = {
 };
 //#endregion
 
-//#region Validators
 // Attach custom validation middleware
 schemas.Posts.pre('validate', function(next) {
-	if (!this.content || (!this.images && this.images.length === 0)) {
-		this.invalidate('Text content or at least 1 image required!');
+	if (!(this.content || (this.images && this.images.length > 0))) {
+		this.invalidate("Either text content or at least 1 image required!");
 	}
 	next();
-});
-//#endregion
+})
 
 // Create models for each relation
 for (let key in schemas) {
