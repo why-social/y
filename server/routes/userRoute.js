@@ -40,18 +40,37 @@ const usernameRegex = /^[a-zA-Z0-9_]+$/;
 const nameRegex = /^[a-zA-Z\s]+$/;
 
 const errorMessages = [
-	"All fields are required",
-	"Name is invalid",
-	"Username is invalid",
-	"Email is invalid",
-	"Password is invalid",
-	"Birthday is invalid",
-	"User with this username already exists",
-	"User with this email already exists",
+	"All fields are required", // 0
+	"Name is invalid", // 1
+	"Username is invalid", // 2
+	"Email is invalid", // 3
+	"Password is invalid", // 4
+	"Birthday is invalid", // 5
+	"User with this username already exists", // 6
+	"User with this email already exists", // 7
+	"User id is invalid", // 8
+	"User not found", // 9
+	"Following not found", // 10
+	"Already following", // 11
 ].map((el, i) => {return {message: el, errCode: i}});
 
+/**
+ * Check if the id(s) in the request are valid
+ * @param  {...String} args - Ids to check
+ * @returns {Function} - Middleware function
+ */
+function checkIdValidity(...args) {
+	return (req, res, next) => {
+		for (let arg of args) {
+			if(!mongoose.Types.ObjectId.isValid(req.params[arg]))
+				return res.status(400).json(errorMessages[8]);
+		};
+		next();
+	}
+}
+
 //#region GET
-router.get("/api/v1/user/:id", authMiddleware, async (req, res) => {
+router.get("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
 	try {
 		// Get user by id from db
 		let result = await mongoose.models["Users"].findById(req.params.id).exec();
@@ -79,7 +98,7 @@ router.get("/api/v1/user/:id", authMiddleware, async (req, res) => {
 	}
 });
 
-router.get("/api/v1/user/:id/followers", async (req,res) => {
+router.get("/api/v1/user/:id/followers", checkIdValidity("id"), async (req,res) => {
 	try{
 		let result = await mongoose.models["User_follows_user"].find({follows: req.params.id}).exec();
 		if(!result) return res.status(404).json({message: "User not found"});
@@ -89,7 +108,7 @@ router.get("/api/v1/user/:id/followers", async (req,res) => {
 	}
 });
 
-router.get("/api/v1/user/:id/following", async (req,res) => {
+router.get("/api/v1/user/:id/following", checkIdValidity("id"), async (req,res) => {
 	try{
 		let result = await mongoose.models["User_follows_user"].find({follower: req.params.id}).exec();
 		if(!result) return res.status(404).json({message: "User not found"});
@@ -160,6 +179,32 @@ router.post("/api/v1/users", async (req,res) => {
 	}
 });
 
+router.post("/api/v1/users/:id/following/:following_id", authMiddleware, checkIdValidity("id", "following_id"), async (req,res) => {
+	try{
+		// Check if the user is authenticated
+		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
+
+		// Check if user exists
+		let user = await mongoose.models["Users"].findById(req.params.user_id).exec();
+		if(!user) return res.status(404).json(errorMessages[9]);
+
+		// Check if following exists
+		let following = await mongoose.models["Users"].findById(req.params.following_id).exec();
+		if(!following) return res.status(404).json(errorMessages[10]);
+
+		// Check if user is already following
+		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: req.params.user_id, follows: req.params.following_id}).exec();
+		if(alreadyFollowing) return res.status(400).json(errorMessages[11]);
+
+		// Create new following and save to db
+		let newFollowing = new mongoose.models["User_follows_user"]({follower: req.params.user_id, follows: req.params.following_id});
+		await newFollowing.save();
+
+		res.status(201).json({message: "Following created"});
+	} catch (err) {
+		res.status(500).json({message: "Server error"});
+	}
+});
 //#endregion
 
 module.exports = router;
