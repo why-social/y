@@ -1,10 +1,10 @@
 var express = require('express');
-var mongoose = require('mongoose');
 var morgan = require('morgan');
 var path = require('path');
 var cors = require('cors');
 var history = require('connect-history-api-fallback');
 var database = require('./db/createDB');
+const postsRoute = require('./routes/posts');
 
 // Variables
 var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDevelopmentDB';
@@ -49,7 +49,7 @@ function importRoutes() {
         res.status(200).json({ 'message': 'Alive' });
     });
 
-    require('./routes/posts')(app, database.models["Posts"])
+    app.use('/', postsRoute);
 
     // Catch all non-error handler for api (i.e., 404 Not Found)
     app.use('/api/*', function (req, res) {
