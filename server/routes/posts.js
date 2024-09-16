@@ -25,6 +25,25 @@ router.get("/api/v1/posts/user/:id", async function (req, res) {
 
     res.json(posts);
 });
+
+// returns a boolean representing whether or not a user having :user_id liked a post having :post_id.   
+router.get("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
+    if(!ObjectId.isValid(req.params.user_id)) {
+        return res.status(400).json({message: 'Invalid user ID'});
+    }
+
+    if(!ObjectId.isValid(req.params.post_id)) {
+        return res.status(400).json({message: 'Invalid post ID'});
+    }
+
+    // TODO: check if DB contains user :user_id && post :post_id
+
+    const post = await models.Posts
+        .findOne({_id: req.params.post_id, likes: {$in: [req.params.user_id]}})
+        .exec();
+
+    res.json({liked: !!post});
+});
 //#endregion
 
 //#region POST
