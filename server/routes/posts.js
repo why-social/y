@@ -105,9 +105,23 @@ router.patch("/api/v1/posts/:id", async function (req, res) {
 });
 //#endregion
 
-//#
-
-//DELETE endpoints region end
+//#region DELETE
+router.delete("/api/v1/posts/:id", async function (req, res) {
+    if (checkAuthHeader(req, res)) {
+        try {
+            const result = await models.Posts.findByIdAndDelete(req.params.id);
+            if (!result) {
+                res.status(404).json({message: 'Post ' + req.params.id + ' does not exist!'});
+            }
+            res.status(200).send();
+        }
+        catch (error) {
+            console.error(error);
+            res.status(500).json({ message: error.message });
+        }
+    }
+});
+//#endregion
 
 function checkAuthHeader(req, res) {
     //TODO authentication header verification
