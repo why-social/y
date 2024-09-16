@@ -51,12 +51,12 @@ router.post("/api/v1/posts/", async function (req, res) {
     if (checkAuthHeader(req, res)) {
         try {
             const newPost = new models.Posts({
-                author: req.body.author,
+                author: req.body.author, // TODO: check if valid ObjectId
                 is_edited: false,
                 content: req.body.content,
                 likes: [],
                 comments: [],
-                images: req.body.images, // assuming array of ObjectID
+                images: req.body.images, // assuming array of ObjectId
             });
             await newPost.save();
             res.status(200).send();
@@ -75,9 +75,32 @@ router.post("/api/v1/posts/", async function (req, res) {
 //#endregion
 
 //#region PATCH
-router.patch("/api/v1/posts/:id", function (req, res) {
+router.patch("/api/v1/posts/:id", async function (req, res) {
     if (checkAuthHeader(req, res)) {
-        res.json({ 'message': 'PATCH test' })
+        try {
+            const newData = {
+                content: req.body.content,
+                images: req.body.images,
+                is_edited: true
+            }; // filter incoming request to only the editable fields
+
+            console.log(newData);
+            if (!newData.content && !newData.images?.length) { // if not trying to edit only the content and/or images
+                return res.status(400).json({message: 'No content for editable fields supplied!'});
+            }
+
+            post = await models.Posts.findOneAndUpdate({_id: req.params.id},{$set: newData});
+            res.status(200).json(post);
+        } 
+        catch (error) {
+            if (error.name === 'ValidationError') {
+                res.status(400).json({ message: error.message });
+            } 
+            else {
+                console.error(error);
+                res.status(500).json({ message: error.message });
+            }
+        }
     }
 });
 //#endregion
