@@ -90,7 +90,8 @@ router.get("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (req
 		}
 
 		// If user is not authenticated, do not return email
-		if(!req.isAuth) delete partialResponse.email;
+		if(!req.isAuth || user._id.toString() !== req.user.userId)
+			delete partialResponse.email;
 
 		res.json(partialResponse);
 	} catch (err) {
@@ -98,7 +99,7 @@ router.get("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (req
 	}
 });
 
-router.get("/api/v1/user/:id/followers", checkIdValidity("id"), async (req,res) => {
+router.get("/api/v1/user/:id/followers", checkIdValidity("id"), async (req, res) => {
 	try{
 		let result = await mongoose.models["User_follows_user"].find({follows: req.params.id}).exec();
 		if(!result) return res.status(404).json({message: "User not found"});
@@ -108,7 +109,7 @@ router.get("/api/v1/user/:id/followers", checkIdValidity("id"), async (req,res) 
 	}
 });
 
-router.get("/api/v1/user/:id/following", checkIdValidity("id"), async (req,res) => {
+router.get("/api/v1/user/:id/following", checkIdValidity("id"), async (req, res) => {
 	try{
 		let result = await mongoose.models["User_follows_user"].find({follower: req.params.id}).exec();
 		if(!result) return res.status(404).json({message: "User not found"});
@@ -120,7 +121,7 @@ router.get("/api/v1/user/:id/following", checkIdValidity("id"), async (req,res) 
 //#endregion
 
 //#region POST
-router.post("/api/v1/users", async (req,res) => {
+router.post("/api/v1/users", async (req, res) => {
 	try{
 		// Check if all the necessary fields are present
 		if(!req.body.name || 
@@ -179,7 +180,7 @@ router.post("/api/v1/users", async (req,res) => {
 	}
 });
 
-router.post("/api/v1/users/:id/following/:following_id", authMiddleware, checkIdValidity("id", "following_id"), async (req,res) => {
+router.post("/api/v1/users/:id/following/:following_id", authMiddleware, checkIdValidity("id", "following_id"), async (req, res) => {
 	try{
 		// Check if the user is authenticated
 		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
@@ -187,6 +188,9 @@ router.post("/api/v1/users/:id/following/:following_id", authMiddleware, checkId
 		// Check if user exists
 		let user = await mongoose.models["Users"].findById(req.params.user_id).exec();
 		if(!user) return res.status(404).json(errorMessages[9]);
+
+		// Check if the user is the same as the authenticated user
+		if(user._id.toString() !== req.user.userId) return res.status(401).json({message: "Unauthorized"});
 
 		// Check if following exists
 		let following = await mongoose.models["Users"].findById(req.params.following_id).exec();
@@ -201,6 +205,54 @@ router.post("/api/v1/users/:id/following/:following_id", authMiddleware, checkId
 		await newFollowing.save();
 
 		res.status(201).json({message: "Following created"});
+	} catch (err) {
+		res.status(500).json({message: "Server error"});
+	}
+});
+//#endregion
+
+//#region PATCH
+router.patch("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
+	try{
+		// Check if the user is authenticated
+		if(!req.isAuth || user._id.toString() !== req.user.userId) return res.status(401).json({message: "Unauthorized"});
+
+		// Check if the user exists
+		let user = await mongoose.models["Users"].findById(req.params.id).exec();
+		if(!user) return res.status(404).json(errorMessages[9]);
+
+		// Check if the fields are valid
+		if(req.body.name && (req.body.name.length < 3 || req.body.name.length > 40 || !nameRegex.test(req.body.name)))
+			return res.status(400).json(errorMessages[1]);
+		if(req.body.username && (req.body.username.length < 3 || req.body.username.length > 20 || !usernameRegex.test(req.body.username)))
+			return res.status(400).json(errorMessages[2]);
+		if(req.body.email && (req.body.email.length < 3 || req.body.email.length > 40 || !emailRegex.test(req.body.email)))
+			return res.status(400).json(errorMessages[3]);
+		if(req.body.birthday && (isNaN(new Date(req.body.birthday).getTime()) || new Date(req.body.birthday) > new Date()))
+			return res.status(400).json(errorMessages[5]);
+
+		// Check if the new username already exists
+		if(req.body.username) {
+			let usernameExists = await mongoose.models["Users"].findOne({username: req.body.username}).exec();
+			if(usernameExists) return res.status(400).json(errorMessages[6]);
+		}
+
+		// Check if the new email already exists
+		if(req.body.email) {
+			let emailExists = await mongoose.models["Users"].findOne({email: req.body.email}).exec();
+			if(emailExists) return res.status(400).json(errorMessages[7]);
+		}
+
+		// Update user fields
+		if(req.body.name) user.name = req.body.name;
+		if(req.body.email) user.email = req.body.email;
+		if(req.body.username) user.username = req.body.username;
+		if(req.body.birthday) user.birthday = req.body.birthday;
+		if(req.body.about_me) user.about_me = req.body.about_me;
+		if(req.body.profile_picture) user.profile_picture = req.body.profile_picture;
+
+		await user.save();
+		res.json({message: "User updated"});
 	} catch (err) {
 		res.status(500).json({message: "Server error"});
 	}
