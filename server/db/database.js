@@ -37,7 +37,7 @@ schemas = {
 		content: String,
 		timestamp: { type: "date", default: new Date() },
 		original_post_id: { type: mongoose.Types.ObjectId, ref: "Posts", default: null },
-		likes: [{ type: mongoose.Types.ObjectId, ref: "Users" }],
+		likes: [{ type: mongoose.Types.ObjectId, ref: "Users", unique: true }],
 		comments: [{ type: mongoose.Types.ObjectId, ref: "Comments" }],
 		images: [{ type: mongoose.Types.ObjectId, ref: "Images" }],
 	}, 

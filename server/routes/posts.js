@@ -72,6 +72,35 @@ router.post("/api/v1/posts/", async function (req, res) {
         }
     }
 });
+
+router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
+    if(!ObjectId.isValid(req.params.user_id)) {
+        return res.status(400).json({message: 'Invalid user ID'});
+    }
+
+    if(!ObjectId.isValid(req.params.post_id)) {
+        return res.status(400).json({message: 'Invalid post ID'});
+    }
+
+    // TODO: check if DB contains user :user_id && post :post_id
+
+    try {
+        const post = await models.Posts
+            .findOneAndUpdate({_id: req.params.post_id}, {$addToSet: {likes: req.params.user_id}}) // TODO: different return message when already liked
+            .exec();
+        res.status(200).json(post);
+    }
+    catch (error) {
+        if (error.name === 'ValidationError') {
+            res.status(400).json({ message: error.message });
+        } 
+        else {
+            console.error(error);
+            res.status(500).json({ message: error.message });
+        }
+    }
+
+});
 //#endregion
 
 //#region PATCH
@@ -120,6 +149,34 @@ router.delete("/api/v1/posts/:id", async function (req, res) {
             res.status(500).json({ message: error.message });
         }
     }
+});
+
+router.delete("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
+    if(!ObjectId.isValid(req.params.user_id)) {
+        return res.status(400).json({message: 'Invalid user ID'});
+    }
+
+    if(!ObjectId.isValid(req.params.post_id)) {
+        return res.status(400).json({message: 'Invalid post ID'});
+    }
+
+    // TODO: check if DB contains user :user_id && post :post_id
+    try {
+        const post = await models.Posts
+            .findOneAndUpdate({_id: req.params.post_id}, {$pull: {likes: req.params.user_id}})
+            .exec();
+        res.status(200).json(post);
+    }
+    catch (error) {
+        if (error.name === 'ValidationError') {
+            res.status(400).json({ message: error.message });
+        } 
+        else {
+            console.error(error);
+            res.status(500).json({ message: error.message });
+        }
+    }
+
 });
 //#endregion
 
