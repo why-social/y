@@ -2,13 +2,16 @@ const express = require("express");
 const router = express.Router();
 const models = require("../db/database").mongoose.models;
 
-//GET endpoints region start
-router.get("/api/v1/posts/", function (req, res) {
-    res.json({ 'message': 'GET test' })
-});
-//GET endpoints region end
+//#region GET
+router.get("/api/v1/posts/:id", async function (req, res) {
+    const post = await models.Posts.findById(req.params.id).populate('comments').exec();
+    if (!post) return res.status(404).json({message: 'Post id ' + req.params.id + ' not found'});
 
-//POST endpoints region start
+    res.json(post);
+});
+//#endregion
+
+//#region POST
 router.post("/api/v1/posts/", async function (req, res) {
     if (checkAuthHeader(req, res)) {
         try {
@@ -34,17 +37,17 @@ router.post("/api/v1/posts/", async function (req, res) {
         }
     }
 });
-//POST endpoints region end
+//#endregion
 
-//PATCH endpoints region start
+//#region PATCH
 router.patch("/api/v1/posts/:id", function (req, res) {
     if (checkAuthHeader(req, res)) {
         res.json({ 'message': 'PATCH test' })
     }
 });
-//PATCH endpoints region end
+//#endregion
 
-//DELETE endpoints region start
+//#
 
 //DELETE endpoints region end
 
