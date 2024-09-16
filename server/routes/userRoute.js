@@ -269,4 +269,57 @@ router.patch("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (r
 });
 //#endregion
 
+//#region DELETE
+router.delete("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
+	try{
+		// Check if the user is authenticated
+		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
+
+		// Check if the user exists
+		let user = await mongoose.models["Users"].findById(req.params.id).exec();
+		if(!user) return res.status(404).json(errorMessages[9]);
+
+		// Check if the user is the same as the authenticated user
+		if(user._id.toString() !== req.user?.userId) return res.status(401).json({message: "Unauthorized"});
+
+		//TODO: Check for all the posts, comments, followings and delete them?
+
+		await user.deleteOne();
+		res.json({message: "User deleted"});
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({message: "Server error"});
+	}
+});
+
+router.delete("/api/v1/user/:id/following/:following_id", authMiddleware, checkIdValidity("id", "following_id"), async (req, res) => {
+	try{
+		// Check if the user is authenticated
+		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
+
+		// Check if the user exists
+		let user = await mongoose.models["Users"].findById(req.params.user_id).exec();
+		if(!user) return res.status(404).json(errorMessages[9]);
+
+		// Check if the user is the same as the authenticated user
+		if(user._id.toString() !== req.user?.userId) return res.status(401).json({message: "Unauthorized"});
+
+		// Check if following exists
+		let following = await mongoose.models["Users"].findById(req.params.following_id).exec();
+		if(!following) return res.status(404).json(errorMessages[10]);
+
+		// Check if user is following
+		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: req.params.user_id, follows: req.params.following_id}).exec();
+		if(!alreadyFollowing) return res.status(400).json(errorMessages[10]);
+
+		await alreadyFollowing.deleteOne();
+		res.json({message: "Following deleted"});
+	} catch (err) {
+		res.status(500).json({message: "Server error"});
+	}
+});
+//#endregion
+
+
+
 module.exports = router;
