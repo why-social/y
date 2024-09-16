@@ -13,8 +13,9 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "TEST SECRET KEY SHOULD BE 
  * - At least one uppercase letter
  * - At least one number
  * - At least one special character
+ * - Length between 8 and 40
  */
-const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).*$/;
+const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,40}$/;
 
 /**
  * Email regex
@@ -23,22 +24,30 @@ const passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).
  * - Must not contain spaces
  * - Must have at least 1 character before and after @
  * - Must have at least 1 character before and after .
- * - Must have at least 1 character after the last .
+ * - Length between 3 and 40
  */
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const emailRegex = /^(?=.{3,40}$)[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Username regex
  * - Only letters, numbers and underscores
+ * - Length between 3 and 20
  */
-const usernameRegex = /^[a-zA-Z0-9_]+$/;
+const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
 
 /**
  * Name regex
  * - Only letters and spaces
+ * - Length between 3 and 40
  */
-const nameRegex = /^[a-zA-Z\s]+$/;
+const nameRegex = /^[a-zA-Z ]{3,40}$/;
 
+/**
+ * Fields that can be updated
+ */
+const updatableFields = ['name', 'email', 'username', 'birthday', 'about_me', 'profile_picture'];
+
+//TODO: Transfer to a separate file
 const errorMessages = [
 	"All fields are required", // 0
 	"Name is invalid", // 1
@@ -90,7 +99,7 @@ router.get("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (req
 		}
 
 		// If user is not authenticated, do not return email
-		if(!req.isAuth || user._id.toString() !== req.user.userId)
+		if(!req.isAuth || user._id.toString() !== req.user?.userId)
 			delete partialResponse.email;
 
 		res.json(partialResponse);
@@ -132,13 +141,13 @@ router.post("/api/v1/users", async (req, res) => {
 			return res.status(400).json(errorMessages[0]);
 
 		// Check the length and validity of fields
-		if(req.body.name.length < 3 || req.body.name.length > 40 || !nameRegex.test(req.body.name)) 
+		if(!nameRegex.test(req.body.name)) 
 			return res.status(400).json(errorMessages[1]);
-		if(req.body.username.length < 3 || req.body.username.length > 20 || !usernameRegex.test(req.body.username))
+		if(!usernameRegex.test(req.body.username))
 			return res.status(400).json(errorMessages[2]);
-		if(req.body.email.length < 3 || req.body.email.length > 40 || !emailRegex.test(req.body.email))
+		if(!emailRegex.test(req.body.email))
 			return res.status(400).json(errorMessages[3]);
-		if(req.body.password.length < 8 || req.body.password.length > 40 || !passwordRegex.test(req.body.password))
+		if(!passwordRegex.test(req.body.password))
 			return res.status(400).json(errorMessages[4]);
 		
 		// Check if birthday is a valid date
@@ -190,7 +199,7 @@ router.post("/api/v1/users/:id/following/:following_id", authMiddleware, checkId
 		if(!user) return res.status(404).json(errorMessages[9]);
 
 		// Check if the user is the same as the authenticated user
-		if(user._id.toString() !== req.user.userId) return res.status(401).json({message: "Unauthorized"});
+		if(user._id.toString() !== req.user?.userId) return res.status(401).json({message: "Unauthorized"});
 
 		// Check if following exists
 		let following = await mongoose.models["Users"].findById(req.params.following_id).exec();
@@ -215,18 +224,21 @@ router.post("/api/v1/users/:id/following/:following_id", authMiddleware, checkId
 router.patch("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
 	try{
 		// Check if the user is authenticated
-		if(!req.isAuth || user._id.toString() !== req.user.userId) return res.status(401).json({message: "Unauthorized"});
+		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
 
 		// Check if the user exists
 		let user = await mongoose.models["Users"].findById(req.params.id).exec();
 		if(!user) return res.status(404).json(errorMessages[9]);
 
+		// Check if the user is the same as the authenticated user
+		if(user._id.toString() !== req.user?.userId) return res.status(401).json({message: "Unauthorized"});
+
 		// Check if the fields are valid
-		if(req.body.name && (req.body.name.length < 3 || req.body.name.length > 40 || !nameRegex.test(req.body.name)))
+		if(req.body.name && !nameRegex.test(req.body.name))
 			return res.status(400).json(errorMessages[1]);
-		if(req.body.username && (req.body.username.length < 3 || req.body.username.length > 20 || !usernameRegex.test(req.body.username)))
+		if(req.body.username && !usernameRegex.test(req.body.username))
 			return res.status(400).json(errorMessages[2]);
-		if(req.body.email && (req.body.email.length < 3 || req.body.email.length > 40 || !emailRegex.test(req.body.email)))
+		if(req.body.email && !emailRegex.test(req.body.email))
 			return res.status(400).json(errorMessages[3]);
 		if(req.body.birthday && (isNaN(new Date(req.body.birthday).getTime()) || new Date(req.body.birthday) > new Date()))
 			return res.status(400).json(errorMessages[5]);
@@ -243,13 +255,11 @@ router.patch("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (r
 			if(emailExists) return res.status(400).json(errorMessages[7]);
 		}
 
-		// Update user fields
-		if(req.body.name) user.name = req.body.name;
-		if(req.body.email) user.email = req.body.email;
-		if(req.body.username) user.username = req.body.username;
-		if(req.body.birthday) user.birthday = req.body.birthday;
-		if(req.body.about_me) user.about_me = req.body.about_me;
-		if(req.body.profile_picture) user.profile_picture = req.body.profile_picture;
+		updatableFields.forEach(field => {
+			if(req.body[field]) {
+				user[field] = req.body[field];
+			}
+		});
 
 		await user.save();
 		res.json({message: "User updated"});
