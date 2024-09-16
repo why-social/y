@@ -31,14 +31,7 @@ schemas = {
 		author: { 
 			type: mongoose.Types.ObjectId, 
 			ref: "Users", 
-			required: [true, 'Author missing'],
-			validate: {
-				validator: async function (value) {
-					const user = await models.Users.findById(value);
-					return !!user; // Return true if user exists, otherwise false
-				},
-				message: 'Author does not exist.'
-			}
+			required: [true, 'Author missing']
 		},
 		is_edited: Boolean,
 		content: String,
@@ -63,13 +56,21 @@ schemas = {
 };
 //#endregion
 
+//#region Validation
 // Attach custom validation middleware
-schemas.Posts.pre('validate', function(next) {
-	if (!(this.content || (this.images && this.images.length > 0))) {
-		this.invalidate("Either text content or at least 1 image required!");
+schemas.Posts.pre('validate', async function(next) {
+	const user = await models.Users.findById(this.author);
+	if (!user) {
+		this.invalidate(this.author, "Author does not exist!");
 	}
+
+	if (!(this.content || (this.images && this.images.length > 0))) {
+		this.invalidate(this.content, "Either text content or at least 1 image required!");
+	}
+
 	next();
 })
+//#endregion
 
 // Create models for each relation
 for(let key in schemas){
