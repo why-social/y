@@ -1,13 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const models = require("../db/database").mongoose.models;
+var ObjectId = require('mongoose').Types.ObjectId; 
 
 //#region GET
+// Returns a post with id :id
 router.get("/api/v1/posts/:id", async function (req, res) {
     const post = await models.Posts.findById(req.params.id).populate('comments').exec();
     if (!post) return res.status(404).json({message: 'Post id ' + req.params.id + ' not found'});
 
     res.json(post);
+});
+
+// Returns all posts authored by the user with id :id
+router.get("/api/v1/posts/user/:id", async function (req, res) {
+    if(!ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({message: 'Invalid user ID'});
+    }
+
+    const posts = await models.Posts.find({author: req.params.id}).populate('comments').exec();
+    if (!posts || posts.length == 0) {
+        return res.status(404).json({message: 'Posts of user ' + req.params.id + ' not found'});
+    }
+
+    res.json(posts);
 });
 //#endregion
 
