@@ -8,6 +8,7 @@ const database = require('./db/database');
 const checkDBAvailability = require('./middleware/checkDB');
 const imageRoute = require('./routes/imageRoute');
 const userRoute = require('./routes/users');
+const loginRoute = require('./routes/login');
 
 global.appRoot = path.resolve(__dirname);
 
@@ -33,6 +34,8 @@ app.use(checkDBAvailability);
 
 // Import routes
 app.use('/', userRoute);
+
+app.use('/', loginRoute);
 
 app.get('/api', function(req, res) {
     res.json({'message': 'Alive!'}); // needed for test script to see if the server booted up

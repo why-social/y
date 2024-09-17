@@ -204,7 +204,7 @@ router.post("/api/v1/users", async (req, res, next) => {
 		await newUser.save();
 
 		// Create JWT token
-		const token = jwt.sign({userId: newUser._id}, JWT_SECRET_KEY, {expiresIn: "15d"});
+		const token = jwt.sign({userId: newUser._id}, JWT_SECRET_KEY, {expiresIn: "1р"});
 
 		// Return message, user id and token
 		res.status(201).json({message: "User created", user_id: newUser._id, token: token});
