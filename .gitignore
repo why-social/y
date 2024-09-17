@@ -176,5 +176,5 @@ $RECYCLE.BIN/
 
 # End of https://www.gitignore.io/api/node,vuejs,visualstudiocode,linux,macos,windows
 
-# Server runtime uploads
+# Media uploaded to the server
 server/uploads/*
