@@ -4,8 +4,10 @@ var morgan = require('morgan');
 var path = require('path');
 var cors = require('cors');
 var history = require('connect-history-api-fallback');
-const createDB = require('./db/createDB');
+const database = require('./db/database');
+const checkDBAvailability = require('./middleware/checkDB');
 const imageRoute = require('./routes/imageRoute');
+const userRoute = require('./routes/users');
 
 global.appRoot = path.resolve(__dirname);
 
@@ -14,7 +16,7 @@ var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDevelopm
 var port = process.env.PORT || 3000;
 
 // Connect to MongoDB
-createDB.connect(mongoURI);
+database.connect(mongoURI);
 
 // Create Express app
 var app = express();
@@ -27,7 +29,11 @@ app.use(morgan('dev'));
 app.options('*', cors());
 app.use(cors());
 
+app.use(checkDBAvailability);
+
 // Import routes
+app.use('/', userRoute);
+
 app.get('/api', function(req, res) {
     res.json({'message': 'Alive!'}); // needed for test script to see if the server booted up
 });

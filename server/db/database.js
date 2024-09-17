@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 // Declare variables
 let schemas = {};
@@ -48,6 +49,13 @@ schemas = {
 		images: [{type: mongoose.Types.ObjectId, ref: "Images"}],
 	}, {collection: 'comments'}),
 };
+
+// Hash password before saving user
+schemas.Users.pre('save', async function(next){
+	if(!this.isModified('password_hash')) return next(); // only hash the password if it has been modified (or is new)
+	this.password_hash = await bcrypt.hash(this.password_hash, 10); // hash the password
+	next();
+});
 
 // Create models for each relation
 for(let key in schemas){
