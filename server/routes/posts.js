@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const models = require("../db/database").mongoose.models;
 var ObjectId = require('mongoose').Types.ObjectId; 
+const authMiddleware = require('../middleware/auth');
 
 //#region GET
 // Returns a post with id :id
@@ -47,28 +48,26 @@ router.get("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
 //#endregion
 
 //#region POST
-router.post("/api/v1/posts/", async function (req, res) {
-    if (checkAuthHeader(req, res)) {
-        try {
-            const newPost = new models.Posts({
-                author: req.body.author, // TODO: check if valid ObjectId
-                is_edited: false,
-                content: req.body.content,
-                likes: [],
-                comments: [],
-                images: req.body.images, // assuming array of ObjectId
-            });
-            await newPost.save();
-            res.status(200).send();
+router.post("/api/v1/posts/", authMiddleware, async function (req, res) {
+    try {
+        const newPost = new models.Posts({
+            author: req.body.author, // TODO: check if valid ObjectId
+            is_edited: false,
+            content: req.body.content,
+            likes: [],
+            comments: [],
+            images: req.body.images, // assuming array of ObjectId
+        });
+        await newPost.save();
+        res.status(200).send();
+    } 
+    catch (error) {
+        if (error.name === 'ValidationError') {
+            res.status(400).json({ message: error.message });
         } 
-        catch (error) {
-            if (error.name === 'ValidationError') {
-                res.status(400).json({ message: error.message });
-            } 
-            else {
-                console.error(error);
-                res.status(500).json({ message: error.message });
-            }
+        else {
+            console.error(error);
+            res.status(500).json({ message: error.message });
         }
     }
 });
@@ -104,50 +103,46 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
 //#endregion
 
 //#region PATCH
-router.patch("/api/v1/posts/:id", async function (req, res) {
-    if (checkAuthHeader(req, res)) {
-        try {
-            const newData = {
-                content: req.body.content,
-                images: req.body.images,
-                is_edited: true
-            }; // filter incoming request to only the editable fields
+router.patch("/api/v1/posts/:id", authMiddleware, async function (req, res) {
+    try {
+        const newData = {
+            content: req.body.content,
+            images: req.body.images,
+            is_edited: true
+        }; // filter incoming request to only the editable fields
 
-            console.log(newData);
-            if (!newData.content && !newData.images?.length) { // if not trying to edit only the content and/or images
-                return res.status(400).json({message: 'No content for editable fields supplied!'});
-            }
+        console.log(newData);
+        if (!newData.content && !newData.images?.length) { // if not trying to edit only the content and/or images
+            return res.status(400).json({message: 'No content for editable fields supplied!'});
+        }
 
-            post = await models.Posts.findOneAndUpdate({_id: req.params.id},{$set: newData});
-            res.status(200).json(post);
+        post = await models.Posts.findOneAndUpdate({_id: req.params.id},{$set: newData});
+        res.status(200).json(post);
+    } 
+    catch (error) {
+        if (error.name === 'ValidationError') {
+            res.status(400).json({ message: error.message });
         } 
-        catch (error) {
-            if (error.name === 'ValidationError') {
-                res.status(400).json({ message: error.message });
-            } 
-            else {
-                console.error(error);
-                res.status(500).json({ message: error.message });
-            }
+        else {
+            console.error(error);
+            res.status(500).json({ message: error.message });
         }
     }
 });
 //#endregion
 
 //#region DELETE
-router.delete("/api/v1/posts/:id", async function (req, res) {
-    if (checkAuthHeader(req, res)) {
-        try {
-            const result = await models.Posts.findByIdAndDelete(req.params.id);
-            if (!result) {
-                res.status(404).json({message: 'Post ' + req.params.id + ' does not exist!'});
-            }
-            res.status(200).send();
+router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res) {
+    try {
+        const result = await models.Posts.findByIdAndDelete(req.params.id);
+        if (!result) {
+            res.status(404).json({message: 'Post ' + req.params.id + ' does not exist!'});
         }
-        catch (error) {
-            console.error(error);
-            res.status(500).json({ message: error.message });
-        }
+        res.status(200).send();
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -179,16 +174,5 @@ router.delete("/api/v1/posts/:post_id/likes/:user_id", async function (req, res)
 
 });
 //#endregion
-
-function checkAuthHeader(req, res) {
-    //TODO authentication header verification
-    if (!req.headers.authorization /*replace with actual header check*/) {
-        res.status(401).json({ "message": "Unauthorised" });
-
-        return false;
-    }
-
-    return true;
-}
 
 module.exports = router;
