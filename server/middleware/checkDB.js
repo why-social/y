@@ -1,4 +1,4 @@
-const mongoose = require("../db/createDB").mongoose;
+const mongoose = require("../db/database").mongoose;
 
 module.exports = (req, res, next) => {
 	if(mongoose.connection.readyState === 1) next();

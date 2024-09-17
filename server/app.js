@@ -4,8 +4,8 @@ var morgan = require('morgan');
 var path = require('path');
 var cors = require('cors');
 var history = require('connect-history-api-fallback');
-const createDB = require('./db/createDB');
-const userRoute = require('./routes/userRoute');
+const createDB = require('./db/database');
+const userRoute = require('./routes/users');
 const checkDBAvailability = require('./middleware/checkDB');
 
 // Variables

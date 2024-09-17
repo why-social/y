@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const mongoose = require("../db/createDB").mongoose;
+const mongoose = require("../db/database").mongoose;
 const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middleware/auth");
 
@@ -79,7 +79,7 @@ function checkIdValidity(...args) {
 }
 
 //#region GET
-router.get("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
+router.get("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
 	try {
 		// Get user by id from db
 		let result = await mongoose.models["Users"].findById(req.params.id).exec();
@@ -108,7 +108,7 @@ router.get("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (req
 	}
 });
 
-router.get("/api/v1/user/:id/followers", checkIdValidity("id"), async (req, res) => {
+router.get("/api/v1/users/:id/followers", checkIdValidity("id"), async (req, res) => {
 	try{
 		let result = await mongoose.models["User_follows_user"].find({follows: req.params.id}).exec();
 		if(!result) return res.status(404).json({message: "User not found"});
@@ -118,7 +118,7 @@ router.get("/api/v1/user/:id/followers", checkIdValidity("id"), async (req, res)
 	}
 });
 
-router.get("/api/v1/user/:id/following", checkIdValidity("id"), async (req, res) => {
+router.get("/api/v1/users/:id/following", checkIdValidity("id"), async (req, res) => {
 	try{
 		let result = await mongoose.models["User_follows_user"].find({follower: req.params.id}).exec();
 		if(!result) return res.status(404).json({message: "User not found"});
@@ -189,28 +189,25 @@ router.post("/api/v1/users", async (req, res) => {
 	}
 });
 
-router.post("/api/v1/users/:id/following/:following_id", authMiddleware, checkIdValidity("id", "following_id"), async (req, res) => {
+router.post("/api/v1/users/following/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res) => {
 	try{
 		// Check if the user is authenticated
 		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
 
-		// Check if user exists
-		let user = await mongoose.models["Users"].findById(req.params.user_id).exec();
+		// Check if user exists by using their token
+		let user = await mongoose.models["Users"].findById(req.user?.userId).exec();
 		if(!user) return res.status(404).json(errorMessages[9]);
-
-		// Check if the user is the same as the authenticated user
-		if(user._id.toString() !== req.user?.userId) return res.status(401).json({message: "Unauthorized"});
 
 		// Check if following exists
 		let following = await mongoose.models["Users"].findById(req.params.following_id).exec();
 		if(!following) return res.status(404).json(errorMessages[10]);
 
 		// Check if user is already following
-		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: req.params.user_id, follows: req.params.following_id}).exec();
+		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: user._id.toString(), follows: req.params.following_id}).exec();
 		if(alreadyFollowing) return res.status(400).json(errorMessages[11]);
 
 		// Create new following and save to db
-		let newFollowing = new mongoose.models["User_follows_user"]({follower: req.params.user_id, follows: req.params.following_id});
+		let newFollowing = new mongoose.models["User_follows_user"]({follower: user._id.toString(), follows: req.params.following_id});
 		await newFollowing.save();
 
 		res.status(201).json({message: "Following created"});
@@ -221,7 +218,7 @@ router.post("/api/v1/users/:id/following/:following_id", authMiddleware, checkId
 //#endregion
 
 //#region PATCH
-router.patch("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
+router.patch("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
 	try{
 		// Check if the user is authenticated
 		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
@@ -270,7 +267,7 @@ router.patch("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (r
 //#endregion
 
 //#region DELETE
-router.delete("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
+router.delete("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
 	try{
 		// Check if the user is authenticated
 		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
@@ -282,7 +279,8 @@ router.delete("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (
 		// Check if the user is the same as the authenticated user
 		if(user._id.toString() !== req.user?.userId) return res.status(401).json({message: "Unauthorized"});
 
-		//TODO: Check for all the posts, comments, followings and delete them?
+		// Delete all followings
+		await mongoose.models["User_follows_user"].deleteMany({$or: [{follower: req.params.id}, {follows: req.params.id}]}).exec();
 
 		await user.deleteOne();
 		res.json({message: "User deleted"});
@@ -292,24 +290,21 @@ router.delete("/api/v1/user/:id", authMiddleware, checkIdValidity("id"), async (
 	}
 });
 
-router.delete("/api/v1/user/:id/following/:following_id", authMiddleware, checkIdValidity("id", "following_id"), async (req, res) => {
+router.delete("/api/v1/users/following/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res) => {
 	try{
 		// Check if the user is authenticated
 		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
 
 		// Check if the user exists
-		let user = await mongoose.models["Users"].findById(req.params.user_id).exec();
+		let user = await mongoose.models["Users"].findById(req.user?.userId).exec();
 		if(!user) return res.status(404).json(errorMessages[9]);
-
-		// Check if the user is the same as the authenticated user
-		if(user._id.toString() !== req.user?.userId) return res.status(401).json({message: "Unauthorized"});
 
 		// Check if following exists
 		let following = await mongoose.models["Users"].findById(req.params.following_id).exec();
 		if(!following) return res.status(404).json(errorMessages[10]);
 
 		// Check if user is following
-		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: req.params.user_id, follows: req.params.following_id}).exec();
+		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: user._id.toString(), follows: req.params.following_id}).exec();
 		if(!alreadyFollowing) return res.status(400).json(errorMessages[10]);
 
 		await alreadyFollowing.deleteOne();
