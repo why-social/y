@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 var path = require('path');
 var fs = require('fs')
-const mongoose = require("../db/createDB").mongoose;
+const mongoose = require("../db/database").mongoose;
 
 //#region GET
 // Get image from the server

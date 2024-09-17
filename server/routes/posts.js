@@ -85,7 +85,7 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
 
     try {
         const post = await models.Posts
-            .findOneAndUpdate({_id: req.params.post_id}, {$addToSet: {likes: req.params.user_id}}) // TODO: different return message when already liked
+            .findOneAndUpdate({_id: req.params.post_id}, {$addToSet: {likes: req.params.user_id}}, {new: true}) // TODO: different return message when already liked
             .exec();
         res.status(200).json(post);
     }
@@ -111,12 +111,11 @@ router.patch("/api/v1/posts/:id", authMiddleware, async function (req, res) {
             is_edited: true
         }; // filter incoming request to only the editable fields
 
-        console.log(newData);
         if (!newData.content && !newData.images?.length) { // if not trying to edit only the content and/or images
             return res.status(400).json({message: 'No content for editable fields supplied!'});
         }
 
-        post = await models.Posts.findOneAndUpdate({_id: req.params.id},{$set: newData});
+        post = await models.Posts.findOneAndUpdate({_id: req.params.id}, {$set: newData}, {new: true}).exec();
         res.status(200).json(post);
     } 
     catch (error) {
@@ -134,7 +133,7 @@ router.patch("/api/v1/posts/:id", authMiddleware, async function (req, res) {
 //#region DELETE
 router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res) {
     try {
-        const result = await models.Posts.findByIdAndDelete(req.params.id);
+        const result = await models.Posts.findByIdAndDelete(req.params.id).exec();
         if (!result) {
             res.status(404).json({message: 'Post ' + req.params.id + ' does not exist!'});
         }
@@ -146,7 +145,7 @@ router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res) {
     }
 });
 
-router.delete("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
+router.delete("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async function (req, res) {
     if(!ObjectId.isValid(req.params.user_id)) {
         return res.status(400).json({message: 'Invalid user ID'});
     }
@@ -158,7 +157,7 @@ router.delete("/api/v1/posts/:post_id/likes/:user_id", async function (req, res)
     // TODO: check if DB contains user :user_id && post :post_id
     try {
         const post = await models.Posts
-            .findOneAndUpdate({_id: req.params.post_id}, {$pull: {likes: req.params.user_id}})
+            .findOneAndUpdate({_id: req.params.post_id}, {$pull: {likes: req.params.user_id}}, {new: true})
             .exec();
         res.status(200).json(post);
     }
