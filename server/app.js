@@ -5,8 +5,11 @@ var path = require('path');
 var cors = require('cors');
 var history = require('connect-history-api-fallback');
 const createDB = require('./db/database');
-const userRoute = require('./routes/users');
 const checkDBAvailability = require('./middleware/checkDB');
+const imageRoute = require('./routes/imageRoute');
+const userRoute = require('./routes/users');
+
+global.appRoot = path.resolve(__dirname);
 
 // Variables
 var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDevelopmentDB';
@@ -32,8 +35,10 @@ app.use(checkDBAvailability);
 app.use('/', userRoute);
 
 app.get('/api', function(req, res) {
-    res.json({'message': 'Welcome to your DIT342 backend ExpressJS project!'});
+    res.json({'message': 'Alive!'}); // needed for test script to see if the server booted up
 });
+
+app.use('/', imageRoute);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use('/api/*', function (req, res) {
