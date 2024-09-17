@@ -4,7 +4,7 @@ var morgan = require('morgan');
 var path = require('path');
 var cors = require('cors');
 var history = require('connect-history-api-fallback');
-const createDB = require('./db/database');
+const database = require('./db/database');
 const checkDBAvailability = require('./middleware/checkDB');
 const imageRoute = require('./routes/imageRoute');
 const userRoute = require('./routes/users');
@@ -16,7 +16,7 @@ var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDevelopm
 var port = process.env.PORT || 3000;
 
 // Connect to MongoDB
-createDB.connect(mongoURI);
+database.connect(mongoURI);
 
 // Create Express app
 var app = express();
