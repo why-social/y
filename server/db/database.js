@@ -39,7 +39,7 @@ schemas = {
 		original_post_id: { type: mongoose.Types.ObjectId, ref: "Posts", default: null },
 		likes: [{ type: mongoose.Types.ObjectId, ref: "Users", unique: true }],
 		comments: [{ type: mongoose.Types.ObjectId, ref: "Comments" }],
-		images: [{ type: mongoose.Types.ObjectId, ref: "Images" }],
+		images: [{ type: String, ref: "Images" }],
 	}, 
 	{ collection: 'posts' }),
 	Comments: new mongoose.Schema({
@@ -51,7 +51,7 @@ schemas = {
 		parent_is_post: Boolean,
 		likes: [{ type: mongoose.Types.ObjectId, ref: "Users" }],
 		comments: [{ type: mongoose.Types.ObjectId, ref: "Comments" }],
-		images: [{ type: mongoose.Types.ObjectId, ref: "Images" }],
+		images: [{ type: String, ref: "Images" }],
 	}, { collection: 'comments' }),
 };
 //#endregion
