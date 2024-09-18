@@ -40,9 +40,8 @@ router.post("/api/v1/login", async (req, res, next) => {
 	try {
 		const {username, password} = req.body;
 
-		if (!username || !password){
+		if (!username || !password)
 			throw new ValidationError(errorMsg.REQUIRED_FIELDS);
-		}
 
 		let user = await mongoose.models["Users"].findOne({username});
 		if (!user)

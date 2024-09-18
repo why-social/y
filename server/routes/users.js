@@ -101,6 +101,30 @@ class NotFoundError extends Error {
 }
 
 //#region GET
+router.get("/api/v1/users/search", async (req, res, next) => {
+	try{
+		// Check if the search query is present
+		if(!req.query.username) throw new ValidationError(errorMsg.REQUIRED_FIELDS);
+
+		// Check username validity
+		if(!usernameRegex.test(req.query.username)) throw new ValidationError(errorMsg.INVALID_USERNAME);
+
+		// Search for users by name or username
+		let result = await mongoose.models["Users"].findOne({username: req.query.username}).exec();
+		if(!result) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
+		let partialResponse = {
+			name: result.name,
+			username: result.username,
+			profile_picture: result.profile_picture,
+		}
+
+		res.json(partialResponse);
+	} catch (err) {
+		next(err);
+	}
+});
+
 router.get("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res, next) => {
 	try {
 		// Get user by id from db
@@ -156,44 +180,38 @@ router.get("/api/v1/users/:id/following", checkIdValidity("id"), async (req, res
 //#region POST
 router.post("/api/v1/users", async (req, res, next) => {
 	try{
+		let { name, email, password, username, birthday } = req.body;
+
 		// Check if all the necessary fields are present
-		if(!req.body.name || 
-			!req.body.email || 
-			!req.body.password || 
-			!req.body.username ||
-			!req.body.birthday)
+		if(!name || !email || !password || !username || !birthday)
 			throw new ValidationError(errorMsg.REQUIRED_FIELDS);
 
 		// Check the length and validity of fields
-		if(!nameRegex.test(req.body.name)) 
+		if(!nameRegex.test(name)) 
 			throw new ValidationError(errorMsg.INVALID_NAME);
-		if(!usernameRegex.test(req.body.username))
+		if(!usernameRegex.test(username))
 			throw new ValidationError(errorMsg.INVALID_USERNAME);
-		if(!emailRegex.test(req.body.email))
+		if(!emailRegex.test(email))
 			throw new ValidationError(errorMsg.INVALID_EMAIL);
-		if(!passwordRegex.test(req.body.password))
+		if(!passwordRegex.test(password))
 			throw new ValidationError(errorMsg.INVALID_PASSWORD);
 		
 		// Check if birthday is a valid date
-		const birthday = new Date(req.body.birthday);
-		if(isNaN(birthday.getTime()) || birthday > new Date())
+		const birthdayCheck = new Date(birthday);
+		if(isNaN(birthdayCheck.getTime()) || birthdayCheck > new Date())
 			throw new ValidationError(errorMsg.INVALID_BIRTHDAY);
 
 		// Check if user already exists by username
-		let usernameExists = await mongoose.models["Users"].findOne({username: req.body.username}).exec();
+		let usernameExists = await mongoose.models["Users"].findOne({username}).exec();
 		if(usernameExists) throw new ValidationError(errorMsg.USERNAME_EXISTS);
 
 		// Check if user already exists by email
-		let emailExists = await mongoose.models["Users"].findOne({email: req.body.email}).exec();
+		let emailExists = await mongoose.models["Users"].findOne({email}).exec();
 		if(emailExists) throw new ValidationError(errorMsg.EMAIL_EXISTS);
 
 		// Remove all other fields from the request and add necessary
 		req.body = {
-			name: req.body.name,
-			email: req.body.email,
-			password: req.body.password,
-			username: req.body.username,
-			birthday: req.body.birthday,
+			name, email, password, username, birthday,
 			last_time_posted: null,
 			about_me: "",
 			profile_picture: null,
@@ -204,7 +222,7 @@ router.post("/api/v1/users", async (req, res, next) => {
 		await newUser.save();
 
 		// Create JWT token
-		const token = jwt.sign({userId: newUser._id}, JWT_SECRET_KEY, {expiresIn: "1р"});
+		const token = jwt.sign({userId: newUser._id}, JWT_SECRET_KEY, {expiresIn: "1h"});
 
 		// Return message, user id and token
 		res.status(201).json({message: "User created", user_id: newUser._id, token: token});
