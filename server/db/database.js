@@ -10,7 +10,7 @@ schemas = {
 	Users: new mongoose.Schema({
 		name: String,
 		email: String,
-		password_hash: String,
+		password: String,
 		about_me: String,
 		username: String,
 		join_date: {type: "date", default: new Date()},
@@ -52,8 +52,8 @@ schemas = {
 
 // Hash password before saving user
 schemas.Users.pre('save', async function(next){
-	if(!this.isModified('password_hash')) return next(); // only hash the password if it has been modified (or is new)
-	this.password_hash = await bcrypt.hash(this.password_hash, 10); // hash the password
+	if(!this.isModified('password')) return next(); // only hash the password if it has been modified (or is new)
+	this.password = await bcrypt.hash(this.password, 10); // hash the password
 	next();
 });
 

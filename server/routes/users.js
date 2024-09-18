@@ -47,55 +47,77 @@ const nameRegex = /^[a-zA-Z ]{3,40}$/;
  */
 const updatableFields = ['name', 'email', 'username', 'birthday', 'about_me', 'profile_picture'];
 
-//TODO: Transfer to a separate file
-const errorMessages = [
-	"All fields are required", // 0
-	"Name is invalid", // 1
-	"Username is invalid", // 2
-	"Email is invalid", // 3
-	"Password is invalid", // 4
-	"Birthday is invalid", // 5
-	"User with this username already exists", // 6
-	"User with this email already exists", // 7
-	"User id is invalid", // 8
-	"User not found", // 9
-	"Following not found", // 10
-	"Already following", // 11
-].map((el, i) => {return {message: el, errCode: i}});
+const errorMsg = {
+	REQUIRED_FIELDS: "All fields are required",
+	INVALID_NAME: "Name is invalid",
+	INVALID_USERNAME: "Username is invalid",
+	INVALID_EMAIL: "Email is invalid",
+	INVALID_PASSWORD: "Password is invalid",
+	INVALID_BIRTHDAY: "Birthday is invalid",
+	USERNAME_EXISTS: "User with this username already exists",
+	EMAIL_EXISTS: "User with this email already exists",
+	INVALID_USER_ID: "User id is invalid",
+	USER_NOT_FOUND: "User not found",
+	FOLLOWING_NOT_FOUND: "Following not found",
+	ALREADY_FOLLOWING: "Already following",
+	UNAUTHORIZED: "Unauthorized",
+};
 
 /**
  * Check if the id(s) in the request are valid
- * @param  {...String} args - Ids to check
+ * @param {...String} args - Ids to check
  * @returns {Function} - Middleware function
  */
-function checkIdValidity(...args) {
+function checkIdValidity(id) {
 	return (req, res, next) => {
-		for (let arg of args) {
-			if(!mongoose.Types.ObjectId.isValid(req.params[arg]))
-				return res.status(400).json(errorMessages[8]);
-		};
+		if(!mongoose.Types.ObjectId.isValid(req.params[id]))
+			return next(new ValidationError(errorMsg.INVALID_USER_ID));
 		next();
 	}
 }
 
+class ValidationError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = 'ValidationError';
+		this.statusCode = 400;
+	}
+}
+
+class UnauthorizedError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = 'UnauthorizedError';
+		this.statusCode = 401;
+	}
+}
+
+class NotFoundError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = 'NotFoundError';
+		this.statusCode = 404;
+	}
+}
+
 //#region GET
-router.get("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
+router.get("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res, next) => {
 	try {
 		// Get user by id from db
-		let result = await mongoose.models["Users"].findById(req.params.id).exec();
+		let user = await mongoose.models["Users"].findById(req.params.id).exec();
 
 		// If user not found return 404
-		if(!result) return res.status(404).json({message: "User not found"});
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
 		let partialResponse = {
-			name: result.name,
-			email: result.email,
-			about_me: result.about_me,
-			username: result.username,
-			join_date: result.join_date,
-			birthday: result.birthday,
-			last_time_posted: result.last_time_posted,
-			profile_picture: result.profile_picture,
+			name: user.name,
+			email: user.email,
+			about_me: user.about_me,
+			username: user.username,
+			join_date: user.join_date,
+			birthday: user.birthday,
+			last_time_posted: user.last_time_posted,
+			profile_picture: user.profile_picture,
 		}
 
 		// If user is not authenticated, do not return email
@@ -104,33 +126,35 @@ router.get("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (re
 
 		res.json(partialResponse);
 	} catch (err) {
-		res.status(500).json({message: "Server error"});
+		next(err);
 	}
 });
 
-router.get("/api/v1/users/:id/followers", checkIdValidity("id"), async (req, res) => {
+router.get("/api/v1/users/:id/followers", checkIdValidity("id"), async (req, res, next) => {
 	try{
 		let result = await mongoose.models["User_follows_user"].find({follows: req.params.id}).exec();
-		if(!result) return res.status(404).json({message: "User not found"});
+		if(!result) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
 		res.json(result);
 	} catch (err) {
-		res.status(500).json({message: "Server error"});
+		next(err);
 	}
 });
 
-router.get("/api/v1/users/:id/following", checkIdValidity("id"), async (req, res) => {
+router.get("/api/v1/users/:id/following", checkIdValidity("id"), async (req, res, next) => {
 	try{
 		let result = await mongoose.models["User_follows_user"].find({follower: req.params.id}).exec();
-		if(!result) return res.status(404).json({message: "User not found"});
+		if(!result) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
 		res.json(result);
 	} catch (err) {
-		res.status(500).json({message: "Server error"});
+		next(err);
 	}
 });
 //#endregion
 
 //#region POST
-router.post("/api/v1/users", async (req, res) => {
+router.post("/api/v1/users", async (req, res, next) => {
 	try{
 		// Check if all the necessary fields are present
 		if(!req.body.name || 
@@ -138,30 +162,30 @@ router.post("/api/v1/users", async (req, res) => {
 			!req.body.password || 
 			!req.body.username ||
 			!req.body.birthday)
-			return res.status(400).json(errorMessages[0]);
+			throw new ValidationError(errorMsg.REQUIRED_FIELDS);
 
 		// Check the length and validity of fields
 		if(!nameRegex.test(req.body.name)) 
-			return res.status(400).json(errorMessages[1]);
+			throw new ValidationError(errorMsg.INVALID_NAME);
 		if(!usernameRegex.test(req.body.username))
-			return res.status(400).json(errorMessages[2]);
+			throw new ValidationError(errorMsg.INVALID_USERNAME);
 		if(!emailRegex.test(req.body.email))
-			return res.status(400).json(errorMessages[3]);
+			throw new ValidationError(errorMsg.INVALID_EMAIL);
 		if(!passwordRegex.test(req.body.password))
-			return res.status(400).json(errorMessages[4]);
+			throw new ValidationError(errorMsg.INVALID_PASSWORD);
 		
 		// Check if birthday is a valid date
 		const birthday = new Date(req.body.birthday);
 		if(isNaN(birthday.getTime()) || birthday > new Date())
-			return res.status(400).json(errorMessages[5]);
+			throw new ValidationError(errorMsg.INVALID_BIRTHDAY);
 
 		// Check if user already exists by username
 		let usernameExists = await mongoose.models["Users"].findOne({username: req.body.username}).exec();
-		if(usernameExists) return res.status(400).json(errorMessages[6]);
+		if(usernameExists) throw new ValidationError(errorMsg.USERNAME_EXISTS);
 
 		// Check if user already exists by email
 		let emailExists = await mongoose.models["Users"].findOne({email: req.body.email}).exec();
-		if(emailExists) return res.status(400).json(errorMessages[7]);
+		if(emailExists) throw new ValidationError(errorMsg.EMAIL_EXISTS);
 
 		// Remove all other fields from the request and add necessary
 		req.body = {
@@ -180,31 +204,31 @@ router.post("/api/v1/users", async (req, res) => {
 		await newUser.save();
 
 		// Create JWT token
-		const token = jwt.sign({userId: newUser._id}, JWT_SECRET_KEY, {expiresIn: "15d"});
+		const token = jwt.sign({userId: newUser._id}, JWT_SECRET_KEY, {expiresIn: "1р"});
 
 		// Return message, user id and token
 		res.status(201).json({message: "User created", user_id: newUser._id, token: token});
 	} catch (err) {
-		res.status(500).json({message: "Server error"});
+		next(err);
 	}
 });
 
-router.post("/api/v1/users/following/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res) => {
+router.post("/api/v1/users/following/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
-		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
+		if(!req.isAuth) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		// Check if user exists by using their token
 		let user = await mongoose.models["Users"].findById(req.user?.userId).exec();
-		if(!user) return res.status(404).json(errorMessages[9]);
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
 		// Check if following exists
 		let following = await mongoose.models["Users"].findById(req.params.following_id).exec();
-		if(!following) return res.status(404).json(errorMessages[10]);
+		if(!following) throw new NotFoundError(errorMsg.FOLLOWING_NOT_FOUND);
 
 		// Check if user is already following
 		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: user._id.toString(), follows: req.params.following_id}).exec();
-		if(alreadyFollowing) return res.status(400).json(errorMessages[11]);
+		if(alreadyFollowing) throw new ValidationError(errorMsg.ALREADY_FOLLOWING);
 
 		// Create new following and save to db
 		let newFollowing = new mongoose.models["User_follows_user"]({follower: user._id.toString(), follows: req.params.following_id});
@@ -212,44 +236,44 @@ router.post("/api/v1/users/following/:following_id", authMiddleware, checkIdVali
 
 		res.status(201).json({message: "Following created"});
 	} catch (err) {
-		res.status(500).json({message: "Server error"});
+		next(err);
 	}
 });
 //#endregion
 
 //#region PATCH
-router.patch("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
+router.patch("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
-		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
+		if(!req.isAuth) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		// Check if the user exists
 		let user = await mongoose.models["Users"].findById(req.params.id).exec();
-		if(!user) return res.status(404).json(errorMessages[9]);
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
 		// Check if the user is the same as the authenticated user
-		if(user._id.toString() !== req.user?.userId) return res.status(401).json({message: "Unauthorized"});
+		if(user._id.toString() !== req.user?.userId) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		// Check if the fields are valid
 		if(req.body.name && !nameRegex.test(req.body.name))
-			return res.status(400).json(errorMessages[1]);
+			throw new ValidationError(errorMsg.INVALID_NAME);
 		if(req.body.username && !usernameRegex.test(req.body.username))
-			return res.status(400).json(errorMessages[2]);
+			throw new ValidationError(errorMsg.INVALID_USERNAME);
 		if(req.body.email && !emailRegex.test(req.body.email))
-			return res.status(400).json(errorMessages[3]);
+			throw new ValidationError(errorMsg.INVALID_EMAIL);
 		if(req.body.birthday && (isNaN(new Date(req.body.birthday).getTime()) || new Date(req.body.birthday) > new Date()))
-			return res.status(400).json(errorMessages[5]);
+			throw new ValidationError(errorMsg.INVALID_BIRTHDAY);
 
 		// Check if the new username already exists
 		if(req.body.username) {
 			let usernameExists = await mongoose.models["Users"].findOne({username: req.body.username}).exec();
-			if(usernameExists) return res.status(400).json(errorMessages[6]);
+			if(usernameExists) throw new ValidationError(errorMsg.USERNAME_EXISTS);
 		}
 
 		// Check if the new email already exists
 		if(req.body.email) {
 			let emailExists = await mongoose.models["Users"].findOne({email: req.body.email}).exec();
-			if(emailExists) return res.status(400).json(errorMessages[7]);
+			if(emailExists) throw new ValidationError(errorMsg.EMAIL_EXISTS);
 		}
 
 		updatableFields.forEach(field => {
@@ -261,23 +285,23 @@ router.patch("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (
 		await user.save();
 		res.json({message: "User updated"});
 	} catch (err) {
-		res.status(500).json({message: "Server error"});
+		next(err);
 	}
 });
 //#endregion
 
 //#region DELETE
-router.delete("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res) => {
+router.delete("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
-		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
+		if(!req.isAuth) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		// Check if the user exists
 		let user = await mongoose.models["Users"].findById(req.params.id).exec();
-		if(!user) return res.status(404).json(errorMessages[9]);
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
 		// Check if the user is the same as the authenticated user
-		if(user._id.toString() !== req.user?.userId) return res.status(401).json({message: "Unauthorized"});
+		if(user._id.toString() !== req.user?.userId) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		// Delete all followings
 		await mongoose.models["User_follows_user"].deleteMany({$or: [{follower: req.params.id}, {follows: req.params.id}]}).exec();
@@ -285,36 +309,46 @@ router.delete("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async 
 		await user.deleteOne();
 		res.json({message: "User deleted"});
 	} catch (err) {
-		console.log(err);
-		res.status(500).json({message: "Server error"});
+		next(err);
 	}
 });
 
-router.delete("/api/v1/users/following/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res) => {
+router.delete("/api/v1/users/following/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
-		if(!req.isAuth) return res.status(401).json({message: "Unauthorized"});
+		if(!req.isAuth) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		// Check if the user exists
 		let user = await mongoose.models["Users"].findById(req.user?.userId).exec();
-		if(!user) return res.status(404).json(errorMessages[9]);
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
-		// Check if following exists
+		// Check if following user exists
 		let following = await mongoose.models["Users"].findById(req.params.following_id).exec();
-		if(!following) return res.status(404).json(errorMessages[10]);
+		if(!following) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
 		// Check if user is following
 		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: user._id.toString(), follows: req.params.following_id}).exec();
-		if(!alreadyFollowing) return res.status(400).json(errorMessages[10]);
+		if(!alreadyFollowing) throw new ValidationError(errorMsg.FOLLOWING_NOT_FOUND);
 
 		await alreadyFollowing.deleteOne();
 		res.json({message: "Following deleted"});
 	} catch (err) {
-		res.status(500).json({message: "Server error"});
+		next(err);
 	}
 });
 //#endregion
 
+
+//#region Error handler
+router.use((err, req, res, next) => {
+	if (err instanceof ValidationError || err instanceof UnauthorizedError || err instanceof NotFoundError) {
+		return res.status(err.statusCode).json({ message: err.message });
+	}
+
+	console.error(err.stack);
+	res.status(500).json({message: "Server error"});
+});
+//#endregion
 
 
 module.exports = router;
