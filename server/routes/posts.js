@@ -77,8 +77,8 @@ router.post("/api/v1/posts/", authMiddleware, async function (req, res) {
 });
 
 router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('image'), async function (req, res) {
-    /*if (!req.isAuth || !req.user)
-        return res.status(401).json({ message: 'Not logged in' });*/
+    if (!req.isAuth || !req.user)
+        return res.status(401).json({ message: 'Not logged in' });
 
     if (!ObjectId.isValid(req.params.post_id)) 
         return res.status(400).json({ message: 'Invalid post ID' });
@@ -87,8 +87,8 @@ router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('imag
     if (!post) 
         return res.status(404).json({ message: 'Post ' + req.params.post_id + ' does not exist' });
 
-    /*if (req.user != post.author)
-        return res.status(401).json({ message: 'Unauthorized' });*/
+    if (req.user != post.author)
+        return res.status(401).json({ message: 'Unauthorized' });
 
 
     try {

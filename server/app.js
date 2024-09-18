@@ -6,7 +6,7 @@ var cors = require('cors');
 var history = require('connect-history-api-fallback');
 var database = require('./db/database');
 const postsRoute = require('./routes/posts');
-const imageRoute = require('./routes/imageRoute');
+const imagesRoute = require('./routes/images');
 
 global.appRoot = path.resolve(__dirname);
 
@@ -34,7 +34,7 @@ app.get('/api/', function (req, res) {
 });
 
 app.use('/', postsRoute);
-app.use('/', imageRoute);
+app.use('/', imagesRoute);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use('/api/*', function (req, res) {
