@@ -63,54 +63,66 @@ router.get("/api/v1/comment/:comment_id/likes/:user_id",
 //#region POST
 router.post("/api/v1/comments/",
     authMiddleware, async function (req, res) {
-        try {
-            if (validateBody(req, res)) {
-                let comment = new models["Comments"](req.body);
+        if (req.isAuth) {
+            try {
+                if (validateBody(req, res)) {
+                    let comment = new models["Comments"](req.body);
 
-                try {
-                    await comment.save();
+                    try {
+                        await comment.save();
 
-                    return res.status(200)
-                        .json({ id: comment["_id"] });
-                } catch (error) {
-                    return res.status(404)
-                        .json({ message: "Malformed request body." })
+                        //TODO: update images
+
+                        return res.status(200)
+                            .json({ id: comment["_id"] });
+                    } catch (error) {
+                        return res.status(404)
+                            .json({ message: "Malformed request body." })
+                    }
                 }
+            } catch (error) {
+                return res.status(404)
+                    .json({ message: error.message });
             }
-        } catch (error) {
-            return res.status(404)
-                .json({ message: error.message });
+        } else {
+            return res.status(401)
+                .json({ message: "Unauthorized." });
         }
     });
 
 router.post("/api/v1/comment/:comment_id/likes/:user_id",
     authMiddleware, async function (req, res) {
-        try {
-            if (validateBody(req, res)) {
-                let target = await models["Comments"]
-                    .findOneAndUpdate({ _id: req.params.comment_id },
-                        { $push: { likes: req.params.user_id } }
-                    );
+        if (req.isAuth && req.user == req.params.user_id) {
+            try {
+                if (validateBody(req, res)) {
+                    let target = await models["Comments"]
+                        .findOneAndUpdate({ _id: req.params.comment_id },
+                            { $push: { likes: req.params.user_id } }
+                        );
 
-                if (target) {
-                    return res.status(200)
-                        .json({ message: "Successfully updated." });
-                } else {
-                    return res.status(404)
-                        .json({ message: "Not found." });
+                    if (target) {
+                        return res.status(200)
+                            .json({ message: "Successfully updated." });
+                    } else {
+                        return res.status(404)
+                            .json({ message: "Not found." });
+                    }
                 }
-            }
-        } catch (error) {
-            res.status(404);
+            } catch (error) {
+                res.status(404);
 
-            if (error.name === 'CastError') {
-                res.json({ message: "Malformed identifiers or request body." });
-            } else {
-                res.json({ message: "Could not update." });
-            }
+                if (error.name === 'CastError') {
+                    res.json({ message: "Malformed identifiers or request body." });
+                } else {
+                    res.json({ message: "Could not update." });
+                }
 
-            return res.status(404)
-                .json({ message: error.message });
+                return res.status(404)
+                    .json({ message: error.message });
+            }
+        } else {
+            return res.status(401)
+                .json({ message: "Unauthorized." });
         }
     });
 //#endregion
@@ -118,38 +130,49 @@ router.post("/api/v1/comment/:comment_id/likes/:user_id",
 //#region PATCH
 router.patch("/api/v1/comments/:id",
     authMiddleware, async function (req, res) {
-        try {
-            if (validateBody(req, res)) {
-                let target = await models["Comments"]
-                    .findOneAndUpdate({ _id: req.params.id },
-                        {
-                            content: req.body["content"],
-                            images: req.body["images"],
-                            is_edited: true
-                        }
-                    );
+        let comment = getCommentById(req.params.id);
 
-                if (target) {
-                    //TODO also update images table
+        if (req.isAuth && comment &&
+            comment["author"] == req.user) {
+            try {
+                if (validateBody(req, res)) {
+                    let imagesAdded = except(req.body["images"], comment["images"]);
+                    let imagesRemoved = except(comment["images"], req.body["images"]);
 
-                    return res.status(200)
-                        .json({ message: "Successfully updated." });
-                } else {
-                    return res.status(404)
-                        .json({ message: "Not found." });
+                    let target = await models["Comments"]
+                        .findOneAndUpdate({ _id: req.params.id },
+                            {
+                                content: req.body["content"],
+                                images: req.body["images"],
+                                is_edited: true
+                            }
+                        );
+
+                    if (target) {
+                        //TODO update images using imagesAdded and imagesRemoved
+
+                        return res.status(200)
+                            .json({ message: "Successfully updated." });
+                    } else {
+                        return res.status(404)
+                            .json({ message: "Not found." });
+                    }
                 }
-            }
-        } catch (error) {
-            res.status(404);
+            } catch (error) {
+                res.status(404);
 
-            if (error.name === 'CastError') {
-                res.json({ message: "Malformed user identifier or request body." });
-            } else {
-                res.json({ message: "Could not update." });
-            }
+                if (error.name === 'CastError') {
+                    res.json({ message: "Malformed user identifier or request body." });
+                } else {
+                    res.json({ message: "Could not update." });
+                }
 
-            return res.status(404)
-                .json({ message: error.message });
+                return res.status(404)
+                    .json({ message: error.message });
+            }
+        } else {
+            return res.status(401)
+                .json({ message: "Unauthorized." });
         }
     });
 //#endregion
@@ -157,61 +180,75 @@ router.patch("/api/v1/comments/:id",
 //#region DELETE
 router.delete("/api/v1/comments/:id",
     authMiddleware, async function (req, res) {
-        try {
-            let target = await models["Comments"]
-                .deleteOne({ _id: req.params.id });
+        let comment = getCommentById(req.params.id);
 
-            if (target && target.acknowledged &&
-                target.deletedCount) {
-                //TODO also update images table
+        if (req.isAuth && comment &&
+            comment["author"] == req.user) {
+            try {
+                //TODO update images using comment
 
-                return res.status(200)
-                    .json({ message: "Successfully removed." });
-            } else {
-                return res.status(404)
-                    .json({ message: "Not found." });
+                let target = await models["Comments"]
+                    .deleteOne({ _id: req.params.id });
+
+                if (target && target.acknowledged &&
+                    target.deletedCount) {
+
+                    return res.status(200)
+                        .json({ message: "Successfully removed." });
+                } else {
+                    return res.status(404)
+                        .json({ message: "Not found." });
+                }
+            } catch (error) {
+                res.status(404);
+
+                if (error.name === 'CastError') {
+                    res.json({ message: "Malformed user identifier or request body." });
+                } else {
+                    res.json({ message: error.message });
+                }
+
+                return res;
             }
-        } catch (error) {
-            res.status(404);
-
-            if (error.name === 'CastError') {
-                res.json({ message: "Malformed user identifier or request body." });
-            } else {
-                res.json({ message: error.message });
-            }
-
-            return res;
+        } else {
+            return res.status(401)
+                .json({ message: "Unauthorized." });
         }
     });
 
 router.delete("/api/v1/comment/:comment_id/likes/:user_id",
     authMiddleware, async function (req, res) {
-        try {
-            if (validateBody(req, res)) {
-                let target = await models["Comments"]
-                    .findOneAndUpdate({ _id: req.params.comment_id },
-                        { $pull: { likes: req.params.user_id } }
-                    );
+        if (req.isAuth && req.user == req.params.user_id) {
+            try {
+                if (validateBody(req, res)) {
+                    let target = await models["Comments"]
+                        .findOneAndUpdate({ _id: req.params.comment_id },
+                            { $pull: { likes: req.params.user_id } }
+                        );
 
-                if (target) {
-                    return res.status(200)
-                        .json({ message: "Successfully updated." });
-                } else {
-                    return res.status(404)
-                        .json({ message: "Not found." });
+                    if (target) {
+                        return res.status(200)
+                            .json({ message: "Successfully updated." });
+                    } else {
+                        return res.status(404)
+                            .json({ message: "Not found." });
+                    }
                 }
-            }
-        } catch (error) {
-            res.status(404);
+            } catch (error) {
+                res.status(404);
 
-            if (error.name === 'CastError') {
-                res.json({ message: "Malformed identifiers or request body." });
-            } else {
-                res.json({ message: "Could not update." });
-            }
+                if (error.name === 'CastError') {
+                    res.json({ message: "Malformed identifiers or request body." });
+                } else {
+                    res.json({ message: "Could not update." });
+                }
 
-            return res.status(404)
-                .json({ message: error.message });
+                return res.status(404)
+                    .json({ message: error.message });
+            }
+        } else {
+            return res.status(401)
+                .json({ message: "Unauthorized." });
         }
     });
 //#endregion
@@ -246,9 +283,11 @@ function validateBody(req) {
         throw new Error("Comment needs to have at least a content string or an image.");
     }
 
-    //TODO validate content and images
-
     return true;
+}
+
+function except(array, excludes) { // https://stackoverflow.com/a/68575761
+    return array.filter((item) => !excludes.includes(item));
 }
 //#endregion
 
