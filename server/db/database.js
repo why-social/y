@@ -28,25 +28,30 @@ schemas = {
 		usageCount: Number,
 	}, {collection: 'images'}),
 	Posts: new mongoose.Schema({
-		author: {type: mongoose.Types.ObjectId, ref: "Users"},
+		author: {
+			type: mongoose.Types.ObjectId, 
+			ref: "Users",
+			required: [true, "Author missing"]
+		},
 		is_edited: Boolean,
 		content: String,
 		timestamp: {type: "date", default: new Date()},
 		original_post_id: {type: mongoose.Types.ObjectId, ref: "Posts", default: null},
 		likes: [{type: mongoose.Types.ObjectId, ref: "Users"}],
 		comments: [{type: mongoose.Types.ObjectId, ref: "Comments"}],
-		images: [{type: mongoose.Types.ObjectId, ref: "Images"}],
+		images: [{type: String, ref: "Images"}],
 	}, {collection: 'posts'}),
 	Comments: new mongoose.Schema({
 		author: {type: mongoose.Types.ObjectId, ref: "Users"},
 		is_edited: Boolean,
+		is_deleted: Boolean,
 		content: String,
 		timestamp: {type: "date", default: new Date()},
 		parent_id: String,
 		parent_is_post: Boolean,
 		likes: [{type: mongoose.Types.ObjectId, ref: "Users"}],
 		comments: [{type: mongoose.Types.ObjectId, ref: "Comments"}],
-		images: [{type: mongoose.Types.ObjectId, ref: "Images"}],
+		images: [{type: String, ref: "Images"}],
 	}, {collection: 'comments'}),
 };
 
