@@ -3,6 +3,7 @@ const router = express.Router();
 var path = require('path');
 var fs = require('fs')
 const mongoose = require("../db/database").mongoose;
+const authMiddleware = require('../middleware/auth');
 
 //#region GET
 // Get image from the server
@@ -35,7 +36,7 @@ router.get("/api/v1/images/:hash", async function(req, res) {
 
 //#region DELETE
 // Delete an image
-router.delete("/api/v1/images/:hash", async function(req, res) {
+router.delete("/api/v1/images/:hash", authMiddleware, async function(req, res) {
     // TODO: require authorization
     const imageObject = await mongoose.models["Images"].findOne({hash : req.params.hash}).exec();
     if (!imageObject) {

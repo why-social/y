@@ -4,10 +4,12 @@ var morgan = require('morgan');
 var path = require('path');
 var cors = require('cors');
 var history = require('connect-history-api-fallback');
+
 const database = require('./db/database');
 const checkDBAvailability = require('./middleware/checkDB');
 const commentsRoute = require('./routes/comments')
-const imageRoute = require('./routes/imageRoute');
+const imagesRoute = require('./routes/images');
+const postsRoute = require('./routes/posts');
 const userRoute = require('./routes/users');
 const loginRoute = require('./routes/login');
 
@@ -33,15 +35,16 @@ app.use(cors());
 
 app.use(checkDBAvailability);
 
-// Import routes
-app.use('/', userRoute);
-app.use('/', loginRoute);
-app.use('/', commentsRoute);
-app.use('/', imageRoute);
-
 app.get('/api', function(req, res) {
     res.json({'message': 'Alive!'}); // needed for test script to see if the server booted up
 });
+
+// Import routes
+app.use('/', userRoute);
+app.use('/', loginRoute);
+app.use('/', postsRoute);
+app.use('/', commentsRoute);
+app.use('/', imagesRoute);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use('/api/*', function (req, res) {
