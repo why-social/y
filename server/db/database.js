@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 let schemas = {};
 let models = {};
 
+//#region Schemas
 // Create schemas for each relation
 schemas = {
 	Users: new mongoose.Schema({
@@ -13,42 +14,66 @@ schemas = {
 		password: String,
 		about_me: String,
 		username: String,
-		join_date: {type: "date", default: new Date()},
+		join_date: { type: "date", default: new Date() },
 		birthday: Date,
 		last_time_posted: Date,
-		profile_picture: {type: mongoose.Types.ObjectId, ref: "Images"},
-	}, {collection: 'users'}), // collection name to use (by default mongodb adds 's' to the end of the name)
+		profile_picture: { type: mongoose.Types.ObjectId, ref: "Images" },
+	}, { collection: 'users' }),
 	User_follows_user: new mongoose.Schema({
-		follower: {type: mongoose.Types.ObjectId, ref: "Users"},
-		follows: {type: mongoose.Types.ObjectId, ref: "Users"},
-	}, {collection: 'user_follows_user'}),
+		follower: { type: mongoose.Types.ObjectId, ref: "Users" },
+		follows: { type: mongoose.Types.ObjectId, ref: "Users" },
+	}, { collection: 'user_follows_user' }),
 	Images: new mongoose.Schema({
-		hash: {type: String, unique: true, index: true},
+		hash: { type: String, unique: true, index: true },
 		url: String,
 		usageCount: Number,
-	}, {collection: 'images'}),
+	}, { collection: 'images' }),
 	Posts: new mongoose.Schema({
-		author: {type: mongoose.Types.ObjectId, ref: "Users"},
+		author: {
+			type: mongoose.Types.ObjectId, 
+			ref: "Users",
+			required: [true, "Author missing"]
+		},
 		is_edited: Boolean,
+		is_deleted: Boolean,
 		content: String,
-		timestamp: {type: "date", default: new Date()},
-		original_post_id: {type: mongoose.Types.ObjectId, ref: "Posts", default: null},
-		likes: [{type: mongoose.Types.ObjectId, ref: "Users"}],
-		comments: [{type: mongoose.Types.ObjectId, ref: "Comments"}],
-		images: [{type: mongoose.Types.ObjectId, ref: "Images"}],
-	}, {collection: 'posts'}),
+		timestamp: { type: "date", default: new Date() },
+		original_post_id: { type: mongoose.Types.ObjectId, ref: "Posts", default: null },
+		likes: [{ type: mongoose.Types.ObjectId, ref: "Users" }],
+		comments: [{ type: mongoose.Types.ObjectId, ref: "Comments" }],
+		images: [{ type: String, ref: "Images" }],
+	}, 
+	{ collection: 'posts' }),
 	Comments: new mongoose.Schema({
-		author: {type: mongoose.Types.ObjectId, ref: "Users"},
+		author: { type: mongoose.Types.ObjectId, ref: "Users" },
 		is_edited: Boolean,
+		is_deleted: Boolean,
 		content: String,
-		timestamp: {type: "date", default: new Date()},
+		timestamp: { type: "date", default: new Date() },
 		parent_id: String,
 		parent_is_post: Boolean,
-		likes: [{type: mongoose.Types.ObjectId, ref: "Users"}],
-		comments: [{type: mongoose.Types.ObjectId, ref: "Comments"}],
-		images: [{type: mongoose.Types.ObjectId, ref: "Images"}],
-	}, {collection: 'comments'}),
+		likes: [{ type: mongoose.Types.ObjectId, ref: "Users" }],
+		comments: [{ type: mongoose.Types.ObjectId, ref: "Comments" }],
+		images: [{ type: String, ref: "Images" }],
+	}, { collection: 'comments' }),
 };
+//#endregion
+
+//#region Validation
+// Attach custom validation middleware
+schemas.Posts.pre('validate', async function(next) {
+	const user = await models.Users.findById(this.author);
+	if (!user) {
+		this.invalidate(this.author, "Author does not exist!");
+	}
+
+	if (!(this.content || (this.images && this.images.length > 0))) {
+		this.invalidate(this.content, "Either text content or at least 1 image required!");
+	}
+
+	next();
+})
+//#endregion
 
 // Hash password before saving user
 schemas.Users.pre('save', async function(next){
