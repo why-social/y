@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const http = require("http");
-const models = require("../db/createDB").mongoose.models;
+const models = require("../db/database").mongoose.models;
 const authMiddleware = require("../middleware/auth");
 
 //#region GET
@@ -12,21 +11,6 @@ router.get("/api/v1/comments/:id",
 
             return res.status(200)
                 .json(comment);
-        } catch (error) {
-            return res.status(404)
-                .json({ message: error.message });
-        }
-    });
-
-router.get("/api/v1/comments/:id/images/",
-    async function (req, res) {
-        try {
-            let comment = await getCommentById(req.params.id);
-
-            return res.status(200)
-                .json({
-                    images: comment["images"]
-                });
         } catch (error) {
             return res.status(404)
                 .json({ message: error.message });
@@ -86,8 +70,6 @@ router.post("/api/v1/comments/",
                 try {
                     await comment.save();
 
-                    //TODO also update images table
-
                     return res.status(200)
                         .json({ id: comment["_id"] });
                 } catch (error) {
@@ -96,6 +78,37 @@ router.post("/api/v1/comments/",
                 }
             }
         } catch (error) {
+            return res.status(404)
+                .json({ message: error.message });
+        }
+    });
+
+router.post("/api/v1/comment/:comment_id/likes/:user_id",
+    authMiddleware, async function (req, res) {
+        try {
+            if (validateBody(req, res)) {
+                let target = await models["Comments"]
+                    .findOneAndUpdate({ _id: req.params.comment_id },
+                        { $push: { likes: req.params.user_id } }
+                    );
+
+                if (target) {
+                    return res.status(200)
+                        .json({ message: "Successfully updated." });
+                } else {
+                    return res.status(404)
+                        .json({ message: "Not found." });
+                }
+            }
+        } catch (error) {
+            res.status(404);
+
+            if (error.name === 'CastError') {
+                res.json({ message: "Malformed identifiers or request body." });
+            } else {
+                res.json({ message: "Could not update." });
+            }
+
             return res.status(404)
                 .json({ message: error.message });
         }
@@ -168,6 +181,37 @@ router.delete("/api/v1/comments/:id",
             }
 
             return res;
+        }
+    });
+
+router.delete("/api/v1/comment/:comment_id/likes/:user_id",
+    authMiddleware, async function (req, res) {
+        try {
+            if (validateBody(req, res)) {
+                let target = await models["Comments"]
+                    .findOneAndUpdate({ _id: req.params.comment_id },
+                        { $pull: { likes: req.params.user_id } }
+                    );
+
+                if (target) {
+                    return res.status(200)
+                        .json({ message: "Successfully updated." });
+                } else {
+                    return res.status(404)
+                        .json({ message: "Not found." });
+                }
+            }
+        } catch (error) {
+            res.status(404);
+
+            if (error.name === 'CastError') {
+                res.json({ message: "Malformed identifiers or request body." });
+            } else {
+                res.json({ message: "Could not update." });
+            }
+
+            return res.status(404)
+                .json({ message: error.message });
         }
     });
 //#endregion
