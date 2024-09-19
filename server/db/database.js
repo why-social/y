@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 // Declare variables
 let schemas = {};
@@ -10,7 +11,7 @@ schemas = {
 	Users: new mongoose.Schema({
 		name: String,
 		email: String,
-		password_hash: String,
+		password: String,
 		about_me: String,
 		username: String,
 		join_date: { type: "date", default: new Date() },
@@ -71,6 +72,13 @@ schemas.Posts.pre('validate', async function(next) {
 	next();
 })
 //#endregion
+
+// Hash password before saving user
+schemas.Users.pre('save', async function(next){
+	if(!this.isModified('password')) return next(); // only hash the password if it has been modified (or is new)
+	this.password = await bcrypt.hash(this.password, 10); // hash the password
+	next();
+});
 
 // Create models for each relation
 for(let key in schemas){

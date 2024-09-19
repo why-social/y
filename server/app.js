@@ -4,9 +4,14 @@ var morgan = require('morgan');
 var path = require('path');
 var cors = require('cors');
 var history = require('connect-history-api-fallback');
-var database = require('./db/database');
-const postsRoute = require('./routes/posts');
+
+const database = require('./db/database');
+const checkDBAvailability = require('./middleware/checkDB');
+
 const imagesRoute = require('./routes/images');
+const postsRoute = require('./routes/posts');
+const userRoute = require('./routes/users');
+const loginRoute = require('./routes/login');
 
 global.appRoot = path.resolve(__dirname);
 
@@ -28,11 +33,15 @@ app.use(morgan('dev'));
 app.options('*', cors());
 app.use(cors());
 
+app.use(checkDBAvailability);
+
 // Import routes
-app.get('/api/', function (req, res) {
-    res.status(200).json({ 'message': 'Alive' });
+app.get('/api', function(req, res) {
+    res.json({'message': 'Alive!'}); // needed for test script to see if the server booted up
 });
 
+app.use('/', userRoute);
+app.use('/', loginRoute);
 app.use('/', postsRoute);
 app.use('/', imagesRoute);
 
