@@ -35,6 +35,7 @@ schemas = {
 			required: [true, 'Author missing']
 		},
 		is_edited: Boolean,
+		is_deleted: Boolean,
 		content: String,
 		timestamp: { type: "date", default: new Date() },
 		original_post_id: { type: mongoose.Types.ObjectId, ref: "Posts", default: null },

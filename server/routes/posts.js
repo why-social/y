@@ -172,8 +172,8 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
 
 //#region PATCH
 router.patch("/api/v1/posts/:id", authMiddleware, async function (req, res) {
-    /*if (!req.isAuth || !req.user)
-        return res.status(401).json({ message: 'Not logged in' });*/
+    if (!req.isAuth || !req.user)
+        return res.status(401).json({ message: 'Not logged in' });
 
     try {      
         if (req.body.content === undefined && req.body.images === undefined) { // if not trying to edit only the content and/or images
@@ -181,10 +181,11 @@ router.patch("/api/v1/posts/:id", authMiddleware, async function (req, res) {
         }
 
         post = await models.Posts.findById(req.params.id);
-        if (!post)
+        if (!post || post.is_deleted)
             return res.status(404).json({ message: 'Post not found' });
-        // if (post.author != req.user)
-        //     return res.status(401).json({ message: 'Unauthorized'}); 
+        if (post.author != req.user)
+            return res.status(401).json({ message: 'Unauthorized'}); 
+
         
         // apply the incoming request to only the editable fields
         if (req.body.content !== undefined) {
@@ -226,9 +227,15 @@ router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res) {
             return res.status(404).json({ message: 'Post ' + req.params.id + ' does not exist!' });
         if (post.author != req.user)
             return res.status(401).json({ message: 'Unauthorized '});
+        if (post.is_deleted)
+            return res.status(400).json({ message: 'Post is deleted'});
 
-        await post.deleteOne();
-        res.status(200).send();
+        post.is_deleted = true;
+        post.content = null;
+        post.images = null;
+        await post.save({ validateBeforeSave: false });
+
+        res.status(200).json(post);
     }
     catch (error) {
         if (error.name === 'CastError') {
