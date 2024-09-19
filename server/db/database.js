@@ -29,10 +29,10 @@ schemas = {
 		usageCount: Number,
 	}, { collection: 'images' }),
 	Posts: new mongoose.Schema({
-		author: { 
+		author: {
 			type: mongoose.Types.ObjectId, 
-			ref: "Users", 
-			required: [true, 'Author missing']
+			ref: "Users",
+			required: [true, "Author missing"]
 		},
 		is_edited: Boolean,
 		is_deleted: Boolean,
@@ -47,6 +47,7 @@ schemas = {
 	Comments: new mongoose.Schema({
 		author: { type: mongoose.Types.ObjectId, ref: "Users" },
 		is_edited: Boolean,
+		is_deleted: Boolean,
 		content: String,
 		timestamp: { type: "date", default: new Date() },
 		parent_id: String,
