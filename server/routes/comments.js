@@ -21,11 +21,11 @@ router.get("/api/v1/comments/user/:id",
     async function (req, res) {
         try {
             let result;
-            let userExists = await models["Users"]
+            let userExists = await models.Users
                 .exists({ _id: req.params.id });
 
             if (userExists) {
-                result = await models["Comments"]
+                result = await models.Comments
                     .find({ user: req.params.id })
                     .lean().exec();
             } else if (!result) {
@@ -47,7 +47,7 @@ router.get("/api/v1/comment/:comment_id/likes/:user_id",
 
             return res.status(200)
                 .json({
-                    likes: comment["likes"]
+                    likes: comment.likes
                         .includes(req.params.user_id)
                 });
         } catch (error) {
@@ -59,31 +59,76 @@ router.get("/api/v1/comment/:comment_id/likes/:user_id",
 //#region POST
 router.post("/api/v1/comments/",
     authMiddleware, async function (req, res) {
-        if (!req.body.isAuth || !req.body.user) {
+        /*if (!req.body.isAuth || !req.body.user) {
             return res.status(401)
                 .json({ message: "Unauthorized" });
-        }
+        }*/
 
         try {
-            if (!req.body.content?.length &&
+            if (!req.body.parent_id) {
+                return res.status(400)
+                    .json({ message: "Comments must have a parent id." });
+            }
+
+            let parent;
+
+            if (req.body.parent_is_post) {
+                parent = await models.Posts
+                    .findOne({ _id: req.body.parent_id }).exec();
+
+                if (!parent) {
+                    parent = await models.Comments
+                        .findOne({ _id: req.body.parent_id }).exec();
+
+                    if (!parent) {
+                        return res.status(404)
+                            .json({ message: "No parent found." });
+                    } else {
+                        req.body.parent_is_post = undefined;
+                    }
+                }
+            } else {
+                parent = await models.Comments
+                    .findOne({ _id: req.body.parent_id }).exec();
+
+                if (!parent) {
+                    return res.status(404)
+                        .json({ message: "No parent found." });
+                }
+            }
+
+            if (!req.body.content?.length ||
                 !req.body.images?.length) {
-                let comment = new models["Comments"]({
+
+                let comment = new models.Comments({
                     author: req.body.user,
                     content: req.body.content,
                     images: req.body.images,
+                    parent_id: req.body.parent_id,
+                    parent_id: req.body.parent_is_post
                 });
 
                 await comment.save();
 
+                if(parent.comments) {
+                    parent.comments.push(comment._id);
+                } else {
+                    parent.comments = [comment._id];
+                }
+
+                await parent.save();
+
                 //TODO: update images
 
                 return res.status(200)
-                    .json({ id: comment["_id"] });
+                    .json({ id: comment._id });
             } else {
                 return res.status(400)
-                    .json({ message: "At least a comment or an image is required." })
+                    .json({ message: "At least an image or content is required." })
             }
         } catch (error) {
+            console.log(error);
+
             return handleError(error, res);
         }
     });
@@ -93,7 +138,7 @@ router.post("/api/v1/comment/:comment_id/likes/:user_id",
         if (req.body.isAuth &&
             req.body.user == req.params.user_id) {
             try {
-                let target = await models["Comments"]
+                let target = await model.Comments
                     .findOneAndUpdate({ _id: req.params.comment_id },
                         { $addToSet: { likes: req.params.user_id } }
                     );
@@ -122,7 +167,7 @@ router.patch("/api/v1/comments/:id",
             let comment = await getCommentById(req.params.id);
 
             /*if (req.isAuth && comment &&
-                comment["author"] == req.user) {
+                comment.author == req.user) {
            
                 return res.status(401)
                     .json({ message: "Unauthorized" });
@@ -153,8 +198,8 @@ router.patch("/api/v1/comments/:id",
                     .json({ message: "Cannot remove both content and images from a comment." })
             }
 
-            //let imagesAdded = except(req.body["images"], comment["images"]);
-            //let imagesRemoved = except(comment["images"], req.body["images"]);
+            //let imagesAdded = except(req.body.images, comment.images);
+            //let imagesRemoved = except(comment.images, req.body.images);
 
             if (req.body.content?.length || wouldHaveImages) {
                 comment.content = req.body.content;
@@ -185,12 +230,12 @@ router.delete("/api/v1/comments/:id",
             let comment = await getCommentById(req.params.id);
 
             /*if (!(req.isAuth && comment &&
-                comment["author"] == req.user)) {
+                comment.author == req.user)) {
                 return res.status(401)
                     .json({ message: "Unauthorized" });
             }*/
 
-            let target = await models["Comments"]
+            let target = await models.Comments
                 .findOneAndUpdate({ _id: req.params.id },
                     {
                         content: null,
@@ -222,7 +267,7 @@ router.delete("/api/v1/comment/:comment_id/likes/:user_id",
         }*/
 
         try {
-            let target = await models["Comments"]
+            let target = await models.Comments
                 .findOneAndUpdate({ _id: req.params.comment_id },
                     { $pull: { likes: req.params.user_id } }
                 );
@@ -245,7 +290,7 @@ async function getCommentById(id) {
     let result;
 
     try {
-        result = await models["Comments"]
+        result = await models.Comments
             .findById(id).exec();
     } catch (error) {
         if (error.name == 'CastError') {
