@@ -12,6 +12,7 @@ const imagesRoute = require('./routes/images');
 const postsRoute = require('./routes/posts');
 const userRoute = require('./routes/users');
 const loginRoute = require('./routes/login');
+const restorePasswordRoute = require('./routes/restorePassword');
 
 global.appRoot = path.resolve(__dirname);
 
@@ -45,6 +46,7 @@ app.use('/', loginRoute);
 app.use('/', postsRoute);
 app.use('/', commentsRoute);
 app.use('/', imagesRoute);
+app.use("/", restorePasswordRoute);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use('/api/*', function (req, res) {
