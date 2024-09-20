@@ -29,4 +29,4 @@ test:
     MONGODB_URI: "mongodb://mongo:27017/whyTestDB"
   script:
     - cd server
-    - npm run test
+    - npm run ci-test
