@@ -96,7 +96,7 @@ router.post("/api/v1/restorePassword", async (req, res, next) => {
 		// Send an email with the token
 		await sendEmail(user.email, user.username, token);
 
-		res.json({
+		res.status(200).json({ // status 200 because no resource is being created
 			token,
 			message: "Temporary token generated",
 		});

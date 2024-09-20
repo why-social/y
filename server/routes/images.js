@@ -30,7 +30,7 @@ router.get("/api/v1/images/:hash", async function(req, res) {
 
     const url = imageObject.url;
 
-    res.sendFile(url, options, function(err) {
+    res.status(200).sendFile(url, options, function(err) {
         if (err) {
             // hash directory exists, but is empty
             // TODO: check if files present in directory, delete if empty or try fixing DB/file

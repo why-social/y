@@ -120,7 +120,7 @@ router.post("/api/v1/comments/",
 
                 //TODO: update images
 
-                return res.status(200)
+                return res.status(201)
                     .json({ id: comment._id });
             } else {
                 return res.status(400)
@@ -144,7 +144,7 @@ router.post("/api/v1/comments/:comment_id/likes/:user_id",
                     );
 
                 if (target) {
-                    return res.status(200)
+                    return res.status(201)
                         .json({ message: "Successfully updated" });
                 } else {
                     return res.status(404)

@@ -14,7 +14,7 @@ router.get("/api/v1/posts/:id", async function (req, res) {
     const post = await models.Posts.findById(req.params.id).populate('comments').exec();
     if (!post) return res.status(404).json({ message: 'Post id ' + req.params.id + ' not found' });
 
-    res.json(post);
+    res.status(200).json(post);
 });
 
 // Returns all posts authored by the user with id :id
@@ -25,7 +25,7 @@ router.get("/api/v1/posts/users/:id", async function (req, res) {
             return res.status(404).json({ message: 'Posts of user ' + req.params.id + ' not found' });
         }
 
-        res.json(posts);
+        res.status(200).json(posts);
     } 
     catch (error) {
         if (error.name === 'CastError') {
@@ -47,7 +47,7 @@ router.get("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async functi
         const post = await models.Posts
             .findOne({ _id: req.params.post_id, likes: { $in: [req.params.user_id] } })
             .exec();
-        res.json({ liked: !!post });
+        res.status(200).json({ liked: !!post });
     }
     catch (error) {
         if (error.name == 'CastError') {
@@ -77,7 +77,7 @@ router.post("/api/v1/posts/", authMiddleware, async function (req, res) {
         });
 
         await newPost.save();
-        res.status(200).json({id : newPost["_id"]});
+        res.status(201).json({id : newPost["_id"]});
     }
     catch (error) {
         if (error.name === 'ValidationError') {
@@ -124,7 +124,7 @@ router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('imag
 
         post.images.push(hash); // add the reference to the image to the post
         await post.save();
-        res.status(200).json(post);
+        res.status(201).json(post);
     }
     catch (error) {
         if (error.name === 'ValidationError') {
@@ -151,7 +151,7 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
         if (!posts)
             return res.status(404).json({message: 'Post not found'});
 
-        res.status(200).json(post);
+        res.status(201).json(post);
     }
     catch (error) {
         if (error.name === 'ValidationError') {
