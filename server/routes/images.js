@@ -7,6 +7,15 @@ const authMiddleware = require('../middleware/auth');
 
 //#region GET
 // Get image from the server
+router.get("/api/v1/images", async function(req, res) {
+	
+	// Get all images hashes
+	let images = await mongoose.models["Images"].find({}, 'hash').exec();
+	images = images.map(image => image.hash);
+	
+	res.status(200).json(images);
+});
+
 router.get("/api/v1/images/:hash", async function(req, res) {
     const options = {
         root: appRoot

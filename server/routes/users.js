@@ -125,6 +125,19 @@ router.get("/api/v1/users/search", async (req, res, next) => {
 	}
 });
 
+router.get("/api/v1/users", authMiddleware, async (req, res, next) => {
+	try {
+		let allUsers = await mongoose.models["Users"].find().exec();
+
+		// return all usernames
+		let usernames = allUsers.map(user => user.username);
+
+		res.status(200).json(usernames);
+	} catch (err) {
+		next(err);
+	}
+});
+
 router.get("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res, next) => {
 	try {
 		// Get user by id from db
