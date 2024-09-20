@@ -17,7 +17,7 @@ router.get("/api/v1/comments/:id",
         }
     });
 
-router.get("/api/v1/comments/user/:id",
+router.get("/api/v1/comments/users/:id",
     async function (req, res) {
         try {
             let result;
@@ -40,7 +40,7 @@ router.get("/api/v1/comments/user/:id",
         }
     });
 
-router.get("/api/v1/comment/:comment_id/likes/:user_id",
+router.get("/api/v1/comments/:comment_id/likes/:user_id",
     async function (req, res) {
         try {
             let comment = await getCommentById(req.params.comment_id);
@@ -133,7 +133,7 @@ router.post("/api/v1/comments/",
         }
     });
 
-router.post("/api/v1/comment/:comment_id/likes/:user_id",
+router.post("/api/v1/comments/:comment_id/likes/:user_id",
     authMiddleware, async function (req, res) {
         if (req.body.isAuth &&
             req.body.user == req.params.user_id) {
@@ -258,7 +258,7 @@ router.delete("/api/v1/comments/:id",
         }
     });
 
-router.delete("/api/v1/comment/:comment_id/likes/:user_id",
+router.delete("/api/v1/comments/:comment_id/likes/:user_id",
     authMiddleware, async function (req, res) {
         /*if (!req.body.isAuth ||
             req.body.user != req.params.user_id) {

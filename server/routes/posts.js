@@ -18,7 +18,7 @@ router.get("/api/v1/posts/:id", async function (req, res) {
 });
 
 // Returns all posts authored by the user with id :id
-router.get("/api/v1/posts/user/:id", async function (req, res) {
+router.get("/api/v1/posts/users/:id", async function (req, res) {
     try {
         const posts = await models.Posts.find({ author: req.params.id }).populate('comments').exec();
         if (!posts || posts.length == 0) {

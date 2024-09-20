@@ -178,7 +178,7 @@ router.get("/api/v1/users/:id/followers", checkIdValidity("id"), async (req, res
 	}
 });
 
-router.get("/api/v1/users/:id/following", checkIdValidity("id"), async (req, res, next) => {
+router.get("/api/v1/users/:id/followings", checkIdValidity("id"), async (req, res, next) => {
 	try{
 		let result = await mongoose.models["User_follows_user"].find({follower: req.params.id}).exec();
 		if(!result) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
@@ -244,7 +244,7 @@ router.post("/api/v1/users", async (req, res, next) => {
 	}
 });
 
-router.post("/api/v1/users/following/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res, next) => {
+router.post("/api/v1/users/followings/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
 		if(!req.isAuth) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
@@ -322,6 +322,20 @@ router.patch("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (
 //#endregion
 
 //#region DELETE
+router.delete("/api/v1/users", async (req, res, next) => { // WE DO NOT ENDORSE THIS
+	try{
+		// Check if the user has admin privileges
+		if(req.headers["razvan_admin_privileges"] !== "awooga") throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+		// Delete all users
+		await mongoose.models["Users"].deleteMany({}).exec();
+
+		res.status(200).json({message: "All users deleted"});
+	} catch (err) {
+		next(err);
+	}
+});
+
 router.delete("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
@@ -344,7 +358,7 @@ router.delete("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async 
 	}
 });
 
-router.delete("/api/v1/users/following/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res, next) => {
+router.delete("/api/v1/users/followings/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
 		if(!req.isAuth) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
