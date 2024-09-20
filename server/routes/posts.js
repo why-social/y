@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const models = require("../db/database").mongoose.models;
-var ObjectId = require('mongoose').Types.ObjectId;
 const authMiddleware = require('../middleware/auth');
 const upload = require('../middleware/upload').upload;
 const path = require('path');
@@ -16,13 +15,13 @@ router.get("/api/v1/posts/:id", async function (req, res) {
 
     post._links = {
         user: {
-            href: `http://localhost/${PORT}/api/v1/users/${post.author}`
+            href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${post.author}`
         }
     };
 
     if (post.original_post_id) {
         post._links.parent = {
-            href: `http://localhost/${PORT}/api/v1/posts/${post.original_post_id}`
+            href: `${req.protocol + '://' + req.get('host')}/api/v1/posts/${post.original_post_id}`
         };
     }
 

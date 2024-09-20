@@ -3,7 +3,6 @@ const router = express.Router();
 const mongoose = require("../db/database").mongoose;
 const models = mongoose.models;
 const authMiddleware = require("../middleware/auth");
-const PORT = require("../app");
 
 //#region GET
 router.get("/api/v1/comments/:id",
@@ -25,17 +24,17 @@ router.get("/api/v1/comments/:id",
 
                 comment._links = {
                     user: {
-                        href: `http://localhost/${PORT}/api/v1/users/${comment.author}`
+                        href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${comment.author}`
                     }
                 };
 
                 if (comment.parent_is_post) {
                     comment._links.parent = {
-                        href: `http://localhost/${PORT}/api/v1/posts/${comment.parent_id}`
+                        href: `${req.protocol + '://' + req.get('host')}/api/v1/posts/${comment.parent_id}`
                     };
                 } else {
                     comment._links.parent = {
-                        href: `http://localhost/${PORT}/api/v1/comments/${comment.parent_id}`
+                        href: `${req.protocol + '://' + req.get('host')}/api/v1/comments/${comment.parent_id}`
                     };
                 }
 
