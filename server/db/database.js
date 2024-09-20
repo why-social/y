@@ -17,7 +17,7 @@ schemas = {
 		join_date: { type: "date", default: new Date() },
 		birthday: Date,
 		last_time_posted: Date,
-		profile_picture: { type: mongoose.Types.ObjectId, ref: "Images" },
+		profile_picture: { type: String, ref: "Images" },
 	}, { collection: 'users' }),
 	User_follows_user: new mongoose.Schema({
 		follower: { type: mongoose.Types.ObjectId, ref: "Users" },
@@ -26,11 +26,14 @@ schemas = {
 	Images: new mongoose.Schema({
 		hash: { type: String, unique: true, index: true },
 		url: String,
-		usageCount: Number,
+		usageCount: {
+			type: Number,
+			default: 0
+		}
 	}, { collection: 'images' }),
 	Posts: new mongoose.Schema({
 		author: {
-			type: mongoose.Types.ObjectId, 
+			type: mongoose.Types.ObjectId,
 			ref: "Users",
 			required: [true, "Author missing"]
 		},
@@ -42,10 +45,14 @@ schemas = {
 		likes: [{ type: mongoose.Types.ObjectId, ref: "Users" }],
 		comments: [{ type: mongoose.Types.ObjectId, ref: "Comments" }],
 		images: [{ type: String, ref: "Images" }],
-	}, 
-	{ collection: 'posts' }),
+	},
+		{ collection: 'posts' }),
 	Comments: new mongoose.Schema({
-		author: { type: mongoose.Types.ObjectId, ref: "Users" },
+		author: {
+			type: mongoose.Types.ObjectId,
+			ref: "Users",
+			required: [true, "Author missing"]
+		},
 		is_edited: Boolean,
 		is_deleted: Boolean,
 		content: String,
@@ -61,45 +68,64 @@ schemas = {
 
 //#region Validation
 // Attach custom validation middleware
-schemas.Posts.pre('validate', async function(next) {
-	const user = await models.Users.findById(this.author);
-	if (!user) {
-		this.invalidate(this.author, "Author does not exist!");
-	}
+schemas.Posts.pre('validate', async function (next) {
+	if (!this.is_deleted) {
+		const user = await models.Users.findById(this.author);
 
-	if (!(this.content || (this.images && this.images.length > 0))) {
-		this.invalidate(this.content, "Either text content or at least 1 image required!");
+		if (!user) {
+			this.invalidate(this.author, "Author does not exist!");
+		}
+
+		if (!(this.content || (this.images && this.images.length > 0))) {
+			this.invalidate(this.content, "Either text content or at least 1 image required!");
+		}
 	}
 
 	next();
-})
+});
+
+schemas.Comments.pre('validate', async function (next) {
+	if (!this.is_deleted) {
+		const user = await models.Users.findById(this.author);
+
+		if (!user) {
+			this.invalidate(this.author, "Author does not exist!");
+		}
+
+		if (!(this.content || (this.images && this.images.length > 0))) {
+			this.invalidate(this.content, "Either text content or at least 1 image required!");
+		}
+	}
+
+	next();
+});
 //#endregion
 
 // Hash password before saving user
-schemas.Users.pre('save', async function(next){
-	if(!this.isModified('password')) return next(); // only hash the password if it has been modified (or is new)
+schemas.Users.pre('save', async function (next) {
+	if (!this.isModified('password')) return next(); // only hash the password if it has been modified (or is new)
 	this.password = await bcrypt.hash(this.password, 10); // hash the password
 	next();
 });
 
 // Create models for each relation
-for(let key in schemas){
+for (let key in schemas) {
 	models[key] = mongoose.model(key, schemas[key]);
 }
 
 // Connect to MongoDB (if database doesn't exist, it will be created automatically)
-function connect(dbUri){
-	mongoose.connect(dbUri)
-	.catch(err => { // error handling
-		console.error(`DB: Failed to connect to MongoDB with URI: ${dbUri}`);
-		console.error(err.stack);
-		process.exit(1);
-	})
-	.then(() => onSuccess(dbUri)); // success handling
+function connect(dbUri) {
+	return mongoose.connect(dbUri)
+		.catch(err => { // error handling
+			console.error(`DB: Failed to connect to MongoDB with URI: ${dbUri}`);
+			console.error(err.stack);
+			process.exit(1);
+		})
+		.then(() => onSuccess(dbUri)); // success handling
 }
 
 // on successful connection to MongoDB
-async function onSuccess(dbUri){
+async function onSuccess(dbUri) {
 	console.log(`DB: Connected to MongoDB with URI: ${dbUri}`);
 
 	// get database object
@@ -109,8 +135,8 @@ async function onSuccess(dbUri){
 	const existingCollections = await db.listCollections().toArray();
 
 	// create collections for each model if they don't exist
-	for (let key in models){
-		if(existingCollections.some(col => col.name.toLowerCase() === key.toLowerCase())){
+	for (let key in models) {
+		if (existingCollections.some(col => col.name.toLowerCase() === key.toLowerCase())) {
 			console.log(`DB: ${key} collection already exists`);
 			continue;
 		}

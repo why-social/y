@@ -1,5 +1,4 @@
 var express = require('express');
-var mongoose = require('mongoose');
 var morgan = require('morgan');
 var path = require('path');
 var cors = require('cors');
@@ -17,7 +16,7 @@ const restorePasswordRoute = require('./routes/restorePassword');
 global.appRoot = path.resolve(__dirname);
 
 // Variables
-var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDevelopmentDB';
+var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDB';
 var port = process.env.PORT || 3000;
 
 // Connect to MongoDB
