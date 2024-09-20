@@ -6,14 +6,27 @@ const authMiddleware = require("../middleware/auth");
 
 //#region GET
 router.get("/api/v1/comments/:id",
-    async function (req, res) {
-        try {
-            let comment = await getCommentById(req.params.id);
+    authMiddleware, async function (req, res) {
+        if (req.headers["x-http-method-override"]) {
+            if (req.headers["x-http-method-override"] == "PUT") {
+                return res.status(500); // TODO
+            } else if (req.headers["x-http-method-override"] == "PATCH") {
+                return await patchForId(req, res);
+            } else if (req.headers["x-http-method-override"] == "DELETE") {
+                return await deleteForId(req, res);
+            } else {
+                return res.status(400)
+                    .json({ message: "Unsupported" });
+            }
+        } else {
+            try {
+                let comment = await getCommentById(req.params.id);
 
-            return res.status(200)
-                .json(comment);
-        } catch (error) {
-            return handleError(error, res);
+                return res.status(200)
+                    .json(comment);
+            } catch (error) {
+                return handleError(error, res);
+            }
         }
     });
 
@@ -59,10 +72,10 @@ router.get("/api/v1/comment/:comment_id/likes/:user_id",
 //#region POST
 router.post("/api/v1/comments/",
     authMiddleware, async function (req, res) {
-        /*if (!req.body.isAuth || !req.body.user) {
+        if (!req.body.isAuth || !req.body.user) {
             return res.status(401)
                 .json({ message: "Unauthorized" });
-        }*/
+        }
 
         try {
             if (!req.body.parent_id) {
@@ -110,7 +123,7 @@ router.post("/api/v1/comments/",
 
                 await comment.save();
 
-                if(parent.comments) {
+                if (parent.comments) {
                     parent.comments.push(comment._id);
                 } else {
                     parent.comments = [comment._id];
@@ -161,110 +174,114 @@ router.post("/api/v1/comment/:comment_id/likes/:user_id",
 //#endregion
 
 //#region PATCH
-router.patch("/api/v1/comments/:id",
-    authMiddleware, async function (req, res) {
-        try {
-            let comment = await getCommentById(req.params.id);
+async function patchForId(req, res) {
+    try {
+        let comment = await getCommentById(req.params.id);
 
-            /*if (req.isAuth && comment &&
-                comment.author == req.user) {
-           
-                return res.status(401)
-                    .json({ message: "Unauthorized" });
-            }*/
+        if (req.isAuth && comment &&
+            comment.author == req.user) {
 
-            if (comment.is_deleted) {
-                return res.status(400)
-                    .json({ message: "Cannot edit a deleted comment." })
-            }
-
-            if (req.body.content === null) {
-                return res.status(400)
-                    .json({ message: "Cannot set content to null." })
-            }
-
-            if (req.body.images === null) {
-                return res.status(400)
-                    .json({ message: "Cannot set images to null." })
-            }
-
-            let wouldHaveContent = req.body.content == undefined ?
-                comment.content?.length : req.body.content?.length;
-            let wouldHaveImages = req.body.images == undefined ?
-                comment.images?.length : req.body.images?.length;
-
-            if (!wouldHaveContent && !wouldHaveImages) {
-                return res.status(400)
-                    .json({ message: "Cannot remove both content and images from a comment." })
-            }
-
-            //let imagesAdded = except(req.body.images, comment.images);
-            //let imagesRemoved = except(comment.images, req.body.images);
-
-            if (req.body.content?.length || wouldHaveImages) {
-                comment.content = req.body.content;
-            }
-
-            if (req.body.images?.length || wouldHaveContent) {
-                comment.images = req.body.images;
-            }
-
-            comment.is_edited = true;
-
-            await comment.save();
-
-            //TODO update images using imagesAdded and imagesRemoved
-
-            return res.status(200)
-                .json({ message: "Successfully updated" });
-        } catch (error) {
-            return handleError(error, res);
+            return res.status(401)
+                .json({ message: "Unauthorized" });
         }
-    });
+
+        if (comment.is_deleted) {
+            return res.status(400)
+                .json({ message: "Cannot edit a deleted comment." })
+        }
+
+        if (req.body.content === null) {
+            return res.status(400)
+                .json({ message: "Cannot set content to null." })
+        }
+
+        if (req.body.images === null) {
+            return res.status(400)
+                .json({ message: "Cannot set images to null." })
+        }
+
+        let wouldHaveContent = req.body.content == undefined ?
+            comment.content?.length : req.body.content?.length;
+        let wouldHaveImages = req.body.images == undefined ?
+            comment.images?.length : req.body.images?.length;
+
+        if (!wouldHaveContent && !wouldHaveImages) {
+            return res.status(400)
+                .json({ message: "Cannot remove both content and images from a comment." })
+        }
+
+        //let imagesAdded = except(req.body.images, comment.images);
+        //let imagesRemoved = except(comment.images, req.body.images);
+
+        if (req.body.content?.length || wouldHaveImages) {
+            comment.content = req.body.content;
+        }
+
+        if (req.body.images?.length || wouldHaveContent) {
+            comment.images = req.body.images;
+        }
+
+        comment.is_edited = true;
+
+        await comment.save();
+
+        //TODO update images using imagesAdded and imagesRemoved
+
+        return res.status(200)
+            .json({ message: "Successfully updated" });
+    } catch (error) {
+        return handleError(error, res);
+    }
+}
+
+router.patch("/api/v1/comments/:id",
+    authMiddleware, patchForId);
 //#endregion
 
 //#region DELETE
-router.delete("/api/v1/comments/:id",
-    authMiddleware, async function (req, res) {
-        try {
-            let comment = await getCommentById(req.params.id);
+async function deleteForId(req, res) {
+    try {
+        let comment = await getCommentById(req.params.id);
 
-            /*if (!(req.isAuth && comment &&
-                comment.author == req.user)) {
-                return res.status(401)
-                    .json({ message: "Unauthorized" });
-            }*/
-
-            let target = await models.Comments
-                .findOneAndUpdate({ _id: req.params.id },
-                    {
-                        content: null,
-                        images: [],
-                        is_deleted: true
-                    }
-                );
-
-            if (target) {
-                //TODO remove images
-
-                return res.status(200)
-                    .json({ message: "Successfully removed" });
-            } else {
-                return res.status(404)
-                    .json({ message: "Not found" });
-            }
-        } catch (error) {
-            return handleError(error, res);
+        if (!(req.isAuth && comment &&
+            comment.author == req.user)) {
+            return res.status(401)
+                .json({ message: "Unauthorized" });
         }
-    });
+
+        let target = await models.Comments
+            .findOneAndUpdate({ _id: req.params.id },
+                {
+                    content: null,
+                    images: [],
+                    is_deleted: true
+                }
+            );
+
+        if (target) {
+            //TODO remove images
+
+            return res.status(200)
+                .json({ message: "Successfully removed" });
+        } else {
+            return res.status(404)
+                .json({ message: "Not found" });
+        }
+    } catch (error) {
+        return handleError(error, res);
+    }
+}
+
+router.delete("/api/v1/comments/:id",
+    authMiddleware, deleteForId);
 
 router.delete("/api/v1/comment/:comment_id/likes/:user_id",
     authMiddleware, async function (req, res) {
-        /*if (!req.body.isAuth ||
+        if (!req.body.isAuth ||
             req.body.user != req.params.user_id) {
             return res.status(401)
                 .json({ message: "Unauthorized" });
-        }*/
+        }
 
         try {
             let target = await models.Comments
