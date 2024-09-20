@@ -58,24 +58,6 @@ router.delete("/api/v1/images/:hash", authMiddleware, async function(req, res) {
 
     res.status(200).send();
 });
-
-router.delete("/api/v1/images", async function(req, res) {
-	// Check if the user has admin privileges
-	if(req.headers["razvan_admin_privileges"] !== "awooga") 
-		res.status(401).json({message: "Unauthorized"});
-
-	// Delete all images
-	await mongoose.models["Images"].deleteMany({}).exec();
-
-	// Delete all files in the uploads directory
-	const uploadsPath = path.join(appRoot, "/uploads");
-	fs.readdirSync(uploadsPath).forEach(file => {
-		const filePath = path.join(uploadsPath, file);
-		fs.rmSync(filePath, { recursive: true, force: true });
-	});
-
-	res.status(200).send({message: "All images deleted"});
-});
 //#endregion
 
 module.exports = router;
