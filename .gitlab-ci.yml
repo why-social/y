@@ -25,6 +25,8 @@ test:
   services:
     - name: mvertes/alpine-mongo:latest
       alias: mongo
+  variables:
+    MONGODB_URI: "mongodb://mongo:27017/whyTestDB"
   script:
     - cd server
-    - npm run ci-test
+    - npm run test

@@ -11,7 +11,7 @@
     "start": "node ./app.js",
     "dev": "nodemon ./app.js",
     "lint": "eslint .",
-    "ci-test": "cross-env-shell PORT=3001 MONGODB_URI=mongodb://localhost:27017/whyTestDB \"npm run newman-server\"",
+    "test": "cross-env-shell PORT=3001 MONGODB_URI=mongodb://localhost:27017/whyTestDB \"npm run newman-server\"",
     "newman-server": "npm run dropdb && npm run populatedb && run-p --race start newman-wait",
     "newman-wait": "wait-on http://localhost:3001/api && npm run newman",
     "newman": "newman run ./tests/server.postman_collection.json --env-var host=http://localhost:3001",
