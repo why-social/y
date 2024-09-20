@@ -27,4 +27,4 @@ test:
       alias: mongo
   script:
     - cd server
-    - npm run test
+    - npm run ci-test
