@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require("../db/database").mongoose;
 const models = mongoose.models;
 const authMiddleware = require("../middleware/auth");
+const PORT = require("../app");
 
 //#region GET
 router.get("/api/v1/comments/:id",
@@ -21,6 +22,22 @@ router.get("/api/v1/comments/:id",
         } else {
             try {
                 let comment = await getCommentById(req.params.id);
+
+                comment._links = {
+                    user: {
+                        href: `http://localhost/${PORT}/api/v1/users/${comment.author}`
+                    }
+                };
+
+                if (comment.parent_is_post) {
+                    comment._links.parent = {
+                        href: `http://localhost/${PORT}/api/v1/posts/${comment.parent_id}`
+                    };
+                } else {
+                    comment._links.parent = {
+                        href: `http://localhost/${PORT}/api/v1/comments/${comment.parent_id}`
+                    };
+                }
 
                 return res.status(200)
                     .json(comment);
