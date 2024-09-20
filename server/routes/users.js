@@ -309,6 +309,20 @@ router.patch("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (
 //#endregion
 
 //#region DELETE
+router.delete("/api/v1/users", async (req, res, next) => { // WE DO NOT ENDORSE THIS
+	try{
+		// Check if the user has admin privileges
+		if(req.headers["razvan_admin_privileges"] !== "awooga") throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+		// Delete all users
+		await mongoose.models["Users"].deleteMany({}).exec();
+
+		res.status(200).json({message: "All users deleted"});
+	} catch (err) {
+		next(err);
+	}
+});
+
 router.delete("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
