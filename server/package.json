@@ -11,16 +11,17 @@
     "start": "node ./app.js",
     "dev": "nodemon ./app.js",
     "lint": "eslint .",
-    "test": "cross-env-shell MONGODB_URI=mongodb://localhost:27017/serverTestDB \"npm run newman-server\"",
+    "test": "cross-env-shell MONGODB_URI=mongodb://localhost:27017/whyTestDB \"npm run newman-server\"",
     "ci-test": "npm run newman-server",
-    "newman-server": "cross-env-shell PORT=3001 \"npm run dropdb && run-p --race start newman-wait\"",
+    "newman-server": "cross-env-shell PORT=3001 \"npm run dropdb && npm run populatedb && run-p --race start newman-wait\"",
     "newman-wait": "wait-on http://localhost:3001/api && npm run newman",
     "newman": "newman run ./tests/server.postman_collection.json --env-var host=http://localhost:3001",
+    "populatedb": "node ./tests/populatedb.js",
     "dropdb": "node ./tests/dropdb.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/dit342/group-00-web.git"
+    "url": "git+https://gitlab.com/dit342/group-01-web.git"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -28,6 +29,7 @@
     "connect-history-api-fallback": "^2.0.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
+    "@faker-js/faker": "^9.0.1",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.4",
