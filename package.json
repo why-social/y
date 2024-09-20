@@ -1,5 +1,5 @@
 {
-  "name": "y-social",
+  "name": "backend-frontend",
   "version": "0.1.0",
   "description": "Y is a Twitter (X) clone built for Web and Mobile Engineering (DIT342)",
   "main": "server/app.js",
