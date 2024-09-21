@@ -7,6 +7,15 @@ const authMiddleware = require('../middleware/auth');
 
 //#region GET
 // Get image from the server
+router.get("/api/v1/images", async function(req, res) {
+	
+	// Get all images hashes
+	let images = await mongoose.models["Images"].find({}, 'hash').exec();
+	images = images.map(image => image.hash);
+	
+	res.status(200).json(images);
+});
+
 router.get("/api/v1/images/:hash", async function(req, res) {
     const options = {
         root: appRoot
@@ -21,7 +30,7 @@ router.get("/api/v1/images/:hash", async function(req, res) {
 
     const url = imageObject.url;
 
-    res.sendFile(url, options, function(err) {
+    res.status(200).sendFile(url, options, function(err) {
         if (err) {
             // hash directory exists, but is empty
             // TODO: check if files present in directory, delete if empty or try fixing DB/file
@@ -57,6 +66,24 @@ router.delete("/api/v1/images/:hash", authMiddleware, async function(req, res) {
     await mongoose.models["Images"].deleteOne({_id : imageObject._id}).exec(); // delete the DB entry
 
     res.status(200).send();
+});
+
+router.delete("/api/v1/images", async function(req, res) {
+	// Check if the user has admin privileges
+	if(req.headers["razvan_admin_privileges"] !== "awooga") 
+		res.status(401).json({message: "Unauthorized"});
+
+	// Delete all images
+	await mongoose.models["Images"].deleteMany({}).exec();
+
+	// Delete all files in the uploads directory
+	const uploadsPath = path.join(appRoot, "/uploads");
+	fs.readdirSync(uploadsPath).forEach(file => {
+		const filePath = path.join(uploadsPath, file);
+		fs.rmSync(filePath, { recursive: true, force: true });
+	});
+
+	res.status(200).send({message: "All images deleted"});
 });
 //#endregion
 

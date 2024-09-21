@@ -25,19 +25,20 @@ router.get("/api/v1/posts/:id", async function (req, res) {
         };
     }
 
-    res.json(post);
+    res.status(200).json(post);
 });
 
 // Returns all posts authored by the user with id :id
-router.get("/api/v1/posts/user/:id", async function (req, res) {
+router.get("/api/v1/posts/users/:id", async function (req, res) {
     try {
         const posts = await models.Posts.find({ author: req.params.id }).populate('comments').exec();
         if (!posts || posts.length == 0) {
             return res.status(404).json({ message: 'Posts of user ' + req.params.id + ' not found' });
         }
 
-        res.json(posts);
+        res.status(200).json(posts);
     }
+
     catch (error) {
         if (error.name === 'CastError') {
             // invalid ObjectId
@@ -58,7 +59,7 @@ router.get("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async functi
         const post = await models.Posts
             .findOne({ _id: req.params.post_id, likes: { $in: [req.params.user_id] } })
             .exec();
-        res.json({ liked: !!post });
+        res.status(200).json({ liked: !!post });
     }
     catch (error) {
         if (error.name == 'CastError') {
@@ -73,14 +74,14 @@ router.get("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async functi
 //#endregion
 
 //#region POST
-router.post("/api/v1/posts/", authMiddleware, async function (req, res) {
-    // if (!req.isAuth || !req.user || req.body.author != req.user) 
-    //     return res.status(401).json({message: 'Unauthorized'});
+async function post(req, res) {
+    if (!req.isAuth || !req.user || req.body.author != req.user)
+        return res.status(401).json({ message: 'Unauthorized' });
 
     try {
         const newPost = new models.Posts({
+            _id: req.params.id, // if called from PUT, it will be specified
             author: req.body.author,
-            is_edited: false,
             content: req.body.content,
             likes: [],
             comments: [],
@@ -88,8 +89,9 @@ router.post("/api/v1/posts/", authMiddleware, async function (req, res) {
         });
 
         await newPost.save();
-        res.status(200).json({ id: newPost["_id"] });
+        res.status(201).json({ id: newPost["_id"] });
     }
+
     catch (error) {
         if (error.name === 'ValidationError') {
             res.status(400).json({ message: error.message });
@@ -103,7 +105,9 @@ router.post("/api/v1/posts/", authMiddleware, async function (req, res) {
             res.status(500).json({ message: error.message });
         }
     }
-});
+}
+
+router.post("/api/v1/posts/", authMiddleware, post);
 
 router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('image'), async function (req, res) {
     if (!req.isAuth || !req.user)
@@ -135,7 +139,7 @@ router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('imag
 
         post.images.push(hash); // add the reference to the image to the post
         await post.save();
-        res.status(200).json(post);
+        res.status(201).json(post);
     }
     catch (error) {
         if (error.name === 'ValidationError') {
@@ -162,7 +166,7 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
         if (!posts)
             return res.status(404).json({ message: 'Post not found' });
 
-        res.status(200).json(post);
+        res.status(201).json(post);
     }
     catch (error) {
         if (error.name === 'ValidationError') {
@@ -179,6 +183,88 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
     }
 
 });
+//#endregion
+
+//#region PUT
+router.put("/api/v1/comments/:id",
+    authMiddleware, async function (req, res) {
+        try {
+            let post = await models.Posts.findById(req.params.id).exec()
+
+            if (req.isAuth && comment &&
+                post.author == req.user) {
+
+                return res.status(401)
+                    .json({ message: "Unauthorized" });
+            }
+
+            if (post.is_deleted) {
+                return res.status(400)
+                    .json({ message: "Cannot edit a deleted comment." })
+            }
+
+            if (req.body.is_deleted) {
+                return res.status(400)
+                    .json({ message: "Comments can only be deleted through DELETE requests." })
+            }
+
+            if (!req.body.is_edited) {
+                return res.status(400)
+                    .json({ message: "Edited posts need to have is_edited = true." })
+            }
+
+            if (req.body.author && req.body.author != post.author) {
+                return res.status(400)
+                    .json({ message: "Cannot change author." })
+            }
+
+            if (req.body.timestamp && req.body.timestamp != post.timestamp) {
+                return res.status(400)
+                    .json({ message: "Cannot change timestamp." })
+            }
+
+            if (req.body.original_post_id && req.body.original_post_id != post.original_post_id) {
+                return res.status(400)
+                    .json({ message: "Cannot change parent id." })
+            }
+
+            if (req.body.likes) {
+                let likesDiff = except(req.body.likes, post.likes);
+
+                if (likesDiff.length == 0) {
+                    likesDiff = except(post.likes, req.body.likes);
+                }
+
+                if (likesDiff.length > 0 &&
+                    (likesDiff.length > 1 || likesDiff[0] != req.user)) {
+                    return res.status(400)
+                        .json({ message: "Cannot change other users' likes." })
+                }
+            }
+
+            if (req.body.content?.length ||
+                req.body.images?.length) {
+
+                post.is_edited = true;
+                post.content = req.body.content;
+                post.images = req.body.images ? req.body.images : [];
+                post.likes = req.body.likes;
+
+                await post.save();
+
+                //TODO update images
+
+                return res.status(200)
+                    .json({ message: "Successfully updated" });
+            } else {
+                return res.status(400)
+                    .json({ message: "At least an image or content is required." })
+            }
+        } catch (error) {
+            return post(req, res);
+        }
+    }
+);
 //#endregion
 
 //#region PATCH
