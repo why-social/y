@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const models = require("../db/database").mongoose.models;
-var ObjectId = require('mongoose').Types.ObjectId;
 const authMiddleware = require('../middleware/auth');
 const upload = require('../middleware/upload').upload;
 const path = require('path');
@@ -13,6 +12,18 @@ const crypto = require('crypto');
 router.get("/api/v1/posts/:id", async function (req, res) {
     const post = await models.Posts.findById(req.params.id).populate('comments').exec();
     if (!post) return res.status(404).json({ message: 'Post id ' + req.params.id + ' not found' });
+
+    post._links = {
+        user: {
+            href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${post.author}`
+        }
+    };
+
+    if (post.original_post_id) {
+        post._links.parent = {
+            href: `${req.protocol + '://' + req.get('host')}/api/v1/posts/${post.original_post_id}`
+        };
+    }
 
     res.status(200).json(post);
 });
@@ -26,22 +37,23 @@ router.get("/api/v1/posts/users/:id", async function (req, res) {
         }
 
         res.status(200).json(posts);
-    } 
+    }
+
     catch (error) {
         if (error.name === 'CastError') {
             // invalid ObjectId
-            res.status(400).json({message: 'Invalid ObjectId: ' + error.message});
+            res.status(400).json({ message: 'Invalid ObjectId: ' + error.message });
         }
         else {
-            res.status(500).json({message: error.message});
+            res.status(500).json({ message: error.message });
         }
     }
 });
 
 // returns a boolean representing whether or not a user having :user_id liked a post having :post_id.   
 router.get("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async function (req, res) {
-    if (!req.isAuth || !req.user) 
-        return res.status(401).json({message: 'Unauthorized'});
+    if (!req.isAuth || !req.user)
+        return res.status(401).json({ message: 'Unauthorized' });
 
     try {
         const post = await models.Posts
@@ -52,12 +64,12 @@ router.get("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async functi
     catch (error) {
         if (error.name == 'CastError') {
             // invalid ObjectId
-            res.status(400).json({message: 'Invalid ObjectId: ' + error.message});
+            res.status(400).json({ message: 'Invalid ObjectId: ' + error.message });
         }
         else {
-            res.status(500).json({message: error.message});
+            res.status(500).json({ message: error.message });
         }
-    }    
+    }
 });
 //#endregion
 
@@ -77,15 +89,16 @@ router.post("/api/v1/posts/", authMiddleware, async function (req, res) {
         });
 
         await newPost.save();
-        res.status(201).json({id : newPost["_id"]});
+        res.status(201).json({ id: newPost["_id"] });
     }
+
     catch (error) {
         if (error.name === 'ValidationError') {
             res.status(400).json({ message: error.message });
         }
         else if (error.name === 'CastError') {
             // invalid ObjectId
-            res.status(400).json({message: 'Invalid ObjectId: ' + error.message});
+            res.status(400).json({ message: 'Invalid ObjectId: ' + error.message });
         }
         else {
             console.error(error);
@@ -99,7 +112,7 @@ router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('imag
         return res.status(401).json({ message: 'Not logged in' });
 
     var post = await models.Posts.findById(req.params.post_id);
-    if (!post) 
+    if (!post)
         return res.status(404).json({ message: 'Post ' + req.params.post_id + ' does not exist' });
 
     if (req.user != post.author)
@@ -113,13 +126,13 @@ router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('imag
 
         // check if the directory (image) already exists
         if (fs.existsSync(dir)) {
-            await models.Images.findOneAndUpdate({hash: hash}, {$inc: {usageCount: 1}}, {new: true}); // only update the existing document in the DB
+            await models.Images.findOneAndUpdate({ hash: hash }, { $inc: { usageCount: 1 } }, { new: true }); // only update the existing document in the DB
         }
         else {
             // save the file with its original name inside the /hash directory
-            fs.mkdirSync(dir, { recursive: true });         
+            fs.mkdirSync(dir, { recursive: true });
             fs.writeFileSync(filePath, fileBuffer);
-            await new models.Images({hash: hash, url: filePath, usageCount: 1}).save(); // insert new entry into Images collection
+            await new models.Images({ hash: hash, url: filePath, usageCount: 1 }).save(); // insert new entry into Images collection
         }
 
         post.images.push(hash); // add the reference to the image to the post
@@ -132,7 +145,7 @@ router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('imag
         }
         else if (error.name === 'CastError') {
             // invalid ObjectId
-            res.status(400).json({message: 'Invalid ObjectId: ' + error.message});
+            res.status(400).json({ message: 'Invalid ObjectId: ' + error.message });
         }
         else {
             console.log(error.message);
@@ -149,7 +162,7 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
             .exec();
 
         if (!posts)
-            return res.status(404).json({message: 'Post not found'});
+            return res.status(404).json({ message: 'Post not found' });
 
         res.status(201).json(post);
     }
@@ -159,7 +172,7 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
         }
         else if (error.name === 'CastError') {
             // invalid ObjectId
-            res.status(400).json({message: 'Invalid ObjectId: ' + error.message});
+            res.status(400).json({ message: 'Invalid ObjectId: ' + error.message });
         }
         else {
             console.error(error);
@@ -175,7 +188,7 @@ router.patch("/api/v1/posts/:id", authMiddleware, async function (req, res) {
     if (!req.isAuth || !req.user)
         return res.status(401).json({ message: 'Not logged in' });
 
-    try {      
+    try {
         if (req.body.content === undefined && req.body.images === undefined) { // if not trying to edit only the content and/or images
             return res.status(400).json({ message: 'No content for editable fields supplied!' });
         }
@@ -184,9 +197,9 @@ router.patch("/api/v1/posts/:id", authMiddleware, async function (req, res) {
         if (!post || post.is_deleted)
             return res.status(404).json({ message: 'Post not found' });
         if (post.author != req.user)
-            return res.status(401).json({ message: 'Unauthorized'}); 
+            return res.status(401).json({ message: 'Unauthorized' });
 
-        
+
         // apply the incoming request to only the editable fields
         if (req.body.content !== undefined) {
             post.content = req.body.content;
@@ -206,7 +219,7 @@ router.patch("/api/v1/posts/:id", authMiddleware, async function (req, res) {
         }
         else if (error.name === 'CastError') {
             // invalid ObjectId
-            res.status(400).json({message: 'Invalid ObjectId: ' + error.message});
+            res.status(400).json({ message: 'Invalid ObjectId: ' + error.message });
         }
         else {
             console.error(error);
@@ -223,12 +236,12 @@ router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res) {
 
     try {
         const post = await models.Posts.findById(req.params.id).exec();
-        if (!post) 
+        if (!post)
             return res.status(404).json({ message: 'Post ' + req.params.id + ' does not exist!' });
         if (post.author != req.user)
-            return res.status(401).json({ message: 'Unauthorized '});
+            return res.status(401).json({ message: 'Unauthorized ' });
         if (post.is_deleted)
-            return res.status(400).json({ message: 'Post is deleted'});
+            return res.status(400).json({ message: 'Post is deleted' });
 
         post.is_deleted = true;
         post.content = null;
@@ -240,7 +253,7 @@ router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res) {
     catch (error) {
         if (error.name === 'CastError') {
             // invalid ObjectId
-            res.status(400).json({message: 'Invalid ObjectId: ' + error.message});
+            res.status(400).json({ message: 'Invalid ObjectId: ' + error.message });
         }
         else {
             console.error(error);
@@ -255,10 +268,10 @@ router.delete("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async fun
 
     try {
         const post = await models.Posts.findById(req.params.post_id);
-        if (!post) 
+        if (!post)
             return res.status(404).json({ message: 'Post ' + req.params.id + ' does not exist!' });
         if (post.author != req.user)
-            return res.status(401).json({ message: 'Unauthorized '});
+            return res.status(401).json({ message: 'Unauthorized ' });
 
         res.status(200).json(post);
     }
@@ -268,7 +281,7 @@ router.delete("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async fun
         }
         else if (error.name === 'CastError') {
             // invalid ObjectId
-            res.status(400).json({message: 'Invalid ObjectId: ' + error.message});
+            res.status(400).json({ message: 'Invalid ObjectId: ' + error.message });
         }
         else {
             console.error(error);
