@@ -2121,13 +2121,10 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"/*\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									"*/\r",
-									"// TODO: add email api secret key to repo and enable this\r",
-									"console.log(\"EMAIL TEST NOT IMPLEMENTED, API KEY MISSING\");"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -2169,6 +2166,269 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "IMAGES",
+			"item": [
+				{
+					"name": "Create a post with a real image",
+					"item": [
+						{
+							"name": "User 1 Creates a post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if(pm.response.code == 201){\r",
+											"    pm.environment.set(\"user1_post2\", pm.response.json().id);\r",
+											"}\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token1}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"author\" : \"{{user1}}\",\r\n    \"content\" : \"Testing image upload\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/posts/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"posts",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add image to the post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if(pm.response.code == 201){\r",
+											"    pm.environment.set(\"image1\", pm.response.json().images[0]);\r",
+											"}\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token1}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "image",
+											"type": "file",
+											"src": "./tests/testImage.png"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/posts/{{user1_post2}}/images",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"posts",
+										"{{user1_post2}}",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get an image",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/images/{{image1}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"images",
+										"{{image1}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete an image",
+					"item": [
+						{
+							"name": "Cannot delete an image in use",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 409\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/images/{{image1}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"images",
+										"{{image1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete the post using the image",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token1}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/posts/{{user1_post2}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"posts",
+										"{{user1_post2}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete the image",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/images/{{image1}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"images",
+										"{{image1}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		}

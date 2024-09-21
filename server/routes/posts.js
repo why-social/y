@@ -124,7 +124,7 @@ router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('imag
 
         post.images.push(hash); // add the reference to the image to the post
         await post.save();
-        res.status(200).json(post);
+        res.status(201).json(post);
     }
     catch (error) {
         if (error.name === 'ValidationError') {
@@ -232,6 +232,10 @@ router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res) {
 
         post.is_deleted = true;
         post.content = null;
+
+        post.images.forEach(async (image) => {
+            await models.Images.findOneAndUpdate({hash: image}, {$inc: {usageCount: -1}});
+        });
         post.images = null;
         await post.save({ validateBeforeSave: false });
 
