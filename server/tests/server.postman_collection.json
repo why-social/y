@@ -1635,7 +1635,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/comments/{{comment1}}",
+							"raw": "{{host}}/api/v1/comments/{{comment2}}",
 							"host": [
 								"{{host}}"
 							],
@@ -1643,7 +1643,7 @@
 								"api",
 								"v1",
 								"comments",
-								"{{comment1}}"
+								"{{comment2}}"
 							]
 						}
 					},
@@ -1790,6 +1790,76 @@
 					"response": []
 				},
 				{
+					"name": "(PATCH) Edit a comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content is changed\", function () {\r",
+									"    pm.expect(pm.response.json().content).to.equal(\"hackerman\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Edit registered\", function () {\r",
+									"    pm.expect(pm.response.json().is_edited).to.be.true;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-http-method-override",
+								"value": "PATCH",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\" : \"hackerman\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/comments/{{comment1}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"comments",
+								"{{comment1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "User un-likes a comment",
 					"event": [
 						{
@@ -1925,6 +1995,69 @@
 								"v1",
 								"comments",
 								"{{comment2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "(DELETE) Delete a comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"DB entry is preserved\", function () {\r",
+									"    pm.expect(pm.response.json()).to.not.be.undefined; \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content is null\", function () {\r",
+									"    pm.expect(pm.response.json().content).to.be.null;\r",
+									"    pm.expect(pm.response.json().images).to.be.null; \r",
+									"});\r",
+									"\r",
+									"pm.test(\"Flagged as deleted\", function () {\r",
+									"    pm.expect(pm.response.json().is_deleted).to.be.true; \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-http-method-override",
+								"value": "DELETE",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/comments/{{comment1}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"comments",
+								"{{comment1}}"
 							]
 						}
 					},
