@@ -1461,6 +1461,22 @@
 				},
 				{
 					"name": "Add comment to a comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1602,6 +1618,12 @@
 									"\r",
 									"pm.test(\"Comment is liked by user2\", function () {\r",
 									"    pm.expect(pm.response.json().likes).to.contain(pm.environment.get(\"user2\"));\r",
+									"});\r",
+									"\r",
+									"pm.test(\"HATEOAS\", function () {\r",
+									"    pm.expect(pm.response.json()._links).to.not.be.undefined;\r",
+									"    pm.expect(pm.response.json()._links.user.href).to.contain(pm.environment.get(\"user1\"));\r",
+									"    pm.expect(pm.response.json()._links.parent.href).to.contain(pm.environment.get(\"user2_post1\"));\r",
 									"});"
 								],
 								"type": "text/javascript",

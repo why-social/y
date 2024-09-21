@@ -20,8 +20,8 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res) {
         }
     } else {
         try {
-            let comment = await getCommentById(req.params.id);
-            
+            let comment = await getCommentById(req.params.id, true);
+
             comment._links = {
                 user: {
                     href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${comment.author}`
@@ -38,8 +38,7 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res) {
                 };
             }
             
-            return res.status(200)
-            .json(comment);
+            return res.status(200).json(comment);
         } catch (error) {
             return handleError(error, res);
         }
@@ -70,10 +69,9 @@ router.get("/api/v1/comments/user/:id", async function (req, res) {
 
 router.get("/api/v1/comments/:comment_id/likes/:user_id", async function (req, res) {
     try {
-        let comment = await getCommentById(req.params.comment_id);
+        let comment = await getCommentById(req.params.comment_id, false);
         
-        return res.status(200)
-        .json({
+        return res.status(200).json({
             likes: comment.likes
             .includes(req.params.user_id)
         });
@@ -162,12 +160,12 @@ router.post("/api/v1/comments/:comment_id/likes/:user_id", authMiddleware, async
     if (req.isAuth && req.user.userId == req.params.user_id) {
         try {
             let target = await models.Comments.findOneAndUpdate({ _id: req.params.comment_id },
-                { $addToSet: { likes: req.params.user_id } }
+                { $addToSet: { likes: req.params.user_id },}, { new:true } 
             );
             
             if (target) {
                 return res.status(200)
-                .json({ message: "Successfully updated" });
+                .json(target);
             } else {
                 return res.status(404)
                 .json({ message: "Not found" });
@@ -185,7 +183,7 @@ router.post("/api/v1/comments/:comment_id/likes/:user_id", authMiddleware, async
 //#region PATCH
 async function patchForId(req, res) {
     try {
-        let comment = await getCommentById(req.params.id);
+        let comment = await getCommentById(req.params.id, false);
         
         if (!comment) res.status(400).json({ message: "Comment does not exist" }); 
         if (!req.isAuth || comment.author != req.user.userId) {
@@ -248,7 +246,7 @@ router.patch("/api/v1/comments/:id", authMiddleware, patchForId);
 //#region DELETE
 async function deleteForId(req, res) {
     try {
-        let comment = await getCommentById(req.params.id);
+        let comment = await getCommentById(req.params.id, false);
         
         if (!(req.isAuth && comment && comment.author == req.user.userId)) {
             return res.status(401)
@@ -304,11 +302,14 @@ router.delete("/api/v1/comments/:comment_id/likes/:user_id", authMiddleware, asy
 //#endregion
 
 //#region Utility
-async function getCommentById(id) {
+async function getCommentById(id, lean) {
     let result;
     
     try {
-        result = await models.Comments.findById(id).exec();
+        if (lean)
+            result = await models.Comments.findById(id).lean().exec();
+        else
+            result = await models.Comments.findById(id).exec();
     } catch (error) {
         if (error.name == 'CastError') {
             error = new Error("Malformed comment identifier");
