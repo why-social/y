@@ -2393,7 +2393,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"email\", \"m.orlov10@gmail.com\");"
+									"pm.environment.set(\"email\", \"razvan-albu@hotmail.com\");"
 								],
 								"type": "text/javascript",
 								"packages": {}
