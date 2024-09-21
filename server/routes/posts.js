@@ -7,6 +7,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
+const { except } = require("../utils/utils");
 
 const router = express.Router();
 
@@ -293,10 +294,5 @@ router.delete("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async fun
     }
 });
 //#endregion
-
-// Helper function to return the difference between two arrays
-function except(array, excludes) { // https://stackoverflow.com/a/68575761
-    return array.filter((item) => !excludes.includes(item));
-}
 
 module.exports = router;
