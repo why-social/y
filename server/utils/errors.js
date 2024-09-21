@@ -58,6 +58,17 @@ const errorMsg = {
 	ALREADY_FOLLOWING: "Already following",
 	UNAUTHORIZED: "Unauthorized",
 	IMG_IN_USE: "Image still in use",
+	CANNOT_EDIT_DELETED_COMMENT: "Cannot edit a deleted comment",
+	DELETE_COMMENTS_ONLY: "Comments can only be deleted through DELETE requests",
+	EDITED_POSTS_NEED_IS_EDITED_TRUE: "Edited posts need to have is_edited = true",
+	CANNOT_CHANGE_AUTHOR: "Cannot change author",
+	CANNOT_CHANGE_TIMESTAMP: "Cannot change timestamp",
+	CANNOT_CHANGE_PARENT_ID: "Cannot change parent id",
+	CANNOT_CHANGE_OTHER_USERS_LIKES: "Cannot change other users' likes.",
+	AT_LEAST_IMAGE_OR_CONTENT_REQUIRED: "At least an image or content is required.",
+	NO_CONTENT_FOR_EDITABLE_FIELDS: "No content for editable fields supplied",
+	POST_IS_DELETED: "Post is deleted",
+	POST_NOT_LIKED: "Post not liked by the user",
 };
 
 function castErrorHandler(err, req, res, next) {
