@@ -11,6 +11,7 @@ const MJ_APIKEY_PRIVATE = process.env.MJ_APIKEY_PRIVATE;
 
 
 async function sendEmail(email, name, token){
+
 	const options = {
 		hostname: 'api.mailjet.com',
 		port: 443,
@@ -21,6 +22,7 @@ async function sendEmail(email, name, token){
 			"Authorization": "Basic " + Buffer.from(`${MJ_APIKEY_PUBLIC}:${MJ_APIKEY_PRIVATE}`).toString("base64")
 		}
 	};
+
 	const data = JSON.stringify({
 		Messages: [{
 			From: {
@@ -35,6 +37,7 @@ async function sendEmail(email, name, token){
 			TextPart: `Hello, click on the following link to restore your password: http://localhost:3000/restorePassword?token=${token}`,
 		}]
 	});
+	
 	return new Promise((resolve, reject) => {
 		const req = https.request(options, (res) => {
 			let responseData = '';
@@ -75,18 +78,14 @@ class NotFoundError extends Error {
 
 router.post("/api/v1/restorePassword", async (req, res, next) => {
 	try {
-		const { id } = req.body;
+		const { email } = req.body;
 
 		// Check if ID is provided
-		if(!id)
-			throw new ValidationError("User id is required");
-
-		// Check if ID has a valid format
-		if(!mongoose.Types.ObjectId.isValid(id))
-			throw new ValidationError("Invalid user id");
+		if(!email)
+			throw new ValidationError("Email is required");
 		
 		// Check if user exists
-		const user = await mongoose.models["Users"].findById(id);
+		const user = await mongoose.models["Users"].findOne({email});
 		if(!user)
 			throw new NotFoundError("User not found");
 
@@ -97,8 +96,7 @@ router.post("/api/v1/restorePassword", async (req, res, next) => {
 		await sendEmail(user.email, user.username, token);
 
 		res.status(200).json({ // status 200 because no resource is being created
-			token,
-			message: "Temporary token generated",
+			message: "Email sent",
 		});
 	} catch (error) {
 		next(error);
