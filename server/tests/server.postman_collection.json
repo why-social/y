@@ -2499,7 +2499,7 @@
 										"exec": [
 											"if(pm.response.code == 201){\r",
 											"    pm.environment.set(\"image1\", pm.response.json().images[0]);\r",
-											"    pm.environment.set(\"image_post\", pm.response.json()._id);\r",
+											"    pm.environment.set(\"image_post1\", pm.response.json()._id);\r",
 											"}\r",
 											"\r",
 											"pm.test(\"Status code is 201\", function () {\r",
@@ -2549,6 +2549,107 @@
 										"v1",
 										"posts",
 										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User 2 Creates a post with the same image",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if(pm.response.code == 201){\r",
+											"    pm.environment.set(\"image_post2\", pm.response.json()._id);\r",
+											"}\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Hashing works\", function () {\r",
+											"    pm.expect(pm.response.json().images[0]).to.equal(pm.environment.get(\"image1\"));\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token2}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "images",
+											"type": "file",
+											"src": "./tests/testImage.png"
+										},
+										{
+											"key": "content",
+											"value": "BECAUSE YES!!",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/posts/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"posts",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all images",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/images",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"images"
 									]
 								}
 							},
@@ -2657,7 +2758,7 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "{{host}}/api/v1/posts/{{image_post}}",
+									"raw": "{{host}}/api/v1/posts/{{image_post1}}",
 									"host": [
 										"{{host}}"
 									],
@@ -2665,7 +2766,85 @@
 										"api",
 										"v1",
 										"posts",
-										"{{image_post}}"
+										"{{image_post1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cannot delete an image in use Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 409\", function () {\r",
+											"    pm.response.to.have.status(409);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/images/{{image1}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"images",
+										"{{image1}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete the post using the image Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token2}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/api/v1/posts/{{image_post2}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"posts",
+										"{{image_post2}}"
 									]
 								}
 							},

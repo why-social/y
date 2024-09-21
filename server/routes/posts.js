@@ -366,7 +366,10 @@ async function saveFile(file) {
     
     // check if the directory (image) already exists
     if (fs.existsSync(dir)) {
-        return await models.Images.findOneAndUpdate({hash: hash}, {$inc: {usageCount: 1}}, {new: true}).lean().exec(); // only update the existing document in the DB
+        const image = await models.Images.findOneAndUpdate({hash : hash}, {$inc: {usageCount: 1}}, {new: true}); // only update the existing document in the DB
+        console.log(image);
+        console.log(hash);
+        return image;
     }
     
     // save the file with its original name inside the /hash directory
