@@ -91,7 +91,7 @@ router.post("/api/v1/restorePassword", async (req, res, next) => {
 			throw new NotFoundError("User not found");
 
 		// Generate a temporary token
-		const token = jwt.sign({userId: user._id}, JWT_SECRET_KEY, {expiresIn: "1h"});
+		const token = jwt.sign({userId: user._id}, JWT_SECRET_KEY, {expiresIn: "1h"}); // TODO: shorter expiry
 
 		// Send an email with the token
 		await sendEmail(user.email, user.username, token);

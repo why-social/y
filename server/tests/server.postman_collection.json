@@ -1941,7 +1941,7 @@
 			]
 		},
 		{
-			"name": "LOGIN",
+			"name": "LOGIN & RESTORE",
 			"item": [
 				{
 					"name": "Log in to User1",
@@ -2050,6 +2050,121 @@
 								"v1",
 								"posts",
 								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a user with a real email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if(pm.response.code == 201){",
+									"    pm.environment.set(\"forgetful_user\", pm.response.json().user_id);",
+									"}",
+									"",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"email\", \"m.orlov10@gmail.com\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Pwnd\",\n    \"email\": \"{{email}}\",\n    \"password\": \"iWillForgetThisInAbout100milliseconds!\",\n    \"username\": \"analburazv\",\n    \"birthday\": \"1990-01-01T00:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/v1/users/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Request password restoration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/*\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"*/\r",
+									"// TODO: add email api secret key to repo and enable this\r",
+									"console.log(\"EMAIL TEST NOT IMPLEMENTED, API KEY MISSING\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"{{forgetful_user}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/restorePassword",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"restorePassword"
 							]
 						}
 					},
