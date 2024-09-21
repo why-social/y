@@ -31,5 +31,5 @@ test:
     - cd server
     - MJ_APIKEY_PUBLIC=$MJ_APIKEY_PUBLIC MJ_APIKEY_PRIVATE=$MJ_APIKEY_PRIVATE npm run ci-test
   rules:
-    - if: $CI_COMMIT_BRANCH == "main" || $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_PIPELINE_SOURCE == "merge_request_event"
       when: always
