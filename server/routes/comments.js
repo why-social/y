@@ -194,10 +194,8 @@ router.post("/api/v1/comments/:comment_id/likes/:user_id",
 
 //#region PUT
 async function putForId(req, res) {
-    let comment;
-
     try {
-        comment = await getCommentById(req.params.id);
+        let comment = await getCommentById(req.params.id);
 
         if (req.isAuth && comment &&
             comment.author == req.user) {
@@ -221,7 +219,7 @@ async function putForId(req, res) {
                 .json({ message: "Edited posts need to have is_edited = true." })
         }
 
-        if (req.body.author && req.body.author != req.author) {
+        if (req.body.author && req.body.author != comment.author) {
             return res.status(400)
                 .json({ message: "Cannot change author." })
         }
