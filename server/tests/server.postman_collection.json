@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "58b682f3-ec6e-4379-bbd9-8edf60cd4ac4",
+		"_postman_id": "3fbdcd8f-fb44-4455-a324-71aa10965952",
 		"name": "server",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "38093461"
@@ -39,12 +39,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/123sd",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/123sd",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -85,12 +83,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/66e76ceeae466024710b57ff",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/66e76ceeae466024710b57ff",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -146,12 +142,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -182,12 +176,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/{{user1}}",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/{{user1}}",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -228,12 +220,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/{{user1}}",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/{{user1}}",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -278,12 +268,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -314,12 +302,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/{{user2}}",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/{{user2}}",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -369,12 +355,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/following/{{user2}}",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/following/{{user2}}",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -410,12 +394,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/{{user1}}/following",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/{{user1}}/following",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -466,12 +448,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/following/{{user1}}",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/following/{{user1}}",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -522,12 +502,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/{{user1}}",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/{{user1}}",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -568,12 +546,10 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/following/{{user2}}",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/following/{{user2}}",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -619,12 +595,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -665,12 +639,10 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/{{user3}}",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/{{user3}}",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -704,12 +676,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/{{user3}}",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/{{user3}}",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -1557,14 +1527,14 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/comment/{{comment1}}/likes/{{user2}}",
+							"raw": "{{host}}/api/v1/comments/{{comment1}}/likes/{{user2}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"comment",
+								"comments",
 								"{{comment1}}",
 								"likes",
 								"{{user2}}"
@@ -1603,14 +1573,14 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/comment/{{comment2}}/likes/{{user2}}",
+							"raw": "{{host}}/api/v1/comments/{{comment2}}/likes/{{user2}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"comment",
+								"comments",
 								"{{comment2}}",
 								"likes",
 								"{{user2}}"
@@ -1720,14 +1690,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/comment/{{comment2}}/likes/{{user2}}",
+							"raw": "{{host}}/api/v1/comments/{{comment2}}/likes/{{user2}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"comment",
+								"comments",
 								"{{comment2}}",
 								"likes",
 								"{{user2}}"
@@ -1827,14 +1797,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/comment/{{comment1}}/likes/{{user2}}",
+							"raw": "{{host}}/api/v1/comments/{{comment1}}/likes/{{user2}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"comment",
+								"comments",
 								"{{comment1}}",
 								"likes",
 								"{{user2}}"
@@ -2098,12 +2068,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/api/v1/users/",
-							"protocol": "http",
+							"raw": "{{host}}/api/v1/users/",
 							"host": [
-								"localhost"
+								"{{host}}"
 							],
-							"port": "3000",
 							"path": [
 								"api",
 								"v1",
@@ -2456,7 +2424,7 @@
 	"variable": [
 		{
 			"key": "host",
-			"value": "http://localhost:3000",
+			"value": "http://localhost:3001",
 			"type": "string"
 		}
 	]
