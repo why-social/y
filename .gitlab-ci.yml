@@ -28,6 +28,8 @@ test:
       alias: mongo
   variables:
     MONGODB_URI: "mongodb://mongo:27017/serverTestDB"
+    MJ_APIKEY_PUBLIC: $MJ_APIKEY_PUBLIC
+    MJ_APIKEY_PRIVATE: $MJ_APIKEY_PRIVATE
   script:
     - cd server
     - npm run ci-test
