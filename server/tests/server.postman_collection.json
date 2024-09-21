@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "3fbdcd8f-fb44-4455-a324-71aa10965952",
+		"_postman_id": "f7d6e5aa-6fce-4533-8605-f4158bc549d2",
 		"name": "server",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "38093461"
@@ -355,7 +355,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/api/v1/users/following/{{user2}}",
+							"raw": "{{host}}/api/v1/users/followings/{{user2}}",
 							"host": [
 								"{{host}}"
 							],
@@ -363,7 +363,7 @@
 								"api",
 								"v1",
 								"users",
-								"following",
+								"followings",
 								"{{user2}}"
 							]
 						}
@@ -394,7 +394,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/{{user1}}/following",
+							"raw": "{{host}}/api/v1/users/{{user1}}/followings",
 							"host": [
 								"{{host}}"
 							],
@@ -403,7 +403,7 @@
 								"v1",
 								"users",
 								"{{user1}}",
-								"following"
+								"followings"
 							]
 						}
 					},
@@ -448,7 +448,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/api/v1/users/following/{{user1}}",
+							"raw": "{{host}}/api/v1/users/followings/{{user1}}",
 							"host": [
 								"{{host}}"
 							],
@@ -456,7 +456,7 @@
 								"api",
 								"v1",
 								"users",
-								"following",
+								"followings",
 								"{{user1}}"
 							]
 						}
@@ -546,7 +546,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/following/{{user2}}",
+							"raw": "{{host}}/api/v1/users/followings/{{user2}}",
 							"host": [
 								"{{host}}"
 							],
@@ -554,7 +554,7 @@
 								"api",
 								"v1",
 								"users",
-								"following",
+								"followings",
 								"{{user2}}"
 							]
 						}
@@ -934,7 +934,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{host}}/api/v1/posts/user/{{user2}}",
+									"raw": "{{host}}/api/v1/posts/users/{{user2}}",
 									"host": [
 										"{{host}}"
 									],
@@ -942,7 +942,7 @@
 										"api",
 										"v1",
 										"posts",
-										"user",
+										"users",
 										"{{user2}}"
 									]
 								}
@@ -961,8 +961,8 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Status code is 200\", function () {\r",
-											"    pm.response.to.have.status(200);\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
 											"});"
 										],
 										"type": "text/javascript",
@@ -1673,7 +1673,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/comments/user/{{user1}}",
+							"raw": "{{host}}/api/v1/comments/users/{{user1}}",
 							"host": [
 								"{{host}}"
 							],
@@ -1681,7 +1681,7 @@
 								"api",
 								"v1",
 								"comments",
-								"user",
+								"users",
 								"{{user1}}"
 							]
 						}
@@ -2187,10 +2187,6 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"if(pm.response.code == 201){",
-									"    pm.environment.set(\"forgetful_user\", pm.response.json().user_id);",
-									"}",
-									"",
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
 									"});"
@@ -2272,7 +2268,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"id\": \"{{forgetful_user}}\"\r\n}",
+							"raw": "{\r\n    \"email\": \"{{email}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

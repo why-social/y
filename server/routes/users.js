@@ -119,7 +119,20 @@ router.get("/api/v1/users/search", async (req, res, next) => {
 			profile_picture: result.profile_picture,
 		}
 
-		res.json(partialResponse);
+		res.status(200).json(partialResponse);
+	} catch (err) {
+		next(err);
+	}
+});
+
+router.get("/api/v1/users", authMiddleware, async (req, res, next) => {
+	try {
+		let allUsers = await mongoose.models["Users"].find().exec();
+
+		// return all usernames
+		let usernames = allUsers.map(user => user.username);
+
+		res.status(200).json(usernames);
 	} catch (err) {
 		next(err);
 	}
@@ -148,7 +161,7 @@ router.get("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (re
 		if(!req.isAuth || user._id.toString() !== req.user?.userId)
 			delete partialResponse.email;
 
-		res.json(partialResponse);
+		res.status(200).json(partialResponse);
 	} catch (err) {
 		next(err);
 	}
@@ -159,18 +172,18 @@ router.get("/api/v1/users/:id/followers", checkIdValidity("id"), async (req, res
 		let result = await mongoose.models["User_follows_user"].find({follows: req.params.id}).exec();
 		if(!result) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
-		res.json(result);
+		res.status(200).json(result);
 	} catch (err) {
 		next(err);
 	}
 });
 
-router.get("/api/v1/users/:id/following", checkIdValidity("id"), async (req, res, next) => {
+router.get("/api/v1/users/:id/followings", checkIdValidity("id"), async (req, res, next) => {
 	try{
 		let result = await mongoose.models["User_follows_user"].find({follower: req.params.id}).exec();
 		if(!result) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
-		res.json(result);
+		res.status(200).json(result);
 	} catch (err) {
 		next(err);
 	}
@@ -231,7 +244,7 @@ router.post("/api/v1/users", async (req, res, next) => {
 	}
 });
 
-router.post("/api/v1/users/following/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res, next) => {
+router.post("/api/v1/users/followings/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
 		if(!req.isAuth) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
@@ -301,7 +314,7 @@ router.patch("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (
 		});
 
 		await user.save();
-		res.json({message: "User updated"});
+		res.status(200).json({message: "User updated"});
 	} catch (err) {
 		next(err);
 	}
@@ -309,6 +322,20 @@ router.patch("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (
 //#endregion
 
 //#region DELETE
+router.delete("/api/v1/users", async (req, res, next) => { // WE DO NOT ENDORSE THIS
+	try{
+		// Check if the user has admin privileges
+		if(req.headers["razvan_admin_privileges"] !== "awooga") throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+		// Delete all users
+		await mongoose.models["Users"].deleteMany({}).exec();
+
+		res.status(200).json({message: "All users deleted"});
+	} catch (err) {
+		next(err);
+	}
+});
+
 router.delete("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
@@ -325,13 +352,13 @@ router.delete("/api/v1/users/:id", authMiddleware, checkIdValidity("id"), async 
 		await mongoose.models["User_follows_user"].deleteMany({$or: [{follower: req.params.id}, {follows: req.params.id}]}).exec();
 
 		await user.deleteOne();
-		res.json({message: "User deleted"});
+		res.status(200).json({message: "User deleted"});
 	} catch (err) {
 		next(err);
 	}
 });
 
-router.delete("/api/v1/users/following/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res, next) => {
+router.delete("/api/v1/users/followings/:following_id", authMiddleware, checkIdValidity("following_id"), async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
 		if(!req.isAuth) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
@@ -349,7 +376,7 @@ router.delete("/api/v1/users/following/:following_id", authMiddleware, checkIdVa
 		if(!alreadyFollowing) throw new ValidationError(errorMsg.FOLLOWING_NOT_FOUND);
 
 		await alreadyFollowing.deleteOne();
-		res.json({message: "Following deleted"});
+		res.status(200).json({message: "Following deleted"});
 	} catch (err) {
 		next(err);
 	}

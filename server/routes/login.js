@@ -53,7 +53,7 @@ router.post("/api/v1/login", async (req, res, next) => {
 
 		const token = jwt.sign({userId: user._id}, JWT_SECRET_KEY, {expiresIn: "1h"});
 
-		res.json({
+		res.status(200).json({
 			message: "Login successful",
 			user_id: user._id,
 			token

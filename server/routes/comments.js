@@ -9,7 +9,7 @@ const authMiddleware = require("../middleware/auth");
 router.get("/api/v1/comments/:id", authMiddleware, async function (req, res) {
     if (req.headers["x-http-method-override"]) {
         if (req.headers["x-http-method-override"] == "PUT") {
-            return res.status(500); // TODO
+            return await putForId(req, res);
         } else if (req.headers["x-http-method-override"] == "PATCH") {
             return await patchForId(req, res);
         } else if (req.headers["x-http-method-override"] == "DELETE") {
@@ -45,11 +45,10 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res) {
     }
 });
 
-router.get("/api/v1/comments/user/:id", async function (req, res) {
+router.get("/api/v1/comments/users/:id", async function (req, res) {
     try {
         let result;
-        let userExists = await models.Users
-        .exists({ _id: req.params.id });
+        let userExists = await models.Users.exists({ _id: req.params.id });
         
         if (userExists) {
             result = await models.Comments
@@ -82,79 +81,83 @@ router.get("/api/v1/comments/:comment_id/likes/:user_id", async function (req, r
 //#endregion
 
 //#region POST
-router.post("/api/v1/comments/", authMiddleware, async function (req, res) {
+async function post(req, res) {
     if (!req.isAuth || !req.user) {
         return res.status(401)
-        .json({ message: "Unauthorized" });
+            .json({ message: "Unauthorized" });
     }
-    
+
     try {
         if (!req.body.parent_id) {
             return res.status(400)
-            .json({ message: "Comments must have a parent id." });
+                .json({ message: "Comments must have a parent id." });
         }
-        
+
         let parent;
-        
+
         if (req.body.parent_is_post) {
             parent = await models.Posts
-            .findOne({ _id: req.body.parent_id }).exec();
-            
+                .findOne({ _id: req.body.parent_id }).exec();
+
             if (!parent) {
                 parent = await models.Comments
-                .findOne({ _id: req.body.parent_id }).exec();
-                
+                    .findOne({ _id: req.body.parent_id }).exec();
+
                 if (!parent) {
                     return res.status(404)
-                    .json({ message: "No parent found." });
+                        .json({ message: "Parent not found." });
                 } else {
                     req.body.parent_is_post = undefined;
                 }
             }
         } else {
             parent = await models.Comments
-            .findOne({ _id: req.body.parent_id }).exec();
-            
+                .findOne({ _id: req.body.parent_id }).exec();
+
             if (!parent) {
                 return res.status(404)
-                .json({ message: "No parent found." });
+                    .json({ message: "No parent found." });
             }
         }
-        
-        if (!req.body.content?.length || !req.body.images?.length) {
-            
+
+        if (!req.body.content?.length ||
+            !req.body.images?.length) {
+
             let comment = new models.Comments({
+                _id: req.params.id, // if called from PUT, it will be specified
                 author: req.user.userId,
                 content: req.body.content,
                 images: req.body.images,
                 parent_id: req.body.parent_id,
                 parent_is_post: req.body.parent_is_post
             });
-            
+
             await comment.save();
-            
+
             if (parent.comments) {
                 parent.comments.push(comment._id);
             } else {
                 parent.comments = [comment._id];
             }
-            
+
             await parent.save();
-            
+
             //TODO: update images
-            
+
             return res.status(201)
-            .json({ id: comment._id });
+                .json({ id: comment._id });
         } else {
             return res.status(400)
-            .json({ message: "At least an image or content is required." })
+                .json({ message: "At least an image or content is required." })
         }
     } catch (error) {
         console.log(error);
-        
+
         return handleError(error, res);
     }
-});
+}
+
+router.post("/api/v1/comments/", authMiddleware, post);
 
 router.post("/api/v1/comments/:comment_id/likes/:user_id", authMiddleware, async function (req, res) {
     if (req.isAuth && req.user.userId == req.params.user_id) {
@@ -164,20 +167,193 @@ router.post("/api/v1/comments/:comment_id/likes/:user_id", authMiddleware, async
             );
             
             if (target) {
-                return res.status(200)
-                .json(target);
+                return res.status(200).json(target);
             } else {
-                return res.status(404)
-                .json({ message: "Not found" });
+                return res.status(404).json({ message: "Not found" });
             }
         } catch (error) {
             return handleError(error, res);
         }
     } else {
-        return res.status(401)
-        .json({ message: "Unauthorized" });
+        return res.status(401).json({ message: "Unauthorized" });
     }
 });
+//#endregion
+
+//#region PUT
+async function putForId(req, res) {
+    try {
+        let comment = await getCommentById(req.params.id);
+
+        if (!comment) res.status(400).json({ message: "Comment does not exist" }); 
+        if (!req.isAuth || comment.author != req.user.userId) {
+
+            return res.status(401)
+                .json({ message: "Unauthorized" });
+        }
+
+        if (comment.is_deleted) {
+            return res.status(400)
+                .json({ message: "Cannot edit a deleted comment." })
+        }
+
+        if (req.body.is_deleted) {
+            return res.status(400)
+                .json({ message: "Comments can only be deleted through DELETE requests." })
+        }
+
+        if (!req.body.is_edited) {
+            return res.status(400)
+                .json({ message: "Edited posts need to have is_edited = true." })
+        }
+
+        if (req.body.author && req.body.author != comment.author) {
+            return res.status(400)
+                .json({ message: "Cannot change author." })
+        }
+
+        if (req.body.timestamp && req.body.timestamp != comment.timestamp) {
+            return res.status(400)
+                .json({ message: "Cannot change timestamp." })
+        }
+
+        if (req.body.parent_id && req.body.parent_id != comment.parent_id) {
+            return res.status(400)
+                .json({ message: "Cannot change parent id." })
+        }
+
+        if (req.body.parent_is_post && req.body.parent_is_post != comment.parent_is_post) {
+            return res.status(400)
+                .json({ message: "Cannot change parent type." })
+        }
+
+        if (req.body.likes) {
+            let likesDiff = except(req.body.likes, comment.likes);
+
+            if (likesDiff.length == 0) {
+                likesDiff = except(comment.likes, req.body.likes);
+            }
+
+            if (likesDiff.length > 0 &&
+                (likesDiff.length > 1 || likesDiff[0] != req.user)) {
+                return res.status(400)
+                    .json({ message: "Cannot change other users' likes." })
+            }
+        }
+
+        if (req.body.content?.length ||
+            req.body.images?.length) {
+
+            comment.is_edited = true;
+            comment.content = req.body.content;
+            comment.images = req.body.images ? req.body.images : [];
+            comment.likes = req.body.likes;
+
+            await comment.save();
+
+            //TODO update images
+
+            return res.status(200)
+                .json({ message: "Successfully updated" });
+        } else {
+            return res.status(400)
+                .json({ message: "At least an image or content is required." })
+        }
+    } catch (error) {
+        return post(req, res);
+    }
+}
+
+router.put("/api/v1/comments/:id",
+    authMiddleware, putForId);
+//#endregion
+
+//#region PUT
+async function putForId(req, res) {
+    try {
+        let comment = await getCommentById(req.params.id);
+
+        if (req.isAuth && comment &&
+            comment.author == req.user) {
+
+            return res.status(401)
+                .json({ message: "Unauthorized" });
+        }
+
+        if (comment.is_deleted) {
+            return res.status(400)
+                .json({ message: "Cannot edit a deleted comment." })
+        }
+
+        if (req.body.is_deleted) {
+            return res.status(400)
+                .json({ message: "Comments can only be deleted through DELETE requests." })
+        }
+
+        if (!req.body.is_edited) {
+            return res.status(400)
+                .json({ message: "Edited posts need to have is_edited = true." })
+        }
+
+        if (req.body.author && req.body.author != comment.author) {
+            return res.status(400)
+                .json({ message: "Cannot change author." })
+        }
+
+        if (req.body.timestamp && req.body.timestamp != comment.timestamp) {
+            return res.status(400)
+                .json({ message: "Cannot change timestamp." })
+        }
+
+        if (req.body.parent_id && req.body.parent_id != comment.parent_id) {
+            return res.status(400)
+                .json({ message: "Cannot change parent id." })
+        }
+
+        if (req.body.parent_is_post && req.body.parent_is_post != comment.parent_is_post) {
+            return res.status(400)
+                .json({ message: "Cannot change parent type." })
+        }
+
+        if (req.body.likes) {
+            let likesDiff = except(req.body.likes, comment.likes);
+
+            if (likesDiff.length == 0) {
+                likesDiff = except(comment.likes, req.body.likes);
+            }
+
+            if (likesDiff.length > 0 &&
+                (likesDiff.length > 1 || likesDiff[0] != req.user)) {
+                return res.status(400)
+                    .json({ message: "Cannot change other users' likes." })
+            }
+        }
+
+        if (req.body.content?.length ||
+            req.body.images?.length) {
+
+            comment.is_edited = true;
+            comment.content = req.body.content;
+            comment.images = req.body.images ? req.body.images : [];
+            comment.likes = req.body.likes;
+
+            await comment.save();
+
+            //TODO update images
+
+            return res.status(200)
+                .json({ message: "Successfully updated" });
+        } else {
+            return res.status(400)
+                .json({ message: "At least an image or content is required." })
+        }
+    } catch (error) {
+        return post(req, res);
+    }
+}
+
+router.put("/api/v1/comments/:id",
+    authMiddleware, putForId);
 //#endregion
 
 //#region PATCH
