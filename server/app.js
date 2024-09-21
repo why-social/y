@@ -12,6 +12,7 @@ const postsRoute = require('./routes/posts');
 const userRoute = require('./routes/users');
 const loginRoute = require('./routes/login');
 const restorePasswordRoute = require('./routes/restorePassword');
+const { AppError, castErrorHandler, NotFoundError } = require('./utils/errors');
 
 global.appRoot = path.resolve(__dirname);
 
@@ -48,8 +49,9 @@ app.use('/', imagesRoute);
 app.use("/", restorePasswordRoute);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
-app.use('/api/*', function (req, res) {
-    res.status(404).json({ 'message': 'Not Found' });
+app.use('/api/*', function (req, res, next) {
+    const err = new NotFoundError('Not Found');
+	next(err);
 });
 
 // Configuration for serving frontend in production mode
@@ -59,6 +61,17 @@ app.use(history());
 var root = path.normalize(__dirname + '/..');
 var client = path.join(root, 'client', 'dist');
 app.use(express.static(client));
+
+// Error handler for custom errors
+app.use(castErrorHandler);
+app.use((err, req, res, next) => {
+	if (err instanceof AppError || err.isAppError) {
+		return res.status(err.statusCode).json({ message: err.message });
+	}
+
+	next(err);
+	//res.status(500).json({message: "Server error"});
+});
 
 // Error handler (i.e., when exception is thrown) must be registered last
 var env = app.get('env');
