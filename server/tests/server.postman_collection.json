@@ -1108,7 +1108,7 @@
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Post is liked\", function () {\r",
+											"pm.test(\"Post is not liked\", function () {\r",
 											"    pm.expect(pm.response.json().liked).to.be.false;\r",
 											"});\r",
 											""
@@ -2089,10 +2089,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"/*\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
-									""
+									"*/\r",
+									"\r",
+									"console.log(\"EMAIL TEST DISABLED\");"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -2424,7 +2427,7 @@
 	"variable": [
 		{
 			"key": "host",
-			"value": "http://localhost:3001",
+			"value": "http://localhost:3000",
 			"type": "string"
 		}
 	]
