@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+var ObjectId = require('mongoose').Types.ObjectId;
 const mongoose = require("../db/database").mongoose;
 const models = mongoose.models;
 const authMiddleware = require("../middleware/auth");
@@ -26,7 +27,7 @@ router.get("/api/v1/comments/user/:id",
 
             if (userExists) {
                 result = await models.Comments
-                    .find({ user: req.params.id })
+                    .find({ author: req.params.id })
                     .lean().exec();
             } else if (!result) {
                 return res.status(404)
@@ -34,7 +35,7 @@ router.get("/api/v1/comments/user/:id",
             }
 
             return res.status(200)
-                .json({ comments: result });
+                .json(result);
         } catch (error) {
             return handleError(error, res);
         }
@@ -59,10 +60,10 @@ router.get("/api/v1/comment/:comment_id/likes/:user_id",
 //#region POST
 router.post("/api/v1/comments/",
     authMiddleware, async function (req, res) {
-        /*if (!req.body.isAuth || !req.body.user) {
+        if (!req.isAuth || !req.user) {
             return res.status(401)
                 .json({ message: "Unauthorized" });
-        }*/
+        }
 
         try {
             if (!req.body.parent_id) {
@@ -101,11 +102,11 @@ router.post("/api/v1/comments/",
                 !req.body.images?.length) {
 
                 let comment = new models.Comments({
-                    author: req.body.user,
+                    author: req.user.userId,
                     content: req.body.content,
                     images: req.body.images,
                     parent_id: req.body.parent_id,
-                    parent_id: req.body.parent_is_post
+                    parent_is_post: req.body.parent_is_post
                 });
 
                 await comment.save();
@@ -120,7 +121,7 @@ router.post("/api/v1/comments/",
 
                 //TODO: update images
 
-                return res.status(200)
+                return res.status(201)
                     .json({ id: comment._id });
             } else {
                 return res.status(400)
@@ -135,14 +136,14 @@ router.post("/api/v1/comments/",
 
 router.post("/api/v1/comment/:comment_id/likes/:user_id",
     authMiddleware, async function (req, res) {
-        if (req.body.isAuth &&
-            req.body.user == req.params.user_id) {
+        if (req.isAuth &&
+            req.user.userId == req.params.user_id) {
             try {
-                let target = await model.Comments
+                let target = await models.Comments
                     .findOneAndUpdate({ _id: req.params.comment_id },
                         { $addToSet: { likes: req.params.user_id } }
                     );
-
+            
                 if (target) {
                     return res.status(200)
                         .json({ message: "Successfully updated" });
@@ -165,13 +166,11 @@ router.patch("/api/v1/comments/:id",
     authMiddleware, async function (req, res) {
         try {
             let comment = await getCommentById(req.params.id);
-
-            /*if (req.isAuth && comment &&
-                comment.author == req.user) {
-           
+            if (!comment) res.status(400).json({ message: "Comment does not exist" }); 
+            if (!req.isAuth || comment.author != req.user.userId) {
                 return res.status(401)
                     .json({ message: "Unauthorized" });
-            }*/
+            }
 
             if (comment.is_deleted) {
                 return res.status(400)
@@ -216,7 +215,7 @@ router.patch("/api/v1/comments/:id",
             //TODO update images using imagesAdded and imagesRemoved
 
             return res.status(200)
-                .json({ message: "Successfully updated" });
+                .json(comment);
         } catch (error) {
             return handleError(error, res);
         }
@@ -229,26 +228,26 @@ router.delete("/api/v1/comments/:id",
         try {
             let comment = await getCommentById(req.params.id);
 
-            /*if (!(req.isAuth && comment &&
-                comment.author == req.user)) {
+            if (!(req.isAuth && comment &&
+                comment.author == req.user.userId)) {
                 return res.status(401)
                     .json({ message: "Unauthorized" });
-            }*/
+            }
 
             let target = await models.Comments
                 .findOneAndUpdate({ _id: req.params.id },
                     {
                         content: null,
-                        images: [],
+                        images: null,
                         is_deleted: true
-                    }
+                    }, {new: true}
                 );
 
             if (target) {
                 //TODO remove images
 
                 return res.status(200)
-                    .json({ message: "Successfully removed" });
+                    .json(target);
             } else {
                 return res.status(404)
                     .json({ message: "Not found" });
@@ -260,11 +259,11 @@ router.delete("/api/v1/comments/:id",
 
 router.delete("/api/v1/comment/:comment_id/likes/:user_id",
     authMiddleware, async function (req, res) {
-        /*if (!req.body.isAuth ||
-            req.body.user != req.params.user_id) {
+        if (!req.isAuth ||
+            req.user.userId != req.params.user_id) {
             return res.status(401)
                 .json({ message: "Unauthorized" });
-        }*/
+        }
 
         try {
             let target = await models.Comments
