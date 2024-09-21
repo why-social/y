@@ -17,11 +17,7 @@ router.get("/api/v1/images", async function(req, res) {
 });
 
 router.get("/api/v1/images/:hash", async function(req, res) {
-    const options = {
-        root: appRoot
-    };
-
-    const imageObject = await mongoose.models["Images"].findOne({hash : req.params.hash}, 'url').exec();
+    const imageObject = await mongoose.models["Images"].findOne({hash : req.params.hash}, 'url').lean().exec();
     if (!imageObject) {
         // invalid hash supplied
         res.status(404).json({ 'message': 'Not Found' });
@@ -30,7 +26,7 @@ router.get("/api/v1/images/:hash", async function(req, res) {
 
     const url = imageObject.url;
 
-    res.status(200).sendFile(url, options, function(err) {
+    res.status(200).sendFile(url, function(err) {
         if (err) {
             // hash directory exists, but is empty
             // TODO: check if files present in directory, delete if empty or try fixing DB/file
@@ -55,7 +51,7 @@ router.delete("/api/v1/images/:hash", authMiddleware, async function(req, res) {
     }
 
     if (imageObject.usageCount != 0) {
-        res.status(400).json({'message' : 'Image still in use!'});
+        res.status(409).json({'message' : 'Image still in use!'});
         return;
     }
 

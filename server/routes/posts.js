@@ -6,6 +6,7 @@ const upload = require('../middleware/upload').upload;
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 //#region GET
 // Returns a post with id :id
@@ -74,9 +75,9 @@ router.get("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async functi
 //#endregion
 
 //#region POST
-async function post(req, res) {
-    if (!req.isAuth || !req.user || req.body.author != req.user)
-        return res.status(401).json({ message: 'Unauthorized' });
+async function postRequest(req, res) {
+    if (!req.isAuth || !req.user || req.body.author !== req.user?.userId) 
+        return res.status(401).json({message: 'Unauthorized'});
 
     try {
         const newPost = new models.Posts({
@@ -89,7 +90,7 @@ async function post(req, res) {
         });
 
         await newPost.save();
-        res.status(201).json({ id: newPost["_id"] });
+        res.status(201).json({id : newPost["_id"]});
     }
 
     catch (error) {
@@ -107,7 +108,7 @@ async function post(req, res) {
     }
 }
 
-router.post("/api/v1/posts/", authMiddleware, post);
+router.post("/api/v1/posts/", authMiddleware, postRequest);
 
 router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('image'), async function (req, res) {
     if (!req.isAuth || !req.user)
@@ -117,7 +118,7 @@ router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('imag
     if (!post)
         return res.status(404).json({ message: 'Post ' + req.params.post_id + ' does not exist' });
 
-    if (req.user != post.author)
+    if (post.author.toString() !== req.user?.userId)
         return res.status(401).json({ message: 'Unauthorized' });
 
     try {
@@ -163,8 +164,8 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
             .findOneAndUpdate({ _id: req.params.post_id }, { $addToSet: { likes: req.params.user_id } }, { new: true }) // TODO: different return message when already liked
             .exec();
 
-        if (!posts)
-            return res.status(404).json({ message: 'Post not found' });
+        if (!post)
+            return res.status(404).json({message: 'Post not found'});
 
         res.status(201).json(post);
     }
@@ -186,17 +187,17 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
 //#endregion
 
 //#region PUT
-router.put("/api/v1/comments/:id",
+router.put("/api/v1/posts/:id",
     authMiddleware, async function (req, res) {
         try {
-            let post = await models.Posts.findById(req.params.id).exec()
+            let post = await models.Posts.findById(req.params.id).exec();
 
-            if (req.isAuth && comment &&
-                post.author == req.user) {
-
-                return res.status(401)
-                    .json({ message: "Unauthorized" });
+            if (!req.isAuth || !req.user) {
+                return res.status(401).json({ message: "Unauthorized" });
             }
+
+            if (!post)
+                return res.status(401).json({ message: "Unauthorized" }); 
 
             if (post.is_deleted) {
                 return res.status(400)
@@ -254,14 +255,12 @@ router.put("/api/v1/comments/:id",
 
                 //TODO update images
 
-                return res.status(200)
-                    .json({ message: "Successfully updated" });
+                return res.status(200).json(post);
             } else {
-                return res.status(400)
-                    .json({ message: "At least an image or content is required." })
+                return res.status(400).json({ message: "At least an image or content is required." })
             }
         } catch (error) {
-            return post(req, res);
+            return await postRequest(req, res);
         }
     }
 );
@@ -280,8 +279,8 @@ router.patch("/api/v1/posts/:id", authMiddleware, async function (req, res) {
         post = await models.Posts.findById(req.params.id);
         if (!post || post.is_deleted)
             return res.status(404).json({ message: 'Post not found' });
-        if (post.author != req.user)
-            return res.status(401).json({ message: 'Unauthorized' });
+        if (post.author.toString() !== req.user?.userId)
+            return res.status(401).json({ message: 'Unauthorized'}); 
 
 
         // apply the incoming request to only the editable fields
@@ -322,13 +321,17 @@ router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res) {
         const post = await models.Posts.findById(req.params.id).exec();
         if (!post)
             return res.status(404).json({ message: 'Post ' + req.params.id + ' does not exist!' });
-        if (post.author != req.user)
-            return res.status(401).json({ message: 'Unauthorized ' });
+        if (post.author.toString() !== req.user?.userId)
+            return res.status(401).json({ message: 'Unauthorized'});
         if (post.is_deleted)
             return res.status(400).json({ message: 'Post is deleted' });
 
         post.is_deleted = true;
         post.content = null;
+
+        post.images.forEach(async (image) => {
+            await models.Images.findOneAndUpdate({hash: image}, {$inc: {usageCount: -1}});
+        });
         post.images = null;
         await post.save({ validateBeforeSave: false });
 
@@ -352,11 +355,16 @@ router.delete("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async fun
 
     try {
         const post = await models.Posts.findById(req.params.post_id);
-        if (!post)
-            return res.status(404).json({ message: 'Post ' + req.params.id + ' does not exist!' });
-        if (post.author != req.user)
-            return res.status(401).json({ message: 'Unauthorized ' });
+        if (!post) 
+            return res.status(404).json({ message: 'Post ' + req.params.post_id + ' does not exist!' });
 
+        const index = post.likes.indexOf(new ObjectId(req.params.user_id));
+        
+        if (index == -1)
+            return res.status(404).json({message: 'Post not liked by user ' + req.params.user_id})
+        
+        post.likes.splice(index, 1);
+        await post.save();
         res.status(200).json(post);
     }
     catch (error) {
