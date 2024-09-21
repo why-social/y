@@ -1218,6 +1218,68 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Update post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Content is changed\", function () {\r",
+											"    pm.expect(pm.response.json().images).to.contain(\"somehash\");\r",
+											"    pm.expect(pm.response.json().content).to.equal(\"bro momento\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Edit registered\", function () {\r",
+											"    pm.expect(pm.response.json().is_edited).to.be.true;\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token1}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"content\" : \"bro momento\",\r\n    \"images\" : [\"somehash\"],\r\n    \"is_edited\" : true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/posts/{{user1_post1}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"posts",
+										"{{user1_post1}}"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -1768,6 +1830,138 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"content\" : \"No help needed im fine :)))))\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/comments/{{comment2}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"comments",
+								"{{comment2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Edit a comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content is changed\", function () {\r",
+									"    pm.expect(pm.response.json().images).to.contain(\"somehash\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Edit registered\", function () {\r",
+									"    pm.expect(pm.response.json().is_edited).to.be.true;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"images\" : [\"somehash\"],\r\n    \"is_edited\" : true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/comments/{{comment2}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"comments",
+								"{{comment2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "(PUT) Edit a comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Content is changed\", function () {\r",
+									"    pm.expect(pm.response.json().images).to.contain(\"somehash\");\r",
+									"    pm.expect(pm.response.json().images).to.contain(\"someotherhash\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Edit registered\", function () {\r",
+									"    pm.expect(pm.response.json().is_edited).to.be.true;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-http-method-override",
+								"value": "PUT",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"images\" : [\"somehash\", \"someotherhash\"],\r\n    \"is_edited\" : true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

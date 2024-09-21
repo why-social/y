@@ -75,7 +75,7 @@ router.get("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async functi
 //#endregion
 
 //#region POST
-async function post(req, res) {
+async function postRequest(req, res) {
     if (!req.isAuth || !req.user || req.body.author !== req.user?.userId) 
         return res.status(401).json({message: 'Unauthorized'});
 
@@ -108,7 +108,7 @@ async function post(req, res) {
     }
 }
 
-router.post("/api/v1/posts/", authMiddleware, post);
+router.post("/api/v1/posts/", authMiddleware, postRequest);
 
 router.post('/api/v1/posts/:post_id/images', authMiddleware, upload.single('image'), async function (req, res) {
     if (!req.isAuth || !req.user)
@@ -187,17 +187,17 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res) {
 //#endregion
 
 //#region PUT
-router.put("/api/v1/comments/:id",
+router.put("/api/v1/posts/:id",
     authMiddleware, async function (req, res) {
         try {
-            let post = await models.Posts.findById(req.params.id).exec()
+            let post = await models.Posts.findById(req.params.id).exec();
 
-            if (req.isAuth && comment &&
-                post.author == req.user) {
-
-                return res.status(401)
-                    .json({ message: "Unauthorized" });
+            if (!req.isAuth || !req.user) {
+                return res.status(401).json({ message: "Unauthorized" });
             }
+
+            if (!post)
+                return res.status(401).json({ message: "Unauthorized" }); 
 
             if (post.is_deleted) {
                 return res.status(400)
@@ -255,14 +255,12 @@ router.put("/api/v1/comments/:id",
 
                 //TODO update images
 
-                return res.status(200)
-                    .json({ message: "Successfully updated" });
+                return res.status(200).json(post);
             } else {
-                return res.status(400)
-                    .json({ message: "At least an image or content is required." })
+                return res.status(400).json({ message: "At least an image or content is required." })
             }
         } catch (error) {
-            return post(req, res);
+            return await postRequest(req, res);
         }
     }
 );
