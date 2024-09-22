@@ -163,7 +163,7 @@ database.connect(mongoURI)
 
 function generateHash() {
     let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const characters = 'abcdef0123456789';
 
     let counter = 64;
     while (counter > 0) {

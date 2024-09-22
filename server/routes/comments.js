@@ -4,6 +4,8 @@ const models = require("../db/database").mongoose.models;
 const authMiddleware = require("../middleware/auth");
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
 const { except, getCommentById } = require("../utils/utils");
+const { updateImages, removeUsage } = require("../utils/imageHandler");
+const { uploadFiles } = require("../middleware/upload");
 
 //#region GET
 router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, next) {
@@ -96,38 +98,40 @@ async function postRequest(req, res, next) {
 			throw new NotFoundError(errorMsg.PARENT_NOT_FOUND);
         }
 
-        if (!req.body.content?.length || !req.body.images?.length) {
-            let comment = new models.Comments({
-                _id: req.params.id, // if called from PUT, it will be specified
-                author: req.user.userId,
-                content: req.body.content,
-                images: req.body.images,
-                parent_id: req.body.parent_id,
-                parent_is_post: req.body.parent_is_post
-            });
-
-            await comment.save();
-
-            if (parent.comments) {
-                parent.comments.push(comment._id);
-            } else {
-                parent.comments = [comment._id];
-            }
-
-            await parent.save();
-
-            //TODO: update images
-
-            return res.status(201).json({ id: comment._id });
-        } else {
-			throw new ValidationError(errorMsg.AT_LEAST_IMAGE_OR_CONTENT_REQUIRED);
+        let comment = new models.Comments({
+            _id: req.params.id, // if called from PUT, it will be specified
+            author: req.user.userId,
+            content: req.body.content,
+            images: [],
+            parent_id: req.body.parent_id,
+            parent_is_post: req.body.parent_is_post
+        });
+        
+        if (req.files?.length > 0) {
+            await updateImages(comment, req.files);
         }
+
+        await comment.save();
+
+        if (parent.comments) {
+            parent.comments.push(comment._id);
+        } else {
+            parent.comments = [comment._id];
+        }
+
+        await parent.save();
+
+        //TODO: update images
+
+        return res.status(201).json(comment);
+
     } catch (err) {
+        console.error(err.message);
         next(err);
     }
 }
 
-router.post("/api/v1/comments/", authMiddleware, postRequest);
+router.post("/api/v1/comments/", authMiddleware, uploadFiles, postRequest);
 
 router.post("/api/v1/comments/:comment_id/likes/:user_id", authMiddleware, async function (req, res, next) {
 	try{
@@ -190,15 +194,18 @@ async function putForId(req, res, next) {
 				throw new ValidationError(errorMsg.CANNOT_CHANGE_OTHER_USERS_LIKES);
         }
 
-        if (req.body.content?.length || req.body.images?.length) {
+        if (req.body.content?.length || req.files?.length) {
             comment.is_edited = true;
             comment.content = req.body.content;
-            comment.images = req.body.images ? req.body.images : [];
             comment.likes = req.body.likes;
 
-            await comment.save();
+            if (req.files?.length > 0) {
+                await updateImages(comment, req.files);
+            } else {
+                await updateImages(comment, []);
+            }
 
-            //TODO update images
+            await comment.save();
 
             return res.status(200).json(comment);
         } else {
@@ -209,7 +216,7 @@ async function putForId(req, res, next) {
     }
 }
 
-router.put("/api/v1/comments/:id", authMiddleware, putForId);
+router.put("/api/v1/comments/:id", authMiddleware, uploadFiles, putForId);
 //#endregion
 
 //#region PATCH
@@ -238,30 +245,25 @@ async function patchForId(req, res, next) {
         if (!wouldHaveContent && !wouldHaveImages)
 			throw new ValidationError(errorMsg.CANNOT_REMOVE_BOTH_CONTENT_AND_IMAGES);
         
-        //let imagesAdded = except(req.body.images, comment.images);
-        //let imagesRemoved = except(comment.images, req.body.images);
         
         if (req.body.content?.length || wouldHaveImages) {
             comment.content = req.body.content;
+            comment.is_edited = true;
         }
         
-        if (req.body.images?.length || wouldHaveContent) {
-            comment.images = req.body.images;
+        if (req.files?.length) {
+            await updateImages(comment, req.files);
+            comment.is_edited = true;
         }
-        
-        comment.is_edited = true;
         
         await comment.save();
-        
-        //TODO update images using imagesAdded and imagesRemoved
-        
         return res.status(200).json(comment);
     } catch (err) {
         next(err);
     }
 }
 
-router.patch("/api/v1/comments/:id", authMiddleware, patchForId);
+router.patch("/api/v1/comments/:id", authMiddleware, uploadFiles, patchForId);
 //#endregion
 
 //#region DELETE
@@ -272,17 +274,18 @@ async function deleteForId(req, res, next) {
         if (!(req.isAuth && comment && comment.author == req.user.userId))
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
         
-        let target = await models.Comments.findOneAndUpdate({ _id: req.params.id },
-            {
-                content: null,
-                images: null,
-                is_deleted: true
-            }, {new: true}
-        );
+        const target = await models.Comments.findById(req.params.id);
         
         if (target) {
             //TODO remove images
-            
+            target.is_deleted = true;
+            target.content = null;
+            for (var hash of target.images) {
+                await removeUsage(hash);
+            }
+            target.images = null;
+
+            await target.save({ validateBeforeSave: false });
             return res.status(200).json(target);
         } else {
             throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
@@ -305,7 +308,7 @@ router.delete("/api/v1/comments/:comment_id/likes/:user_id", authMiddleware, asy
 		if(!target)
 			throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
         
-		return res.status(200).json({ message: "Successfully updated" });
+		return res.status(200).json(target);
     } catch (err) {
         next(err);
     }

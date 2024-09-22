@@ -47,8 +47,6 @@ router.get("/api/v1/images/:hash", async function(req, res, next) {
 // Delete an image
 router.delete("/api/v1/images/:hash", authMiddleware, async function(req, res, next) {
 	try{
-		// TODO: require authorization
-		
 		const imageObject = await mongoose.models["Images"].findOne({hash : req.params.hash}).exec();
 		if (!imageObject) // invalid hash supplied / not in DB
 			throw new NotFoundError(errorMsg.IMAGE_NOT_FOUND);
@@ -71,7 +69,7 @@ router.delete("/api/v1/images", async function(req, res, next) {
 	try{
 		// Check if the user has admin privileges
 		if(req.headers["razvan_admin_privileges"] !== "awooga") 
-			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+			throw new UnauthorizedError(errorMsg.UNAUTHORIZED); // TODO: secret admin key?
 
 		// Delete all images
 		await mongoose.models["Images"].deleteMany({}).exec();

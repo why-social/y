@@ -2,8 +2,17 @@ const models = require("../db/database").mongoose.models;
 const { NotFoundError, errorMsg } = require("../utils/errors");
 
 // Helper function to return the difference between two arrays
-function except(array, excludes) { // https://stackoverflow.com/a/68575761
+function except(array, excludes) { // Adapted from https://stackoverflow.com/a/68575761
+	if (array == null) return excludes;
+	if (excludes == null) return array;
     return array.filter((item) => !excludes.includes(item));
+}
+
+function removeFromArray(array, item) {
+	const index = array.indexOf(item);
+    if (index == -1)
+		throw new NotFoundError('Item not in array');
+	array.splice(index, 1);
 }
 
 async function getCommentById(id, lean, next) {
@@ -23,4 +32,4 @@ async function getCommentById(id, lean, next) {
 	}
 }
 
-module.exports = { except, getCommentById };
+module.exports = { except, removeFromArray, getCommentById };
