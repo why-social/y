@@ -16,7 +16,7 @@ build:
     - docker
   script:
     - cd server
-    - npm install --global
+    - npm install
 
 test:
   stage: test
