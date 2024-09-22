@@ -47,8 +47,6 @@ router.get("/api/v1/images/:hash", async function(req, res, next) {
 // Delete an image
 router.delete("/api/v1/images/:hash", authMiddleware, async function(req, res, next) {
 	try{
-		// TODO: require authorization
-		
 		const imageObject = await mongoose.models["Images"].findOne({hash : req.params.hash}).exec();
 		if (!imageObject) // invalid hash supplied / not in DB
 			throw new NotFoundError(errorMsg.IMAGE_NOT_FOUND);

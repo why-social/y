@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "b36b812a-60ee-48a1-9d60-ec0dc7a85f15",
+		"_postman_id": "56cf4e23-a2ee-4970-a3f1-ecf082028cc5",
 		"name": "server",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "38379553"
@@ -699,6 +699,64 @@
 					"name": "Post Creation / getting",
 					"item": [
 						{
+							"name": "User 1 Creates a post (images)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if(pm.response.code == 201){\r",
+											"    pm.environment.set(\"user1_post1\", pm.response.json()._id);\r",
+											"}\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token1}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "content",
+											"value": "Another post",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/posts/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"posts",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "User 2 Creates a post (text only)",
 							"event": [
 								{
@@ -815,14 +873,14 @@
 							"response": []
 						},
 						{
-							"name": "User 1 Creates a post",
+							"name": "User 2 Creates a post",
 							"event": [
 								{
 									"listen": "test",
 									"script": {
 										"exec": [
 											"if(pm.response.code == 201){\r",
-											"    pm.environment.set(\"user1_post1\", pm.response.json()._id);\r",
+											"    pm.environment.set(\"user2_post3\", pm.response.json()._id);\r",
 											"}\r",
 											"\r",
 											"pm.test(\"Status code is 201\", function () {\r",
@@ -840,7 +898,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "{{token1}}",
+											"value": "{{token2}}",
 											"type": "string"
 										}
 									]
@@ -848,14 +906,70 @@
 								"method": "POST",
 								"header": [],
 								"body": {
-									"mode": "formdata",
-									"formdata": [
+									"mode": "raw",
+									"raw": "{\r\n    \"author\" : \"{{user2}}\",\r\n    \"content\" : \"Hello from Postman 3!\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/api/v1/posts/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"posts",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User 2 Creates a post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if(pm.response.code == 201){\r",
+											"    pm.environment.set(\"user2_post4\", pm.response.json()._id);\r",
+											"}\r",
+											"\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
 										{
-											"key": "content",
-											"value": "Another post",
-											"type": "text"
+											"key": "token",
+											"value": "{{token2}}",
+											"type": "string"
 										}
 									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"author\" : \"{{user2}}\",\r\n    \"content\" : \"Hello from Postman 4!\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
 								},
 								"url": {
 									"raw": "{{host}}/api/v1/posts/",
@@ -923,8 +1037,8 @@
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"There are 2 posts\", function () {\r",
-											"    pm.expect(pm.response.json().length).to.equal(2);\r",
+											"pm.test(\"There are 4 posts\", function () {\r",
+											"    pm.expect(pm.response.json().length).to.equal(4);\r",
 											"});\r",
 											""
 										],
@@ -3927,7 +4041,7 @@
 					"response": []
 				},
 				{
-					"name": "get feed user 1",
+					"name": "get feed for User 1",
 					"event": [
 						{
 							"listen": "test",
@@ -3937,14 +4051,12 @@
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Response returns 1 post\", function () {\r",
-									"    // user 2 has two posts, one of which \r",
+									"pm.test(\"Response returns 3 posts\", function () {\r",
+									"    // user 4 has two posts, one of which \r",
 									"    // is deleted and should not be included\r",
-									"    let target = pm.response.json();\r",
+									"    let target = pm.response.json()?.posts;\r",
 									"\r",
-									"    debugger;\r",
-									"    pm.expect(target.length).to.equal(1);\r",
-									"    pm.expect(target[0]._id).to.equal(pm.environment.get(\"user2_post2\"));\r",
+									"    pm.expect(target?.length).to.equal(3);\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -3975,6 +4087,224 @@
 								"v1",
 								"feeds",
 								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get invalid sort feed for User 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/feeds?sort=awooga",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"feeds"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "awooga"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get ascending feed for User 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response returns 3 asc posts\", function () {\r",
+									"    // user 4 has two posts, one of which \r",
+									"    // is deleted and should not be included\r",
+									"    let target = pm.response.json()?.posts;\r",
+									"\r",
+									"    pm.expect(target?.length).to.equal(3);\r",
+									"    pm.expect(target[0]._id).to.equal(pm.environment.get(\"user2_post2\"));\r",
+									"    pm.expect(target[1]._id).to.equal(pm.environment.get(\"user2_post3\"));\r",
+									"    pm.expect(target[2]._id).to.equal(pm.environment.get(\"user2_post4\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/feeds?sort=asc",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"feeds"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get descending feed for User 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response returns 3 desc posts\", function () {\r",
+									"    // user 4 has two posts, one of which \r",
+									"    // is deleted and should not be included\r",
+									"    let target = pm.response.json()?.posts;\r",
+									"\r",
+									"    pm.expect(target?.length).to.equal(3);\r",
+									"    pm.expect(target[0]._id).to.equal(pm.environment.get(\"user2_post4\"));\r",
+									"    pm.expect(target[1]._id).to.equal(pm.environment.get(\"user2_post3\"));\r",
+									"    pm.expect(target[2]._id).to.equal(pm.environment.get(\"user2_post2\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/feeds?sort=desc",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"feeds"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get invalid page feed for User 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/feeds?page=-1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"feeds"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "-1"
+								}
 							]
 						}
 					},
