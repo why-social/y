@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require("../db/database").mongoose;
 const jwt = require("jsonwebtoken");
 const https = require('https');
+const { AppError, ValidationError, NotFoundError, errorMsg } = require("../utils/errors");
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "TEST SECRET KEY SHOULD BE CHANGED BEFORE PRODUCTION";
 
@@ -48,7 +49,7 @@ async function sendEmail(email, name, token){
 
 			res.on('end', () => {
 				if(res.statusCode !== 200)
-					return reject(new Error(`Mailjet API returned status code ${res.statusCode}: ${responseData}`));
+					return reject(new AppError(`Mailjet API returned status code ${res.statusCode}: ${responseData}`));
 				resolve(responseData);
 			});
 		});
@@ -60,34 +61,18 @@ async function sendEmail(email, name, token){
 	});
 }
 
-class ValidationError extends Error {
-	constructor(message) {
-		super(message);
-		this.name = 'ValidationError';
-		this.statusCode = 400;
-	}
-}
-
-class NotFoundError extends Error {
-	constructor(message) {
-		super(message);
-		this.name = 'NotFoundError';
-		this.statusCode = 404;
-	}
-}
-
 router.post("/api/v1/restorePassword", async (req, res, next) => {
 	try {
 		const { email } = req.body;
 
 		// Check if ID is provided
 		if(!email)
-			throw new ValidationError("Email is required");
+			throw new ValidationError(errorMsg.REQUIRED_FIELDS);
 		
 		// Check if user exists
 		const user = await mongoose.models["Users"].findOne({email});
 		if(!user)
-			throw new NotFoundError("User not found");
+			throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
 		// Generate a temporary token
 		const token = jwt.sign({userId: user._id}, JWT_SECRET_KEY, {expiresIn: "1h"}); // TODO: shorter expiry
@@ -102,16 +87,5 @@ router.post("/api/v1/restorePassword", async (req, res, next) => {
 		next(error);
 	}
 });
-
-
-router.use((err, req, res, next) => {
-	if (err instanceof ValidationError || err instanceof NotFoundError) {
-		return res.status(err.statusCode).json({ message: err.message });
-	}
-
-	console.error(err.stack);
-	res.status(500).json({message: "Server error"});
-});
-
 
 module.exports = router;
