@@ -1,5 +1,8 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
+var models = require('../db/database').mongoose.models;
 
 const storage = multer.memoryStorage(); // Configure multer to store the file in memory for hashing
 const maxSizeMB = 12;
@@ -38,4 +41,26 @@ const uploadFiles = (req, res, next) => {
     })
 }
 
-module.exports = { uploadFiles }
+async function saveFile(file) {
+  // Saves the file from multer buffer (memory) to disk and updates images DB
+  const fileBuffer = file.buffer; // read file from multer buffer
+  const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex'); // generate hash from the file content
+  const dir = path.join(appRoot, '/uploads/', hash);
+  const filePath = path.join(dir, file.originalname);
+  
+  // check if the directory (image) already exists
+  if (fs.existsSync(dir)) {
+      const image = await models.Images.findOneAndUpdate({hash : hash}, {$inc: {usageCount: 1}}, {new: true}); // only update the existing document in the DB
+      console.log(image);
+      console.log(hash);
+      return image;
+  }
+  
+  // save the file with its original name inside the /hash directory
+  fs.mkdirSync(dir, { recursive: true });         
+  fs.writeFileSync(filePath, fileBuffer);
+  const newImage = new models.Images({hash: hash, url: filePath, usageCount: 1});
+  return await newImage.save(); // insert new entry into Images collection
+}
+
+module.exports = { uploadFiles, saveFile }

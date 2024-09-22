@@ -1,11 +1,7 @@
 const express = require("express");
 const models = require("../db/database").mongoose.models;
 const authMiddleware = require('../middleware/auth');
-const { uploadFiles } = require('../middleware/upload');
-const path = require('path');
-const fs = require('fs');
-const crypto = require('crypto');
-const { MulterError } = require("multer");
+const { uploadFiles, saveFile } = require('../middleware/upload');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
 const { except } = require("../utils/utils");
@@ -276,27 +272,5 @@ router.delete("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async fun
     
 });
 //#endregion
-
-async function saveFile(file) {
-    // Saves the file from multer buffer (memory) to disk and updates images DB
-    const fileBuffer = file.buffer; // read file from multer buffer
-    const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex'); // generate hash from the file content
-    const dir = path.join(appRoot, '/uploads/', hash);
-    const filePath = path.join(dir, file.originalname);
-    
-    // check if the directory (image) already exists
-    if (fs.existsSync(dir)) {
-        const image = await models.Images.findOneAndUpdate({hash : hash}, {$inc: {usageCount: 1}}, {new: true}); // only update the existing document in the DB
-        console.log(image);
-        console.log(hash);
-        return image;
-    }
-    
-    // save the file with its original name inside the /hash directory
-    fs.mkdirSync(dir, { recursive: true });         
-    fs.writeFileSync(filePath, fileBuffer);
-    const newImage = new models.Images({hash: hash, url: filePath, usageCount: 1});
-    return await newImage.save(); // insert new entry into Images collection
-}
 
 module.exports = router;
