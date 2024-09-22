@@ -1,5 +1,4 @@
 var express = require('express');
-var mongoose = require('mongoose');
 var morgan = require('morgan');
 var path = require('path');
 var cors = require('cors');
@@ -14,11 +13,12 @@ const postsRoute = require('./routes/posts');
 const userRoute = require('./routes/users');
 const loginRoute = require('./routes/login');
 const restorePasswordRoute = require('./routes/restorePassword');
+const { AppError, castErrorHandler, NotFoundError, errorMsg } = require('./utils/errors');
 
 global.appRoot = path.resolve(__dirname);
 
 // Variables
-var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDevelopmentDB';
+var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDB';
 var port = process.env.PORT || 3000;
 
 // Connect to MongoDB
@@ -51,8 +51,9 @@ app.use('/', imagesRoute);
 app.use('/', restorePasswordRoute);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
-app.use('/api/*', function (req, res) {
-    res.status(404).json({ 'message': 'Not Found' });
+app.use('/api/*', function (req, res, next) {
+    const err = new NotFoundError(errorMsg.NOT_FOUND);
+	next(err);
 });
 
 // Configuration for serving frontend in production mode
@@ -62,6 +63,17 @@ app.use(history());
 var root = path.normalize(__dirname + '/..');
 var client = path.join(root, 'client', 'dist');
 app.use(express.static(client));
+
+// Error handler for custom errors
+app.use(castErrorHandler);
+app.use((err, req, res, next) => {
+	if (err instanceof AppError || err.isAppError) {
+		return res.status(err.statusCode).json({ message: err.message });
+	}
+
+	next(err);
+	//res.status(500).json({message: "Server error"});
+});
 
 // Error handler (i.e., when exception is thrown) must be registered last
 var env = app.get('env');
