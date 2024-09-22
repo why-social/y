@@ -12,7 +12,7 @@ const postsRoute = require('./routes/posts');
 const userRoute = require('./routes/users');
 const loginRoute = require('./routes/login');
 const restorePasswordRoute = require('./routes/restorePassword');
-const { AppError, castErrorHandler, NotFoundError } = require('./utils/errors');
+const { AppError, castErrorHandler, NotFoundError, errorMsg } = require('./utils/errors');
 
 global.appRoot = path.resolve(__dirname);
 
@@ -50,7 +50,7 @@ app.use("/", restorePasswordRoute);
 
 // Catch all non-error handler for api (i.e., 404 Not Found)
 app.use('/api/*', function (req, res, next) {
-    const err = new NotFoundError('Not Found');
+    const err = new NotFoundError(errorMsg.NOT_FOUND);
 	next(err);
 });
 

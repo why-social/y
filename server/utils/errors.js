@@ -31,6 +31,15 @@ class NotFoundError extends AppError {
 		this.statusCode = 404;
 	}
 }
+
+class ConflictError extends AppError {
+	constructor(message) {
+		super(message);
+		this.name = 'ConflictError';
+		this.statusCode = 409;
+	}
+}
+
 class CustomCastError extends mongoose.Error.CastError {
     constructor(type, value, path, reason) {
         super(type, value, path, reason);
@@ -92,6 +101,7 @@ module.exports = {
     ValidationError,
     UnauthorizedError,
     NotFoundError,
+	ConflictError,
 	CustomCastError,
 	castErrorHandler
 };

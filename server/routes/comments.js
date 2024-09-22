@@ -16,7 +16,7 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 			} else if (req.headers["x-http-method-override"] == "DELETE") {
 				return await deleteForId(req, res, next);
 			} else {
-				throw new ValidationError("Unsupported");
+				throw new ValidationError(errorMsg.UNSUPPORTED);
 			}
 		} else {
 			let comment = await getCommentById(req.params.id, true, next);

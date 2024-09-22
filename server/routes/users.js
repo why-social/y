@@ -3,7 +3,7 @@ const router = express.Router();
 const mongoose = require("../db/database").mongoose;
 const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middleware/auth");
-const { AppError, ValidationError, UnauthorizedError, NotFoundError, errorMsg } = require("../utils/errors");
+const { ValidationError, UnauthorizedError, NotFoundError, ConflictError, errorMsg } = require("../utils/errors");
 const { nameRegex, usernameRegex, emailRegex, passwordRegex } = require("../utils/customRegex");
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "TEST SECRET KEY SHOULD BE CHANGED BEFORE PRODUCTION";
@@ -150,11 +150,11 @@ router.post("/api/v1/users", async (req, res, next) => {
 
 		// Check if user already exists by username
 		let usernameExists = await mongoose.models["Users"].findOne({username}).exec();
-		if(usernameExists) throw new ValidationError(errorMsg.USERNAME_EXISTS);
+		if(usernameExists) throw new ConflictError(errorMsg.USERNAME_EXISTS);
 
 		// Check if user already exists by email
 		let emailExists = await mongoose.models["Users"].findOne({email}).exec();
-		if(emailExists) throw new ValidationError(errorMsg.EMAIL_EXISTS);
+		if(emailExists) throw new ConflictError(errorMsg.EMAIL_EXISTS);
 
 		// Remove all other fields from the request and add necessary
 		req.body = {
@@ -193,7 +193,7 @@ router.post("/api/v1/users/followings/:following_id", authMiddleware, async (req
 
 		// Check if user is already following
 		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: user._id.toString(), follows: req.params.following_id}).exec();
-		if(alreadyFollowing) throw new ValidationError(errorMsg.ALREADY_FOLLOWING);
+		if(alreadyFollowing) throw new ConflictError(errorMsg.ALREADY_FOLLOWING);
 
 		// Create new following and save to db
 		let newFollowing = new mongoose.models["User_follows_user"]({follower: user._id.toString(), follows: req.params.following_id});
@@ -232,13 +232,13 @@ router.patch("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 		// Check if the new username already exists
 		if(req.body.username) {
 			let usernameExists = await mongoose.models["Users"].findOne({username: req.body.username}).exec();
-			if(usernameExists) throw new ValidationError(errorMsg.USERNAME_EXISTS);
+			if(usernameExists) throw new ConflictError(errorMsg.USERNAME_EXISTS);
 		}
 
 		// Check if the new email already exists
 		if(req.body.email) {
 			let emailExists = await mongoose.models["Users"].findOne({email: req.body.email}).exec();
-			if(emailExists) throw new ValidationError(errorMsg.EMAIL_EXISTS);
+			if(emailExists) throw new ConflictError(errorMsg.EMAIL_EXISTS);
 		}
 
 		updatableFields.forEach(field => {

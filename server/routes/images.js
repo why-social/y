@@ -4,7 +4,7 @@ var path = require('path');
 var fs = require('fs')
 const mongoose = require("../db/database").mongoose;
 const authMiddleware = require('../middleware/auth');
-const { NotFoundError, UnauthorizedError, errorMsg } = require("../utils/errors");
+const { NotFoundError, UnauthorizedError, ConflictError, errorMsg } = require("../utils/errors");
 
 //#region GET
 // Get image from the server
@@ -54,7 +54,7 @@ router.delete("/api/v1/images/:hash", authMiddleware, async function(req, res, n
 			throw new NotFoundError(errorMsg.IMAGE_NOT_FOUND);
 
 		if (imageObject.usageCount != 0)
-			return res.status(409).json({'message' : 'Image still in use!'});
+			throw new ConflictError(errorMsg.IMG_IN_USE);
 		
 		console.log("Deleting " + path.join(__dirname, imageObject.url));
 
