@@ -3,7 +3,7 @@
 		"_postman_id": "b36b812a-60ee-48a1-9d60-ec0dc7a85f15",
 		"name": "server",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "38093461"
+		"_exporter_id": "38379553"
 	},
 	"item": [
 		{
@@ -517,7 +517,7 @@
 					"response": []
 				},
 				{
-					"name": "user1 unfollows user2",
+					"name": "user2 unfollows user1",
 					"event": [
 						{
 							"listen": "test",
@@ -538,7 +538,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{token1}}",
+									"value": "{{token2}}",
 									"type": "string"
 								}
 							]
@@ -546,7 +546,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/followings/{{user2}}",
+							"raw": "{{host}}/api/v1/users/followings/{{user1}}",
 							"host": [
 								"{{host}}"
 							],
@@ -555,7 +555,7 @@
 								"v1",
 								"users",
 								"followings",
-								"{{user2}}"
+								"{{user1}}"
 							]
 						}
 					},
@@ -1332,7 +1332,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "{{token1}}",
+											"value": "{{token2}}",
 											"type": "string"
 										}
 									]
@@ -1340,7 +1340,7 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "{{host}}/api/v1/posts/{{user1_post1}}",
+									"raw": "{{host}}/api/v1/posts/{{user2_post1}}",
 									"host": [
 										"{{host}}"
 									],
@@ -1348,7 +1348,7 @@
 										"api",
 										"v1",
 										"posts",
-										"{{user1_post1}}"
+										"{{user2_post1}}"
 									]
 								}
 							},
@@ -1377,7 +1377,7 @@
 									"bearer": [
 										{
 											"key": "token",
-											"value": "{{token1}}",
+											"value": "{{token2}}",
 											"type": "string"
 										}
 									]
@@ -1394,7 +1394,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{host}}/api/v1/posts/{{user1_post1}}",
+									"raw": "{{host}}/api/v1/posts/{{user2_post1}}",
 									"host": [
 										"{{host}}"
 									],
@@ -1402,7 +1402,7 @@
 										"api",
 										"v1",
 										"posts",
-										"{{user1_post1}}"
+										"{{user2_post1}}"
 									]
 								}
 							},
@@ -3886,6 +3886,99 @@
 							}
 						}
 					]
+				}
+			]
+		},
+		{
+			"name": "FEEDS",
+			"item": [
+				{
+					"name": "get feeds no authentication",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/feeds/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"feeds",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get feed user 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response returns 1 post\", function () {\r",
+									"    // user 2 has two posts, one of which \r",
+									"    // is deleted and should not be included\r",
+									"    let target = pm.response.json();\r",
+									"\r",
+									"    debugger;\r",
+									"    pm.expect(target.length).to.equal(1);\r",
+									"    pm.expect(target[0]._id).to.equal(pm.environment.get(\"user2_post2\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/feeds/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"feeds",
+								""
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
