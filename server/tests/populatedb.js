@@ -8,19 +8,19 @@ var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDB';
 database.connect(mongoURI)
     .then(async () => {
         try {
-            // // Generate mock images
-            // const images = [];
-            // for (let i = 0; i < 50; i++) {
-            //     const image = new models.Images({
-            //         hash: generateHash(),
-            //         url: faker.internet.url()
-            //     });
+            // Generate mock images
+            const images = [];
+            for (let i = 0; i < 50; i++) {
+                const image = new models.Images({
+                    hash: generateHash(),
+                    url: faker.internet.url()
+                });
 
-            //     //NOTE: save images to db when used
-            //     images.push(image);
-            // }
+                //NOTE: save images to db when used
+                images.push(image);
+            }
 
-            // console.log('Generated mock images.');
+            console.log('Generated mock images.');
 
             // Generate mock users
             const users = [];

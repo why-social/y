@@ -66,7 +66,7 @@ router.get("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async functi
 //#endregion
 
 //#region POST
-async function postRequest(req, res, next) {
+async function postRequest(req, res, next) {  
 	try{
 		if (!req.isAuth || !req.user) 
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
@@ -160,16 +160,16 @@ router.put("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (req
 				throw new ValidationError(errorMsg.CANNOT_CHANGE_OTHER_USERS_LIKES);
 		}
 
-		if (req.body.content?.length || req.body.images?.length) {
+		if (req.body.content?.length || req.files?.length) {
 
 			post.is_edited = true;
 			post.content = req.body.content;
 			post.likes = req.body.likes;
 
             if (req.files?.length > 0) {
-                updateImages(post, req.files);
+                await updateImages(post, req.files);
             } else {
-                updateImages(post, []);
+                await updateImages(post, []);
             }
             
 
