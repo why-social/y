@@ -1,11 +1,11 @@
 const express = require("express");
 const models = require("../db/database").mongoose.models;
 const authMiddleware = require('../middleware/auth');
-const { uploadFiles, saveFile } = require('../middleware/upload');
+const { uploadFiles } = require('../middleware/upload');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
 const { except } = require("../utils/utils");
-const { updateImageUsage, updateImages } = require("../utils/imageHandler");
+const { updateImages, removeUsage } = require("../utils/imageHandler");
 
 const router = express.Router();
 
@@ -84,10 +84,6 @@ async function postRequest(req, res, next) {
         if (req.files?.length > 0) {
             await updateImages(newPost, req.files);
         }
-            // req.files.forEach(async (file) => {
-            //     const image = await saveFile(file);
-            //     newPost.images.push(image.hash);
-            // });
 
         await newPost.save();
         res.status(201).json(newPost);
@@ -127,7 +123,7 @@ router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res, n
 //#endregion
 
 //#region PUT
-router.put("/api/v1/posts/:id", authMiddleware, async function (req, res, next) {
+router.put("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (req, res, next) {
 	try {
 		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
@@ -170,9 +166,14 @@ router.put("/api/v1/posts/:id", authMiddleware, async function (req, res, next) 
 			post.content = req.body.content;
 			post.likes = req.body.likes;
 
-			await post.save();
+            if (req.files?.length > 0) {
+                updateImages(post, req.files);
+            } else {
+                updateImages(post, []);
+            }
+            
 
-			//TODO update images
+			await post.save();
 
 			return res.status(200).json(post);
 		} else {
@@ -185,12 +186,12 @@ router.put("/api/v1/posts/:id", authMiddleware, async function (req, res, next) 
 //#endregion
 
 //#region PATCH
-router.patch("/api/v1/posts/:id", authMiddleware, async function (req, res, next) {
+router.patch("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (req, res, next) {
 	try{
 		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
-		if (req.body.content === undefined && req.body.images === undefined) // if not trying to edit only the content and/or images
+		if (req.body.content === undefined && req.files?.length === 0) // if not trying to edit only the content and/or images
 			throw new ValidationError(errorMsg.NO_CONTENT_FOR_EDITABLE_FIELDS);
 		
 
@@ -205,13 +206,12 @@ router.patch("/api/v1/posts/:id", authMiddleware, async function (req, res, next
 			post.content = req.body.content;
 			post.is_edited = true;
 		}
-		if (req.body.images !== undefined) {
-			post.images = req.body.images;
+		if (req.files?.length > 0) {
+			await updateImages(post, req.files);
 			post.is_edited = true;
 		}
 
 		await post.save();
-		// TODO: update imageCount
 
 		res.status(200).json(post);
 	} catch(err) {
@@ -237,9 +237,9 @@ router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res, nex
         post.is_deleted = true;
         post.content = null;
 
-        post.images.forEach(async (image) => {
-            await models.Images.findOneAndUpdate({hash: image}, {$inc: {usageCount: -1}});
-        });
+        for (var hash of post.images) {
+            await removeUsage(hash);
+        }
         post.images = null;
 
         await post.save({ validateBeforeSave: false });

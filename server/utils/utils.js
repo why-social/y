@@ -12,7 +12,7 @@ function removeFromArray(array, item) {
 	const index = array.indexOf(item);
     if (index == -1)
 		throw new NotFoundError('Item not in array');
-	post.likes.splice(index, 1);
+	array.splice(index, 1);
 }
 
 async function getCommentById(id, lean, next) {
