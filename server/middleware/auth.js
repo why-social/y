@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const jwtSecretKey = process.env.JWT_SECRET_KEY || "TEST SECRET KEY SHOULD BE CHANGED BEFORE PRODUCTION";
 
-// TODO throw an exception if required
 const authMiddleware = (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', ''); // Remove 'Bearer ' from token
 

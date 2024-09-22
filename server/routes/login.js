@@ -3,38 +3,9 @@ const router = express.Router();
 const mongoose = require("../db/database").mongoose;
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const { ValidationError, UnauthorizedError, NotFoundError, errorMsg } = require("../utils/errors");
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "TEST SECRET KEY SHOULD BE CHANGED BEFORE PRODUCTION";
-
-const errorMsg = {
-	REQUIRED_FIELDS: "All fields are required",
-	USER_NOT_FOUND: "User not found",
-	INCORRECT_PASSWORD: "Incorrect password",
-};
-
-class ValidationError extends Error {
-	constructor(message) {
-		super(message);
-		this.name = 'ValidationError';
-		this.statusCode = 400;
-	}
-}
-
-class UnauthorizedError extends Error {
-	constructor(message) {
-		super(message);
-		this.name = 'UnauthorizedError';
-		this.statusCode = 401;
-	}
-}
-
-class NotFoundError extends Error {
-	constructor(message) {
-		super(message);
-		this.name = 'NotFoundError';
-		this.statusCode = 404;
-	}
-}
 
 router.post("/api/v1/login", async (req, res, next) => {
 	try {
@@ -62,18 +33,5 @@ router.post("/api/v1/login", async (req, res, next) => {
 		next(err);
 	}
 });
-
-
-//#region Error handler
-router.use((err, req, res, next) => {
-	if (err instanceof ValidationError || err instanceof UnauthorizedError || err instanceof NotFoundError) {
-		return res.status(err.statusCode).json({ message: err.message });
-	}
-
-	console.error(err.stack);
-	res.status(500).json({message: "Server error"});
-});
-//#endregion
-
 
 module.exports = router;
