@@ -1,4 +1,4 @@
-image: node:20-alpine
+image: node:18
 
 # Cache modules in between jobs per-branch
 cache:
