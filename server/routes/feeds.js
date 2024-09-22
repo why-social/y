@@ -2,42 +2,43 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("../db/database").mongoose;
 const models = mongoose.models;
+const { UnauthorizedError, errorMsg } = require("../utils/errors");
 const authMiddleware = require("../middleware/auth");
 
 //#region GET
-router.get("/api/v1/feeds", authMiddleware,
-    async function (req, res) {
-        if (!req.body.isAuth) {
-            return res.status(401)
-                .json({ message: "Unauthorized" });
-        }
-
+router.get("/api/v1/feeds/", authMiddleware,
+    async function (req, res, next) {
         try {
+            if (!req.isAuth || !req.user) {
+                throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+            }
+
             let result = await models.User_follows_user
-                .find({ follower: req.body.user }, { follows: true })
-                .lean().exec();
+                .find({ follower: req.user.userId }, { follows: true })
+                .exec();
 
-            if (!result) {
-                return res.status(404)
-                    .json({ message: "Not found" });
-            }
+            let following = [];
+            result.forEach(entry => {
+                following.push(entry.follows);
+            });
 
-            let following = []// { author "id" }
+            if (following.length) {
+                result = await models.Posts.aggregate([{
+                    $match: {
+                        author: { $in: following },
+                        $or: [
+                            { is_deleted: { $exists: false } },
+                            { is_deleted: false }
+                        ]
+                    }
+                }]).exec();
 
-            await models.Posts.find({
-                $or: following,
-            })
-
-            return res.json(result);
-        } catch (error) {
-            if (error.name == 'CastError' ||
-                error.name == 'BSONError') {
-                return res.status(400)
-                    .json({ message: "Malformed authentication token" });
+                return res.json(result);
             } else {
-                return res.status(500)
-                    .json({ message: "Server error" });
+                return res.json([]);
             }
+        } catch (err) {
+            next(err);
         }
     });
 //#endregion
