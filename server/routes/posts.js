@@ -5,6 +5,7 @@ const { uploadFiles, saveFile } = require('../middleware/upload');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
 const { except } = require("../utils/utils");
+const { updateImageUsage, updateImages } = require("../utils/imageHandler");
 
 const router = express.Router();
 
@@ -80,11 +81,13 @@ async function postRequest(req, res, next) {
 			images: [],
 		});
 
-        if (req.files?.length > 0)
-            req.files.forEach(async (file) => {
-                const image = await saveFile(file);
-                newPost.images.push(image.hash);
-            });
+        if (req.files?.length > 0) {
+            await updateImages(newPost, req.files);
+        }
+            // req.files.forEach(async (file) => {
+            //     const image = await saveFile(file);
+            //     newPost.images.push(image.hash);
+            // });
 
         await newPost.save();
         res.status(201).json(newPost);
@@ -130,7 +133,7 @@ router.put("/api/v1/posts/:id", authMiddleware, async function (req, res, next) 
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		let post = await models.Posts.findById(req.params.id).exec();
-			if(!post) return postRequest(req, res);
+        if(!post) return postRequest(req, res);
 
 		if (post.is_deleted)
 			throw new ValidationError(errorMsg.CANNOT_EDIT_DELETED_COMMENT);
@@ -165,7 +168,6 @@ router.put("/api/v1/posts/:id", authMiddleware, async function (req, res, next) 
 
 			post.is_edited = true;
 			post.content = req.body.content;
-			post.images = req.body.images ? req.body.images : [];
 			post.likes = req.body.likes;
 
 			await post.save();
@@ -260,7 +262,6 @@ router.delete("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async fun
         const index = post.likes.indexOf(new ObjectId(req.params.user_id));
         if (index == -1)
 			throw new NotFoundError(errorMsg.POST_NOT_LIKED);
-        
         post.likes.splice(index, 1);
 
         await post.save();

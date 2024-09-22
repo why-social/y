@@ -71,7 +71,7 @@ router.delete("/api/v1/images", async function(req, res, next) {
 	try{
 		// Check if the user has admin privileges
 		if(req.headers["razvan_admin_privileges"] !== "awooga") 
-			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+			throw new UnauthorizedError(errorMsg.UNAUTHORIZED); // TODO: secret admin key?
 
 		// Delete all images
 		await mongoose.models["Images"].deleteMany({}).exec();
