@@ -29,6 +29,7 @@ test:
     MONGODB_URI: "mongodb://mongo:27017/whyTestDB"
   script:
     - cd server
+    - npm install
     - MJ_APIKEY_PUBLIC=$MJ_APIKEY_PUBLIC MJ_APIKEY_PRIVATE=$MJ_APIKEY_PRIVATE npm run ci-test
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_PIPELINE_SOURCE == "merge_request_event"
