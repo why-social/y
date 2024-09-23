@@ -1101,7 +1101,7 @@
 								"method": "POST",
 								"header": [],
 								"url": {
-									"raw": "{{host}}/api/v1/posts/{{user1_post1}}/likes/{{user2}}",
+									"raw": "{{host}}/api/v1/posts/{{user1_post1}}/likes",
 									"host": [
 										"{{host}}"
 									],
@@ -1110,8 +1110,7 @@
 										"v1",
 										"posts",
 										"{{user1_post1}}",
-										"likes",
-										"{{user2}}"
+										"likes"
 									]
 								}
 							},
@@ -1729,7 +1728,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/comments/{{comment1}}/likes/{{user2}}",
+							"raw": "{{host}}/api/v1/comments/{{comment1}}/likes",
 							"host": [
 								"{{host}}"
 							],
@@ -1738,15 +1737,14 @@
 								"v1",
 								"comments",
 								"{{comment1}}",
-								"likes",
-								"{{user2}}"
+								"likes"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "User likes a comment Copy",
+					"name": "User likes another comment",
 					"event": [
 						{
 							"listen": "test",
@@ -1775,7 +1773,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/comments/{{comment2}}/likes/{{user2}}",
+							"raw": "{{host}}/api/v1/comments/{{comment2}}/likes",
 							"host": [
 								"{{host}}"
 							],
@@ -1784,8 +1782,7 @@
 								"v1",
 								"comments",
 								"{{comment2}}",
-								"likes",
-								"{{user2}}"
+								"likes"
 							]
 						}
 					},
