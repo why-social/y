@@ -865,7 +865,7 @@
 								{
 									"key": "image",
 									"type": "file",
-									"src": "/C:/Users/Max/source/repos/group-01-web/server/tests/testImage.png"
+									"src": "./tests/testImage.png"
 								}
 							]
 						},
