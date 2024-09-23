@@ -5,26 +5,14 @@ const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middleware/auth");
 const { ValidationError, UnauthorizedError, NotFoundError, ConflictError, errorMsg } = require("../utils/errors");
 const { nameRegex, usernameRegex, emailRegex, passwordRegex } = require("../utils/customRegex");
+const { secrets } = require("../utils/utils");
 
-const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "TEST SECRET KEY SHOULD BE CHANGED BEFORE PRODUCTION";
+const JWT_SECRET_KEY = secrets.JWT_SECRET_KEY;
 
 /**
  * Fields that can be updated
  */
 const updatableFields = ['name', 'email', 'username', 'birthday', 'about_me', 'profile_picture'];
-
-/**
- * Check if the id(s) in the request are valid
- * @param {...String} args - Ids to check
- * @returns {Function} - Middleware function
- */
-function checkIdValidity(id) {
-	return (req, res, next) => {
-		if(!mongoose.Types.ObjectId.isValid(req.params[id]))
-			return next(new ValidationError(errorMsg.INVALID_USER_ID));
-		next();
-	}
-}
 
 //#region GET
 router.get("/api/v1/users/search", async (req, res, next) => {
@@ -190,6 +178,9 @@ router.post("/api/v1/users/followings/:following_id", authMiddleware, async (req
 		// Check if following exists
 		let following = await mongoose.models["Users"].findById(req.params.following_id).exec();
 		if(!following) throw new NotFoundError(errorMsg.FOLLOWING_NOT_FOUND);
+
+		// Check if user tries to follow themselves
+		if(user._id.toString() === req.params.following_id) throw new ValidationError(errorMsg.CANNOT_FOLLOW_YOURSELF);
 
 		// Check if user is already following
 		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: user._id.toString(), follows: req.params.following_id}).exec();

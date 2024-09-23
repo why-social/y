@@ -1,6 +1,12 @@
 const models = require("../db/database").mongoose.models;
 const { NotFoundError, errorMsg } = require("../utils/errors");
 
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "TEST SECRET KEY SHOULD BE CHANGED BEFORE PRODUCTION";
+const MJ_APIKEY_PUBLIC = process.env.MJ_APIKEY_PUBLIC;
+const MJ_APIKEY_PRIVATE = process.env.MJ_APIKEY_PRIVATE;
+
+const secrets = { JWT_SECRET_KEY, MJ_APIKEY_PUBLIC, MJ_APIKEY_PRIVATE };
+
 // Helper function to return the difference between two arrays
 function except(array, excludes) { // Adapted from https://stackoverflow.com/a/68575761
 	if (array == null) return excludes;
@@ -32,4 +38,4 @@ async function getCommentById(id, lean, next) {
 	}
 }
 
-module.exports = { except, removeFromArray, getCommentById };
+module.exports = { except, removeFromArray, getCommentById, secrets };
