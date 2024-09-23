@@ -5,7 +5,7 @@ const authMiddleware = require("../middleware/auth");
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
 const { except, getCommentById } = require("../utils/utils");
 const { updateImages, removeUsage } = require("../utils/imageHandler");
-const { uploadFiles } = require("../middleware/upload");
+const uploadMiddleware = require("../middleware/upload");
 
 //#region GET
 router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, next) {
@@ -131,7 +131,7 @@ async function postRequest(req, res, next) {
 	}
 }
 
-router.post("/api/v1/comments/", authMiddleware, uploadFiles, postRequest);
+router.post("/api/v1/comments/", authMiddleware, uploadMiddleware.multiple, postRequest);
 
 router.post("/api/v1/comments/:comment_id/likes", authMiddleware, async function (req, res, next) {
 	try{
@@ -216,7 +216,7 @@ async function putForId(req, res, next) {
 	}
 }
 
-router.put("/api/v1/comments/:id", authMiddleware, uploadFiles, putForId);
+router.put("/api/v1/comments/:id", authMiddleware, uploadMiddleware.multiple, putForId);
 //#endregion
 
 //#region PATCH
@@ -263,7 +263,7 @@ async function patchForId(req, res, next) {
 	}
 }
 
-router.patch("/api/v1/comments/:id", authMiddleware, uploadFiles, patchForId);
+router.patch("/api/v1/comments/:id", authMiddleware, uploadMiddleware.multiple, patchForId);
 //#endregion
 
 //#region DELETE

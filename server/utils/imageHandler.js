@@ -8,7 +8,6 @@ const { except, removeFromArray } = require("./utils");
  * Adds images to the given post and updates the file usage in the DB.
  * @param images Images list to update.
  * @param files List of new files
- * @returns Array of hashes in use after update
  */
 async function updateImages(images, files) {
     const prevHashes = images || [];
@@ -31,6 +30,17 @@ async function updateImages(images, files) {
         removeUsage(hash);
         removeFromArray(images, hash);
     });
+}
+
+async function changeImage(image, newFile) {
+    if (image) 
+        removeUsage(image);
+    const hash = await saveFile(newFile);
+    if (hash == image) 
+        return hash;
+
+    await addUsage(hash);
+    return hash;
 }
 
 async function addUsage(hash) {
@@ -67,4 +77,4 @@ async function saveFile(file) {
     return imageEntry.hash; // insert new entry into Images collection
 }
 
-module.exports = {updateImages, addUsage, removeUsage}
+module.exports = {updateImages, changeImage, addUsage, removeUsage}

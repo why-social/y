@@ -1,7 +1,7 @@
 const express = require("express");
 const models = require("../db/database").mongoose.models;
 const authMiddleware = require('../middleware/auth');
-const { uploadFiles } = require('../middleware/upload');
+const uploadMiddleware = require('../middleware/upload');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
 const { except } = require("../utils/utils");
@@ -104,7 +104,7 @@ async function postRequest(req, res, next) {
 	}
 }
 
-router.post("/api/v1/posts/", authMiddleware, uploadFiles, postRequest);
+router.post("/api/v1/posts/", authMiddleware, uploadMiddleware.multiple, postRequest);
 
 router.post("/api/v1/posts/:post_id/likes/", authMiddleware, async function (req, res, next) {
 	try {
@@ -126,7 +126,7 @@ router.post("/api/v1/posts/:post_id/likes/", authMiddleware, async function (req
 //#endregion
 
 //#region PUT
-router.put("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (req, res, next) {
+router.put("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, async function (req, res, next) {
 	try {
 		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
@@ -189,7 +189,7 @@ router.put("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (req
 //#endregion
 
 //#region PATCH
-router.patch("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (req, res, next) {
+router.patch("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, async function (req, res, next) {
 	try {
 		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);

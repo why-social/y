@@ -105,10 +105,12 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 - GET /api/v1/users/:id/followers
 - GET /api/v1/users/:id/followings
 - POST /api/v1/users
+- POST /api/v1/users/:id/images
 - POST /api/v1/users/followings/:following_id
 - PATCH /api/v1/users/:id
 - DELETE /api/v1/users
 - DELETE /api/v1/users/:id
+- DELETE /api/v1/users/:id/images
 - DELETE /api/v1/users/followings/:following_id
 
 #### Posts

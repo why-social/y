@@ -6,6 +6,8 @@ const authMiddleware = require("../middleware/auth");
 const { ValidationError, UnauthorizedError, NotFoundError, ConflictError, errorMsg } = require("../utils/errors");
 const { nameRegex, usernameRegex, emailRegex, passwordRegex } = require("../utils/customRegex");
 const { secrets } = require("../utils/utils");
+const uploadMiddleware = require("../middleware/upload");
+const imageHandler = require("../utils/imageHandler");
 
 const JWT_SECRET_KEY = secrets.JWT_SECRET_KEY;
 
@@ -166,6 +168,26 @@ router.post("/api/v1/users", async (req, res, next) => {
 	}
 });
 
+router.post("/api/v1/users/:id/images", authMiddleware, uploadMiddleware.single, async (req, res, next) => {
+	try {
+		// Check if the user is authenticated
+		if(!req.isAuth || req.user?.userId != req.params.id) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+		// Check if user exists by using their token
+		let user = await mongoose.models["Users"].findById(req.user?.userId).exec();
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
+		if(!req.file) throw new ValidationError("No image to upload");
+
+		user.profile_picture = await imageHandler.changeImage(user.profile_picture, req.file);
+		await user.save();
+
+		return res.status(201).json({id: user._id, pfp: user.profile_picture});
+	} catch (err) {
+		next(err);
+	}
+});
+
 router.post("/api/v1/users/followings/:following_id", authMiddleware, async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
@@ -256,6 +278,25 @@ router.delete("/api/v1/users", async (req, res, next) => { // WE DO NOT ENDORSE 
 		await mongoose.models["Users"].deleteMany({}).exec();
 
 		res.status(200).json({message: "All users deleted"});
+	} catch (err) {
+		next(err);
+	}
+});
+
+router.delete("/api/v1/users/:id/images", authMiddleware, async (req, res, next) => {
+	try {
+		// Check if the user is authenticated
+		if(!req.isAuth || req.user?.userId != req.params.id) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+		// Check if user exists by using their token
+		let user = await mongoose.models["Users"].findById(req.user?.userId).exec();
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
+		await imageHandler.removeUsage(user.profile_picture);
+		user.profile_picture = null;
+		await user.save();
+
+		return res.status(200).json({message: 'Deleted'});
 	} catch (err) {
 		next(err);
 	}
