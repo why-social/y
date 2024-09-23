@@ -39,7 +39,7 @@ async function addUsage(hash) {
 
 async function removeUsage(hash) {
     const image = await models.Images.findOneAndUpdate({hash : hash}, {$inc: {usageCount: -1}}, {new: true});
-    if (image.usageCount <= 0) {
+    if (image && image?.usageCount <= 0) {
         fs.rmSync(path.join(appRoot, "/uploads/" + image.hash), { recursive: true, force: true }); // delete the directory
         await image.deleteOne().exec(); // delete the DB entry
     }

@@ -277,7 +277,6 @@ async function deleteForId(req, res, next) {
 		const target = await models.Comments.findById(req.params.id);
 		
 		if (target) {
-			//TODO remove images
 			target.is_deleted = true;
 			target.content = null;
 			for (var hash of target.images) {
