@@ -82,7 +82,7 @@ async function postRequest(req, res, next) {
 		});
 
 		if (req.files?.length > 0) {
-			await updateImages(newPost, req.files);
+			await updateImages(newPost.images, req.files);
 		}
 
 		await newPost.save();
@@ -170,9 +170,9 @@ router.put("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (req
 			post.likes = req.body.likes;
 
 			if (req.files?.length > 0) {
-				await updateImages(post, req.files);
+				await updateImages(post.images, req.files);
 			} else {
-				await updateImages(post, []);
+				await updateImages(post.images, []);
 			}
 
 
@@ -210,7 +210,7 @@ router.patch("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (r
 			post.is_edited = true;
 		}
 		if (req.files?.length > 0) {
-			await updateImages(post, req.files);
+			await updateImages(post.images, req.files);
 			post.is_edited = true;
 		}
 

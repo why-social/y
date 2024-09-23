@@ -108,7 +108,7 @@ async function postRequest(req, res, next) {
 		});
 		
 		if (req.files?.length > 0) {
-			await updateImages(comment, req.files);
+			await updateImages(comment.images, req.files);
 		}
 
 		await comment.save();
@@ -200,9 +200,9 @@ async function putForId(req, res, next) {
 			comment.likes = req.body.likes;
 
 			if (req.files?.length > 0) {
-				await updateImages(comment, req.files);
+				await updateImages(comment.images, req.files);
 			} else {
-				await updateImages(comment, []);
+				await updateImages(comment.images, []);
 			}
 
 			await comment.save();
@@ -252,7 +252,7 @@ async function patchForId(req, res, next) {
 		}
 		
 		if (req.files?.length) {
-			await updateImages(comment, req.files);
+			await updateImages(comment.images, req.files);
 			comment.is_edited = true;
 		}
 		

@@ -6,12 +6,12 @@ const { except, removeFromArray } = require("./utils");
 
 /**
  * Adds images to the given post and updates the file usage in the DB.
- * @param item Post/comment to update. Must have an 'images' field!
+ * @param images Images list to update.
  * @param files List of new files
  * @returns Array of hashes in use after update
  */
-async function updateImages(item, files) {
-    const prevHashes = item.images || [];
+async function updateImages(images, files) {
+    const prevHashes = images || [];
     var newHashes = [];
 
     for (const file of files) {        
@@ -24,12 +24,12 @@ async function updateImages(item, files) {
 
     toAdd.forEach(hash => {
         addUsage(hash);
-        item.images.push(hash);
+        images.push(hash);
     });
 
     toRemove.forEach(hash => {
         removeUsage(hash);
-        removeFromArray(item.images, hash);
+        removeFromArray(images, hash);
     });
 }
 
