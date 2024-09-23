@@ -24,7 +24,7 @@ const upload = multer({
   }
 });
 
-const uploadFiles = (req, res, next) => {
+const multiple = (req, res, next) => {
 	// Handles the file upload and writes it to memory for further processing
     const multipleUpload = upload.array('images', maxImages);
 
@@ -38,4 +38,18 @@ const uploadFiles = (req, res, next) => {
     })
 }
 
-module.exports = { uploadFiles }
+const single = (req, res, next) => {
+	// Handles the file upload and writes it to memory for further processing
+    const singleUpload = upload.single('image');
+
+    singleUpload(req, res, function (err) {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({message: 'Invalid file(s)'});
+        } else if (err) {
+            return res.status(500).json({message: 'Error while uploading files'});
+        }
+        next();
+    })
+}
+
+module.exports = { single, multiple }

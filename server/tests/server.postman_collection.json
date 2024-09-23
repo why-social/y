@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "56cf4e23-a2ee-4970-a3f1-ecf082028cc5",
+		"_postman_id": "f3435a91-6135-4680-886a-f8ec202bf888",
 		"name": "server",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "38379553"
+		"_exporter_id": "38093461"
 	},
 	"item": [
 		{
@@ -253,6 +253,16 @@
 								"type": "text/javascript",
 								"packages": {}
 							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"username2\", \"rizzvand2\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
 					],
 					"request": {
@@ -371,7 +381,7 @@
 					"response": []
 				},
 				{
-					"name": "get followers",
+					"name": "get user1's followings",
 					"event": [
 						{
 							"listen": "test",
@@ -404,6 +414,45 @@
 								"users",
 								"{{user1}}",
 								"followings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get user2's followers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Your test name\", function () {",
+									"    var jsonData = pm.response.json()[0];",
+									"    var razvan1ID = pm.environment.get(\"user1\");",
+									"    var razvan2ID = pm.environment.get(\"user2\");",
+									"    pm.expect(jsonData.follower).to.eql(razvan1ID);",
+									"    pm.expect(jsonData.follows).to.eql(razvan2ID);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{user2}}/followers",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{user2}}",
+								"followers"
 							]
 						}
 					},
@@ -685,6 +734,197 @@
 								"v1",
 								"users",
 								"{{user3}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search by username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User found\", function () {\r",
+									"    pm.expect(pm.response.json().username).to.equal(pm.environment.get(\"username1\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/users/search?username={{username1}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"search"
+							],
+							"query": [
+								{
+									"key": "username",
+									"value": "{{username1}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"All users found\", function () {\r",
+									"    pm.expect(pm.response.json()).to.have.length(2);\r",
+									"\r",
+									"    pm.expect(pm.response.json()).to.contain(pm.environment.get(\"username1\"));\r",
+									"    pm.expect(pm.response.json()).to.contain(pm.environment.get(\"username2\"));\r",
+									"})\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add pfp to user1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "./tests/testImage.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{user1}}/images",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{user1}}",
+								"images"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete pfp",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{user1}}/images",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{user1}}",
+								"images"
 							]
 						}
 					},
@@ -1101,7 +1341,7 @@
 								"method": "POST",
 								"header": [],
 								"url": {
-									"raw": "{{host}}/api/v1/posts/{{user1_post1}}/likes/{{user2}}",
+									"raw": "{{host}}/api/v1/posts/{{user1_post1}}/likes",
 									"host": [
 										"{{host}}"
 									],
@@ -1110,8 +1350,7 @@
 										"v1",
 										"posts",
 										"{{user1_post1}}",
-										"likes",
-										"{{user2}}"
+										"likes"
 									]
 								}
 							},
@@ -1729,7 +1968,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/comments/{{comment1}}/likes/{{user2}}",
+							"raw": "{{host}}/api/v1/comments/{{comment1}}/likes",
 							"host": [
 								"{{host}}"
 							],
@@ -1738,15 +1977,14 @@
 								"v1",
 								"comments",
 								"{{comment1}}",
-								"likes",
-								"{{user2}}"
+								"likes"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "User likes a comment Copy",
+					"name": "User likes another comment",
 					"event": [
 						{
 							"listen": "test",
@@ -1775,7 +2013,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/comments/{{comment2}}/likes/{{user2}}",
+							"raw": "{{host}}/api/v1/comments/{{comment2}}/likes",
 							"host": [
 								"{{host}}"
 							],
@@ -1784,8 +2022,7 @@
 								"v1",
 								"comments",
 								"{{comment2}}",
-								"likes",
-								"{{user2}}"
+								"likes"
 							]
 						}
 					},
@@ -3002,449 +3239,6 @@
 					]
 				},
 				{
-					"name": "Comments",
-					"item": [
-						{
-							"name": "Create comments with an image",
-							"item": [
-								{
-									"name": "Create parent post",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"if(pm.response.code == 201){\r",
-													"    pm.environment.set(\"parent\", pm.response.json()._id);\r",
-													"}\r",
-													"\r",
-													"pm.test(\"Status code is 201\", function () {\r",
-													"    pm.response.to.have.status(201);\r",
-													"});"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "POST",
-										"header": [],
-										"body": {
-											"mode": "formdata",
-											"formdata": [
-												{
-													"key": "content",
-													"value": "I am parent comment",
-													"type": "text"
-												}
-											]
-										},
-										"url": {
-											"raw": "{{host}}/api/v1/posts/",
-											"host": [
-												"{{host}}"
-											],
-											"path": [
-												"api",
-												"v1",
-												"posts",
-												""
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "User 1 Creates a comment with an image",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"if(pm.response.code == 201){\r",
-													"    pm.environment.set(\"image1\", pm.response.json().images[0]);\r",
-													"    pm.environment.set(\"comment1\", pm.response.json()._id);\r",
-													"}\r",
-													"\r",
-													"pm.test(\"Status code is 201\", function () {\r",
-													"    pm.response.to.have.status(201);\r",
-													"});"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"auth": {
-											"type": "bearer",
-											"bearer": [
-												{
-													"key": "token",
-													"value": "{{token1}}",
-													"type": "string"
-												}
-											]
-										},
-										"method": "POST",
-										"header": [],
-										"body": {
-											"mode": "formdata",
-											"formdata": [
-												{
-													"key": "images",
-													"type": "file",
-													"src": "./tests/testImage2.png"
-												},
-												{
-													"key": "content",
-													"value": "WHY?!?!",
-													"type": "text"
-												},
-												{
-													"key": "parent_id",
-													"value": "{{parent}}",
-													"type": "text"
-												},
-												{
-													"key": "parent_is_post",
-													"value": "true",
-													"type": "text"
-												}
-											]
-										},
-										"url": {
-											"raw": "{{host}}/api/v1/comments/",
-											"host": [
-												"{{host}}"
-											],
-											"path": [
-												"api",
-												"v1",
-												"comments",
-												""
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "User 2 Creates a comment with the same image",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"if(pm.response.code == 201){\r",
-													"    pm.environment.set(\"comment2\", pm.response.json()._id);\r",
-													"}\r",
-													"\r",
-													"pm.test(\"Status code is 201\", function () {\r",
-													"    pm.response.to.have.status(201);\r",
-													"});\r",
-													"\r",
-													"pm.test(\"Hashing works\", function () {\r",
-													"    pm.expect(pm.response.json().images[0]).to.equal(pm.environment.get(\"image1\"));\r",
-													"});"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"auth": {
-											"type": "bearer",
-											"bearer": [
-												{
-													"key": "token",
-													"value": "{{token2}}",
-													"type": "string"
-												}
-											]
-										},
-										"method": "POST",
-										"header": [],
-										"body": {
-											"mode": "formdata",
-											"formdata": [
-												{
-													"key": "images",
-													"type": "file",
-													"src": "./tests/testImage2.png"
-												},
-												{
-													"key": "content",
-													"value": "BECAUSE YES!!",
-													"type": "text"
-												},
-												{
-													"key": "parent_id",
-													"value": "{{comment1}}",
-													"type": "text"
-												},
-												{
-													"key": "parent_is_post",
-													"value": "false",
-													"type": "text"
-												}
-											]
-										},
-										"url": {
-											"raw": "{{host}}/api/v1/comments/",
-											"host": [
-												"{{host}}"
-											],
-											"path": [
-												"api",
-												"v1",
-												"comments",
-												""
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Add image to comment",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test(\"Status code is 200\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});\r",
-													"\r",
-													"pm.test(\"2 images\", function () {\r",
-													"    pm.expect(pm.response.json().images).to.have.length(2);\r",
-													"});"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "PATCH",
-										"header": [],
-										"body": {
-											"mode": "formdata",
-											"formdata": [
-												{
-													"key": "images",
-													"type": "file",
-													"src": [
-														"./tests/testImage.png",
-														"./tests/testImage2.png"
-													]
-												}
-											]
-										},
-										"url": {
-											"raw": "{{host}}/api/v1/comments/{{comment1}}",
-											"host": [
-												"{{host}}"
-											],
-											"path": [
-												"api",
-												"v1",
-												"comments",
-												"{{comment1}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Remove images from comment",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test(\"Status code is 200\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});\r",
-													"\r",
-													"pm.test(\"Images deleted\", function () {\r",
-													"    pm.expect(pm.response.json().images).to.have.length(0);\r",
-													"});"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"method": "PUT",
-										"header": [],
-										"body": {
-											"mode": "formdata",
-											"formdata": [
-												{
-													"key": "images",
-													"type": "file",
-													"src": []
-												},
-												{
-													"key": "is_edited",
-													"value": "true",
-													"type": "text"
-												},
-												{
-													"key": "content",
-													"value": "boo",
-													"type": "text"
-												}
-											]
-										},
-										"url": {
-											"raw": "{{host}}/api/v1/comments/{{comment1}}",
-											"host": [
-												"{{host}}"
-											],
-											"path": [
-												"api",
-												"v1",
-												"comments",
-												"{{comment1}}"
-											]
-										}
-									},
-									"response": []
-								}
-							],
-							"auth": {
-								"type": "bearer",
-								"bearer": [
-									{
-										"key": "token",
-										"value": "{{token1}}",
-										"type": "string"
-									}
-								]
-							},
-							"event": [
-								{
-									"listen": "prerequest",
-									"script": {
-										"type": "text/javascript",
-										"packages": {},
-										"exec": [
-											""
-										]
-									}
-								},
-								{
-									"listen": "test",
-									"script": {
-										"type": "text/javascript",
-										"packages": {},
-										"exec": [
-											""
-										]
-									}
-								}
-							]
-						},
-						{
-							"name": "Delete the image",
-							"item": [
-								{
-									"name": "Delete the comment",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test(\"Status code is 200\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"auth": {
-											"type": "bearer",
-											"bearer": [
-												{
-													"key": "token",
-													"value": "{{token1}}",
-													"type": "string"
-												}
-											]
-										},
-										"method": "DELETE",
-										"header": [],
-										"url": {
-											"raw": "{{host}}/api/v1/comments/{{comment1}}",
-											"host": [
-												"{{host}}"
-											],
-											"path": [
-												"api",
-												"v1",
-												"comments",
-												"{{comment1}}"
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Delete the comment using the image",
-									"event": [
-										{
-											"listen": "test",
-											"script": {
-												"exec": [
-													"pm.test(\"Status code is 200\", function () {\r",
-													"    pm.response.to.have.status(200);\r",
-													"});"
-												],
-												"type": "text/javascript",
-												"packages": {}
-											}
-										}
-									],
-									"request": {
-										"auth": {
-											"type": "bearer",
-											"bearer": [
-												{
-													"key": "token",
-													"value": "{{token2}}",
-													"type": "string"
-												}
-											]
-										},
-										"method": "DELETE",
-										"header": [],
-										"url": {
-											"raw": "{{host}}/api/v1/comments/{{comment2}}",
-											"host": [
-												"{{host}}"
-											],
-											"path": [
-												"api",
-												"v1",
-												"comments",
-												"{{comment2}}"
-											]
-										}
-									},
-									"response": []
-								}
-							]
-						}
-					]
-				},
-				{
 					"name": "Editing posts",
 					"item": [
 						{
@@ -4000,6 +3794,525 @@
 							}
 						}
 					]
+				},
+				{
+					"name": "Comments",
+					"item": [
+						{
+							"name": "Create comments with an image",
+							"item": [
+								{
+									"name": "Create parent post",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if(pm.response.code == 201){\r",
+													"    pm.environment.set(\"parent\", pm.response.json()._id);\r",
+													"}\r",
+													"\r",
+													"pm.test(\"Status code is 201\", function () {\r",
+													"    pm.response.to.have.status(201);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "content",
+													"value": "I am parent comment",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{host}}/api/v1/posts/",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"posts",
+												""
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "User 1 Creates a comment with an image",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if(pm.response.code == 201){\r",
+													"    pm.environment.set(\"image1\", pm.response.json().images[0]);\r",
+													"    pm.environment.set(\"comment1\", pm.response.json()._id);\r",
+													"}\r",
+													"\r",
+													"pm.test(\"Status code is 201\", function () {\r",
+													"    pm.response.to.have.status(201);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token1}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "images",
+													"type": "file",
+													"src": "./tests/testImage2.png"
+												},
+												{
+													"key": "content",
+													"value": "WHY?!?!",
+													"type": "text"
+												},
+												{
+													"key": "parent_id",
+													"value": "{{parent}}",
+													"type": "text"
+												},
+												{
+													"key": "parent_is_post",
+													"value": "true",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{host}}/api/v1/comments/",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"comments",
+												""
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "User 2 Creates a comment",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if(pm.response.code == 201){\r",
+													"    pm.environment.set(\"comment2\", pm.response.json()._id);\r",
+													"}\r",
+													"\r",
+													"pm.test(\"Status code is 201\", function () {\r",
+													"    pm.response.to.have.status(201);\r",
+													"});\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token2}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "images",
+													"type": "file",
+													"src": "./tests/testImage2.png"
+												},
+												{
+													"key": "content",
+													"value": "BECAUSE YES!!",
+													"type": "text"
+												},
+												{
+													"key": "parent_id",
+													"value": "{{comment1}}",
+													"type": "text"
+												},
+												{
+													"key": "parent_is_post",
+													"value": "false",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{host}}/api/v1/comments/",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"comments",
+												""
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Add image to comment",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"2 images\", function () {\r",
+													"    pm.expect(pm.response.json().images).to.have.length(2);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "PATCH",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "images",
+													"type": "file",
+													"src": [
+														"./tests/testImage.png",
+														"./tests/testImage2.png"
+													]
+												}
+											]
+										},
+										"url": {
+											"raw": "{{host}}/api/v1/comments/{{comment1}}",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"comments",
+												"{{comment1}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Remove images from comment",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Images deleted\", function () {\r",
+													"    pm.expect(pm.response.json().images).to.have.length(0);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "images",
+													"type": "file",
+													"src": []
+												},
+												{
+													"key": "is_edited",
+													"value": "true",
+													"type": "text"
+												},
+												{
+													"key": "content",
+													"value": "boo",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{host}}/api/v1/comments/{{comment1}}",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"comments",
+												"{{comment1}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{token1}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Cleanup",
+							"item": [
+								{
+									"name": "Force-delete all images (admin)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "razvan_admin_privileges",
+												"value": "awooga",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{host}}/api/v1/images",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"images"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Images were deleted",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"No images\", function () {\r",
+													"    pm.expect(pm.response.json()).to.have.length(0);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{host}}/api/v1/images",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"images"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete comment 1",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token1}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{host}}/api/v1/comments/{{comment1}}",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"comments",
+												"{{comment1}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete comment 2",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"    pm.response.to.have.status(200);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{token2}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{host}}/api/v1/comments/{{comment2}}",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"api",
+												"v1",
+												"comments",
+												"{{comment2}}"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
 				}
 			]
 		},
@@ -4305,6 +4618,93 @@
 									"key": "page",
 									"value": "-1"
 								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cleanup",
+			"item": [
+				{
+					"name": "Force-delete all users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "razvan_admin_privileges",
+								"value": "awooga",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"No users left\", function () {\r",
+									"    pm.expect(pm.response.json()).to.be.an('array').that.is.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "razvan_admin_privileges",
+								"value": "awooga",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
 							]
 						}
 					},

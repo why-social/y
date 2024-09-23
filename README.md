@@ -81,6 +81,60 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 
 ![ER Diagram](./images/er_diagram.png)
 
+## Backend (MS1)
+### Endpoints
+#### Feed
+- GET /api/v1/feeds/
+
+#### Password restoration
+- POST /api/v1/restorePassword
+
+#### Login
+- POST /api/v1/login
+
+#### Images
+- GET /api/v1/images
+- GET /api/v1/images/:hash
+- DELETE /api/v1/images/:hash
+- DELETE /api/v1/images
+
+#### Users
+- GET /api/v1/users/search
+- GET /api/v1/users
+- GET /api/v1/users/:id
+- GET /api/v1/users/:id/followers
+- GET /api/v1/users/:id/followings
+- POST /api/v1/users
+- POST /api/v1/users/:id/images
+- POST /api/v1/users/followings/:following_id
+- PATCH /api/v1/users/:id
+- DELETE /api/v1/users
+- DELETE /api/v1/users/:id
+- DELETE /api/v1/users/:id/images
+- DELETE /api/v1/users/followings/:following_id
+
+#### Posts
+- GET /api/v1/posts/:id
+- GET /api/v1/posts/users/:id
+- GET /api/v1/posts/:post_id/likes/:user_id
+- POST /api/v1/posts/
+- POST /api/v1/posts/:post_id/likes/
+- PUT /api/v1/posts/:id
+- PATCH /api/v1/posts/:id
+- DELETE /api/v1/posts/:id
+- DELETE /api/v1/posts/:post_id/likes/:user_id
+
+#### Comments
+- GET /api/v1/comments/:id
+- GET /api/v1/comments/users/:id
+- GET /api/v1/comments/:comment_id/likes/
+- POST /api/v1/comments
+- POST /api/v1/comments/:comment_id/likes
+- PATCH /api/v1/comments/:id
+- PUT /api/v1/comments/:id
+- DELETE /api/v1/comments/:id
+- DELETE /api/v1/comments/:comment_id/likes/:user_id
+
 ## Teaser (MS3)
 
 ![Teaser](./images/teaser.png)

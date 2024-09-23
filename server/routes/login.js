@@ -4,8 +4,9 @@ const mongoose = require("../db/database").mongoose;
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { ValidationError, UnauthorizedError, NotFoundError, errorMsg } = require("../utils/errors");
+const { secrets } = require("../utils/utils"); 
 
-const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "TEST SECRET KEY SHOULD BE CHANGED BEFORE PRODUCTION";
+const JWT_SECRET_KEY = secrets.JWT_SECRET_KEY;
 
 router.post("/api/v1/login", async (req, res, next) => {
 	try {

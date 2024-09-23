@@ -5,26 +5,16 @@ const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middleware/auth");
 const { ValidationError, UnauthorizedError, NotFoundError, ConflictError, errorMsg } = require("../utils/errors");
 const { nameRegex, usernameRegex, emailRegex, passwordRegex } = require("../utils/customRegex");
+const { secrets } = require("../utils/utils");
+const uploadMiddleware = require("../middleware/upload");
+const imageHandler = require("../utils/imageHandler");
 
-const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "TEST SECRET KEY SHOULD BE CHANGED BEFORE PRODUCTION";
+const JWT_SECRET_KEY = secrets.JWT_SECRET_KEY;
 
 /**
  * Fields that can be updated
  */
 const updatableFields = ['name', 'email', 'username', 'birthday', 'about_me', 'profile_picture'];
-
-/**
- * Check if the id(s) in the request are valid
- * @param {...String} args - Ids to check
- * @returns {Function} - Middleware function
- */
-function checkIdValidity(id) {
-	return (req, res, next) => {
-		if(!mongoose.Types.ObjectId.isValid(req.params[id]))
-			return next(new ValidationError(errorMsg.INVALID_USER_ID));
-		next();
-	}
-}
 
 //#region GET
 router.get("/api/v1/users/search", async (req, res, next) => {
@@ -178,6 +168,26 @@ router.post("/api/v1/users", async (req, res, next) => {
 	}
 });
 
+router.post("/api/v1/users/:id/images", authMiddleware, uploadMiddleware.single, async (req, res, next) => {
+	try {
+		// Check if the user is authenticated
+		if(!req.isAuth || req.user?.userId != req.params.id) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+		// Check if user exists by using their token
+		let user = await mongoose.models["Users"].findById(req.user?.userId).exec();
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
+		if(!req.file) throw new ValidationError("No image to upload");
+
+		user.profile_picture = await imageHandler.changeImage(user.profile_picture, req.file);
+		await user.save();
+
+		return res.status(201).json({id: user._id, pfp: user.profile_picture});
+	} catch (err) {
+		next(err);
+	}
+});
+
 router.post("/api/v1/users/followings/:following_id", authMiddleware, async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
@@ -190,6 +200,9 @@ router.post("/api/v1/users/followings/:following_id", authMiddleware, async (req
 		// Check if following exists
 		let following = await mongoose.models["Users"].findById(req.params.following_id).exec();
 		if(!following) throw new NotFoundError(errorMsg.FOLLOWING_NOT_FOUND);
+
+		// Check if user tries to follow themselves
+		if(user._id.toString() === req.params.following_id) throw new ValidationError(errorMsg.CANNOT_FOLLOW_YOURSELF);
 
 		// Check if user is already following
 		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: user._id.toString(), follows: req.params.following_id}).exec();
@@ -265,6 +278,25 @@ router.delete("/api/v1/users", async (req, res, next) => { // WE DO NOT ENDORSE 
 		await mongoose.models["Users"].deleteMany({}).exec();
 
 		res.status(200).json({message: "All users deleted"});
+	} catch (err) {
+		next(err);
+	}
+});
+
+router.delete("/api/v1/users/:id/images", authMiddleware, async (req, res, next) => {
+	try {
+		// Check if the user is authenticated
+		if(!req.isAuth || req.user?.userId != req.params.id) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+		// Check if user exists by using their token
+		let user = await mongoose.models["Users"].findById(req.user?.userId).exec();
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
+		await imageHandler.removeUsage(user.profile_picture);
+		user.profile_picture = null;
+		await user.save();
+
+		return res.status(200).json({message: 'Deleted'});
 	} catch (err) {
 		next(err);
 	}

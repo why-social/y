@@ -4,11 +4,9 @@ const mongoose = require("../db/database").mongoose;
 const jwt = require("jsonwebtoken");
 const https = require('https');
 const { AppError, ValidationError, NotFoundError, errorMsg } = require("../utils/errors");
+const { secrets } = require("../utils/utils");
 
-const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY || "TEST SECRET KEY SHOULD BE CHANGED BEFORE PRODUCTION";
-
-const MJ_APIKEY_PUBLIC = process.env.MJ_APIKEY_PUBLIC;
-const MJ_APIKEY_PRIVATE = process.env.MJ_APIKEY_PRIVATE;
+const { JWT_SECRET_KEY, MJ_APIKEY_PUBLIC, MJ_APIKEY_PRIVATE } = secrets;
 
 
 async function sendEmail(email, name, token){

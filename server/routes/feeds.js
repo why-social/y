@@ -79,8 +79,6 @@ router.get("/api/v1/feeds/", authMiddleware,
                         };
                     }
 
-                    console.log(result);
-
                     return res.json(result);
                 } else {
                     return res.json({

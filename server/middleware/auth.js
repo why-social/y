@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
-const jwtSecretKey = process.env.JWT_SECRET_KEY || "TEST SECRET KEY SHOULD BE CHANGED BEFORE PRODUCTION";
+const { secrets } = require('../utils/utils');
+
+const JWT_SECRET_KEY = secrets.JWT_SECRET_KEY;
 
 const authMiddleware = (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', ''); // Remove 'Bearer ' from token
@@ -11,7 +13,7 @@ const authMiddleware = (req, res, next) => {
 	}
 
     try { // jwt.verify will throw an error if token is invalid
-        const decoded = jwt.verify(token, jwtSecretKey); // Verify token
+        const decoded = jwt.verify(token, JWT_SECRET_KEY); // Verify token
         req.user = decoded; // If token is valid, set user to decoded (user id)
 		req.isAuth = true;
     } catch (error) {

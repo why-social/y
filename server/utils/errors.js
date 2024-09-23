@@ -73,6 +73,7 @@ const errorMsg = {
 	CANNOT_EDIT_DELETED_COMMENT: "Cannot edit a deleted comment",
 	DELETE_COMMENTS_ONLY: "Comments can only be deleted through DELETE requests",
 	EDITED_POSTS_NEED_IS_EDITED_TRUE: "Edited posts need to have is_edited = true",
+	CANNOT_FOLLOW_YOURSELF: "Cannot follow yourself",
 	CANNOT_CHANGE_AUTHOR: "Cannot change author",
 	CANNOT_CHANGE_TIMESTAMP: "Cannot change timestamp",
 	CANNOT_CHANGE_PARENT_ID: "Cannot change parent id",

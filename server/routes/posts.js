@@ -1,7 +1,7 @@
 const express = require("express");
 const models = require("../db/database").mongoose.models;
 const authMiddleware = require('../middleware/auth');
-const { uploadFiles } = require('../middleware/upload');
+const uploadMiddleware = require('../middleware/upload');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
 const { except } = require("../utils/utils");
@@ -12,9 +12,9 @@ const router = express.Router();
 //#region GET
 // Returns a post with id :id
 router.get("/api/v1/posts/:id", async function (req, res, next) {
-	try{
+	try {
 		const post = await models.Posts.findById(req.params.id).populate('comments').lean().exec();
-		if(!post)
+		if (!post)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
 
 		post._links = {
@@ -30,106 +30,109 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 		}
 
 		res.status(200).json(post);
-	} catch(err) {
+	} catch (err) {
 		next(err);
 	};
 });
 
 // Returns all posts authored by the user with id :id
 router.get("/api/v1/posts/users/:id", async function (req, res, next) {
-    try {
-        const posts = await models.Posts.find({ author: req.params.id }).populate('comments').exec();
-        if (!posts || posts.length == 0)
-			throw new NotFoundError(errorMsg.POST_NOT_FOUND);    
+	try {
+		const posts = await models.Posts.find({ author: req.params.id }).populate('comments').exec();
+		if (!posts || posts.length == 0)
+			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
 
-        res.status(200).json(posts);
-    } catch (err) {
-        next(err);
-    }
+		res.status(200).json(posts);
+	} catch (err) {
+		next(err);
+	}
 });
 
 // returns a boolean representing whether or not a user having :user_id liked a post having :post_id.   
 router.get("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async function (req, res, next) {
-	try{
+	try {
 		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		const post = await models.Posts
-			.findOne({ _id: req.params.post_id, likes: { $in: [req.params.user_id] }})
+			.findOne({ _id: req.params.post_id, likes: { $in: [req.params.user_id] } })
 			.exec();
-		
+
 		res.status(200).json({ liked: !!post });
-	} catch(err) {
+	} catch (err) {
 		next(err);
 	}
 });
 //#endregion
 
 //#region POST
-async function postRequest(req, res, next) {  
-	try{
-		if (!req.isAuth || !req.user) 
+async function postRequest(req, res, next) {
+	try {
+		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		const newPost = new models.Posts({
 			_id: req.params.id, // if called from PUT, it will be specified
 			author: req.user.userId,
-            is_edited: false,
+			is_edited: false,
 			content: req.body.content,
 			likes: [],
 			comments: [],
 			images: [],
 		});
 
-        if (req.files?.length > 0) {
-            await updateImages(newPost, req.files);
-        }
+		if (req.files?.length > 0) {
+			await updateImages(newPost.images, req.files);
+		}
 
-        await newPost.save();
-        res.status(201).json(newPost);
-    }
+		await newPost.save();
+		res.status(201).json(newPost);
+	}
 
-    catch (error) {
-        if (error.name === 'ValidationError') {
-            res.status(400).json({ message: error.message });
-        }
-        else if (error.name === 'CastError') {
-            // invalid ObjectId
-            res.status(400).json({ message: 'Invalid ObjectId: ' + error.message });
-        }
-        else {
-            console.error(error);
-            res.status(500).json({ message: error.message });
-        }
-    }
+	catch (error) {
+		if (error.name === 'ValidationError') {
+			res.status(400).json({ message: error.message });
+		}
+		else if (error.name === 'CastError') {
+			// invalid ObjectId
+			res.status(400).json({ message: 'Invalid ObjectId: ' + error.message });
+		}
+		else {
+			console.error(error);
+			res.status(500).json({ message: error.message });
+		}
+	}
 }
 
-router.post("/api/v1/posts/", authMiddleware, uploadFiles, postRequest);
+router.post("/api/v1/posts/", authMiddleware, uploadMiddleware.multiple, postRequest);
 
-router.post("/api/v1/posts/:post_id/likes/:user_id", async function (req, res, next) {
-    try {
-        const post = await models.Posts
-            .findOneAndUpdate({ _id: req.params.post_id }, { $addToSet: { likes: req.params.user_id } }, { new: true }) // TODO: different return message when already liked
-            .exec();
+router.post("/api/v1/posts/:post_id/likes/", authMiddleware, async function (req, res, next) {
+	try {
+		if (!req.isAuth || !req.user)
+			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
-        if (!post)
-            throw new NotFoundError(errorMsg.POST_NOT_FOUND);
+		const post = await models.Posts
+			.findOneAndUpdate({ _id: req.params.post_id }, { $addToSet: { likes: req.user.userId } }, { new: true }) // TODO: different return message when already liked
+			.exec();
 
-        res.status(201).json(post);
-    } catch (err) {
-        next(err);
-    }
+		if (!post)
+			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
+
+		res.status(201).json(post);
+	} catch (err) {
+		next(err);
+	}
 });
 //#endregion
 
 //#region PUT
-router.put("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (req, res, next) {
+router.put("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, async function (req, res, next) {
 	try {
 		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		let post = await models.Posts.findById(req.params.id).exec();
-        if(!post) return postRequest(req, res);
+		if (!post) return postRequest(req, res);
 
 		if (post.is_deleted)
 			throw new ValidationError(errorMsg.CANNOT_EDIT_DELETED_COMMENT);
@@ -166,12 +169,12 @@ router.put("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (req
 			post.content = req.body.content;
 			post.likes = req.body.likes;
 
-            if (req.files?.length > 0) {
-                await updateImages(post, req.files);
-            } else {
-                await updateImages(post, []);
-            }
-            
+			if (req.files?.length > 0) {
+				await updateImages(post.images, req.files);
+			} else {
+				await updateImages(post.images, []);
+			}
+
 
 			await post.save();
 
@@ -186,14 +189,14 @@ router.put("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (req
 //#endregion
 
 //#region PATCH
-router.patch("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (req, res, next) {
-	try{
+router.patch("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, async function (req, res, next) {
+	try {
 		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		if (req.body.content === undefined && req.files?.length === 0) // if not trying to edit only the content and/or images
 			throw new ValidationError(errorMsg.NO_CONTENT_FOR_EDITABLE_FIELDS);
-		
+
 
 		let post = await models.Posts.findById(req.params.id);
 		if (!post || post.is_deleted)
@@ -207,14 +210,14 @@ router.patch("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (r
 			post.is_edited = true;
 		}
 		if (req.files?.length > 0) {
-			await updateImages(post, req.files);
+			await updateImages(post.images, req.files);
 			post.is_edited = true;
 		}
 
 		await post.save();
 
 		res.status(200).json(post);
-	} catch(err) {
+	} catch (err) {
 		next(err);
 	}
 });
@@ -222,55 +225,55 @@ router.patch("/api/v1/posts/:id", authMiddleware, uploadFiles, async function (r
 
 //#region DELETE
 router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res, next) {
-    try {
+	try {
 		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
-        const post = await models.Posts.findById(req.params.id).exec();
-        if (!post)
+		const post = await models.Posts.findById(req.params.id).exec();
+		if (!post)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
-        if (post.author.toString() !== req.user?.userId)
+		if (post.author.toString() !== req.user?.userId)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
-        if (post.is_deleted)
+		if (post.is_deleted)
 			throw new ValidationError(errorMsg.POST_IS_DELETED);
 
-        post.is_deleted = true;
-        post.content = null;
+		post.is_deleted = true;
+		post.content = null;
 
-        for (var hash of post.images) {
-            await removeUsage(hash);
-        }
-        post.images = null;
+		for (var hash of post.images) {
+			await removeUsage(hash);
+		}
+		post.images = null;
 
-        await post.save({ validateBeforeSave: false });
-        
-        res.status(200).json(post);
-    } catch (err) {
+		await post.save({ validateBeforeSave: false });
+
+		res.status(200).json(post);
+	} catch (err) {
 		next(err);
-    }
+	}
 });
 
 router.delete("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async function (req, res, next) {
-    try {
-		if (!req.isAuth || !req.user)
+	try {
+		if (!req.isAuth || req.user?.userId != req.params.user_id)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
-        const post = await models.Posts.findById(req.params.post_id);
-        if (!post) 
-            throw new NotFoundError(errorMsg.POST_NOT_FOUND);
+		const post = await models.Posts.findById(req.params.post_id);
+		if (!post)
+			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
 
-        const index = post.likes.indexOf(new ObjectId(req.params.user_id));
-        if (index == -1)
+		const index = post.likes.indexOf(new ObjectId(req.params.user_id));
+		if (index == -1)
 			throw new NotFoundError(errorMsg.POST_NOT_LIKED);
-        post.likes.splice(index, 1);
+		post.likes.splice(index, 1);
 
-        await post.save();
+		await post.save();
 
-        res.status(200).json(post);
-    } catch (err) {
+		res.status(200).json(post);
+	} catch (err) {
 		next(err);
-    }
-    
+	}
+
 });
 //#endregion
 
