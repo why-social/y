@@ -3,6 +3,7 @@
     <b-container fluid>
       <b-row>
         <b-col>
+          <a href="#"> <img class="logo" src="/favicon.ico" alt=""> </a>
           <b-nav vertical align="right">
             <b-nav-item to="/">Home</b-nav-item>
             <b-nav-item to="/">Home</b-nav-item>
@@ -27,6 +28,7 @@ html, body {
   margin: 0;
   padding: 0;
 }
+
 #app {
   /* display: flex; */
   height: 100%;
@@ -39,5 +41,13 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+
+.logo {
+  -webkit-user-drag: none;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 </style>
