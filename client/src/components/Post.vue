@@ -14,9 +14,7 @@
       </div>
       <div class="interactions">
         <div class="clickble" ref="like">
-          <span class="icon like" ref="like_icon" :class="{ liked: liked }"
-            >favorite</span
-          >
+          <span class="icon like" ref="like_icon" :class="{ liked: liked }">favorite</span>
           <span>{{ likes }}</span>
         </div>
         <div class="clickable">
@@ -24,9 +22,7 @@
           <span>{{ comments }}</span>
         </div>
         <div class="repost inter-tight-medium">
-          <span class="icon" style="font-variation-settings: 'wght' 400"
-            >cached</span
-          >
+          <span class="icon" style="font-variation-settings: 'wght' 400">cached</span>
           <span style="padding-right: 0.4rem">Repost</span>
         </div>
       </div>
@@ -140,9 +136,9 @@ export default {
       pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
       date: 'Jan 1',
       content:
-        "If you are homeless, just... buy a house!? I mean, that's what Obama did, right?",
+      "If you are homeless, just... buy a house!? I mean, that's what Obama did, right?",
       picture:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRccugr3pNwrjcc64YJ1GEy71vj1hCEhAE4OA&s',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRccugr3pNwrjcc64YJ1GEy71vj1hCEhAE4OA&s',
       likes: '420K',
       comments: '69K',
       liked: true

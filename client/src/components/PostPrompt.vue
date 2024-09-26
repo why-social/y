@@ -1,18 +1,19 @@
 <template>
-  <div id="post-form">
-    <form action="post">
-      <div class="avatar-and-text">
+  <form action="post">
+    <div class="form-container">
+      <div class="form-row">
         <img class="avatar" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"/>
         <input class="text-input" id="content" type="text" placeholder="What are you thinking about?">
       </div>
-      <label class="attach-label" for="images">
-        <!-- TODO: Replace placeholder icon -->
-        <img class="attach-icon" src="https://icons.iconarchive.com/icons/dtafalonso/android-lollipop/128/Downloads-icon.png"/>
-      </label>
+      <div class="form-row">
+        <label class="attach-label" for="images">
+          <span class="material-symbols-outlined attach-icon">attach_file</span>
+        </label>
         <input class="file-input" id="images" type="file" multiple>
-      <input type="submit" value="Post">
-    </form>
-  </div>
+        <input type="submit" value="Post">
+      </div>
+    </div>
+  </form>
 </template>
 
 <script>
@@ -20,14 +21,27 @@
 </script>
 
 <style scoped>
-#post-form {
-  padding: 2rem 2.5rem;
+form {
+  padding: 2rem 2.5rem 1rem;
+  overflow: hidden;
   width: 100%;
 }
 
-.avatar-and-text {
+.form-container {
   display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
   gap: 1rem;
+}
+
+.buttons {
+  justify-content: space-between;
+  margin-left: auto;
 }
 
 .avatar {
@@ -37,8 +51,8 @@
 }
 
 input[type=text] {
-  width: 100%;
-  height: 6rem;
+  flex-grow: 1;
+  height: 5rem;
   padding: 1rem 1rem 1rem 0.5rem;
   margin-bottom: 1rem;
   font-size: 1.5rem;
@@ -56,6 +70,7 @@ input[type=submit] {
   background: var(--color-accent);
   padding: 12px 20px;
   border-radius: 2rem;
+  border: 1px solid transparent;
   transition: 0.5s;
 }
 
@@ -65,8 +80,14 @@ input[type=submit]:hover {
 }
 
 .attach-label {
-  float: left;
+  margin-left: auto;
+  align-items: center;
   cursor: pointer;
+}
+
+.attach-icon {
+  color: var(--color-accent);
+  vertical-align: center;
 }
 
 .file-input {
