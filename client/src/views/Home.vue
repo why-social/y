@@ -1,7 +1,17 @@
 <template>
-  <div>
-
-  </div>
+  <b-container fluid>
+      <b-row>
+        <b-col>
+          <NavBar />
+        </b-col>
+        <b-col cols="6" class="center">
+          test
+        </b-col>
+        <b-col>
+          test
+        </b-col>
+      </b-row>
+    </b-container>
 </template>
 
 <script>
