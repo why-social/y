@@ -1,17 +1,16 @@
 <template>
   <b-container fluid>
-      <b-row>
-        <b-col>
-          <NavBar />
-        </b-col>
-        <b-col cols="6" class="center">
-          test
-        </b-col>
-        <b-col>
-          test
-        </b-col>
-      </b-row>
-    </b-container>
+    <b-row>
+      <b-col style="position: sticky; top: 0; height: 100vh">
+        <NavBar />
+      </b-col>
+      <b-col cols="6" class="center">
+        <Post />
+        <Post />
+      </b-col>
+      <b-col> test </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script>
@@ -28,10 +27,10 @@ export default {
   methods: {
     getMessage() {
       Api.get('/')
-        .then(response => {
+        .then((response) => {
           this.message = response.data.message
         })
-        .catch(error => {
+        .catch((error) => {
           this.message = error
         })
     }
@@ -40,13 +39,13 @@ export default {
 </script>
 
 <style>
-b-container, b-col {
+b-container,
+b-col {
   height: 100%;
 }
 .center {
   border-right: 1px solid gray;
   border-left: 1px solid gray;
-
 }
 .btn_message {
   margin-bottom: 1em;
