@@ -5,7 +5,9 @@
           <NavBar />
         </b-col>
         <b-col cols="6" class="center">
-          test
+          <b-row>
+            <PostPrompt />
+          </b-row>
         </b-col>
         <b-col>
           test
