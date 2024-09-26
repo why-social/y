@@ -5,7 +5,7 @@
         <img class="avatar" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"/>
         <input class="text-input" id="content" type="text" placeholder="What are you thinking about?">
       </div>
-      <div class="form-row">
+      <div class="form-row bottom-row">
         <label class="attach-label" for="images">
           <span class="material-symbols-outlined attach-icon">attach_file</span>
         </label>
@@ -37,6 +37,11 @@ form {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.bottom-row {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .buttons {
