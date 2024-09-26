@@ -1,16 +1,13 @@
 <template>
   <div>
-    <a href="#"> <img class="logo" src="/favicon.ico" alt=""> </a>
+    <a href="#"> <img class="logo" src="/favicon.ico" alt="" /> </a>
     <b-nav vertical align="right">
-      <NavBarItem to="/" text="Home">
-        <MdiHome />
-      </NavBarItem>
+      <NavBarItem to="/" text="Home"> </NavBarItem>
     </b-nav>
   </div>
 </template>
 
 <script>
-
 </script>
 
 <style>

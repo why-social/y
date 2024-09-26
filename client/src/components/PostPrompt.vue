@@ -21,7 +21,7 @@
 
 <style scoped>
 #post-form {
-  padding: 2rem 5rem;
+  padding: 2rem 2.5rem;
   width: 100%;
 }
 
@@ -42,26 +42,26 @@ input[type=text] {
   padding: 1rem 1rem 1rem 0.5rem;
   margin-bottom: 1rem;
   font-size: 1.5rem;
-  background: black;
-  color: white;
+  background: var(--color-background);
+  color: var(--color-on-background);
   resize: vertical;
   border: none;
-  border-bottom: 1px solid #757575;
+  border-bottom: 1px solid var(--color-border);
 }
 
 input[type=submit] {
   float: right;
   border: none;
-  color: rgb(9, 9, 32);
-  background: blue;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
   padding: 12px 20px;
   border-radius: 2rem;
   transition: 0.5s;
 }
 
 input[type=submit]:hover {
-  border: 1px solid blue;
-  background: white;
+  border: 1px solid var(--color-accent);
+  background: var(--color-on-background);
 }
 
 .attach-label {
