@@ -2,8 +2,9 @@
   <div>
     <a href="#"> <img class="logo" src="/favicon.ico" alt=""> </a>
     <b-nav vertical align="right">
-      <b-nav-item to="/">Home</b-nav-item>
-      <b-nav-item to="/">Home</b-nav-item>
+      <NavBarItem to="/" text="Home">
+        <MdiHome />
+      </NavBarItem>
     </b-nav>
   </div>
 </template>
