@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f3435a91-6135-4680-886a-f8ec202bf888",
+		"_postman_id": "3d39f56c-8c44-4274-a466-b901194927cc",
 		"name": "server",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "38093461"
@@ -1572,7 +1572,7 @@
 							"response": []
 						},
 						{
-							"name": "Update post",
+							"name": "Replace post",
 							"event": [
 								{
 									"listen": "test",
@@ -1618,13 +1618,33 @@
 											"type": "text"
 										},
 										{
-											"key": "images",
+											"key": "is_edited",
+											"value": "true",
+											"type": "text"
+										},
+										{
+											"key": "author",
+											"value": "{{user1}}",
+											"type": "text"
+										},
+										{
+											"key": "is_deleted",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "timestamp",
+											"value": "1990-01-01T00:00:00.000Z",
+											"type": "text"
+										},
+										{
+											"key": "likes",
 											"value": "",
 											"type": "text"
 										},
 										{
-											"key": "is_edited",
-											"value": "true",
+											"key": "comments",
+											"value": "",
 											"type": "text"
 										}
 									]
@@ -2213,7 +2233,7 @@
 					"response": []
 				},
 				{
-					"name": "Edit a comment",
+					"name": "Replace a comment",
 					"event": [
 						{
 							"listen": "test",
@@ -2250,13 +2270,54 @@
 						"method": "PUT",
 						"header": [],
 						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"content\" : \"hackerman\",\r\n    \"is_edited\" : true\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "content",
+									"value": "hackerman",
+									"type": "text"
+								},
+								{
+									"key": "is_edited",
+									"value": "true",
+									"type": "text"
+								},
+								{
+									"key": "author",
+									"value": "{{user1}}",
+									"type": "text"
+								},
+								{
+									"key": "is_deleted",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "timestamp",
+									"value": "1990-01-01T00:00:00.000Z",
+									"type": "text"
+								},
+								{
+									"key": "likes",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "comments",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "parent_id",
+									"value": "{{user2_post1}}",
+									"type": "text"
+								},
+								{
+									"key": "parent_is_post",
+									"value": "true",
+									"type": "text"
 								}
-							}
+							]
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/comments/{{comment2}}",
@@ -2274,7 +2335,7 @@
 					"response": []
 				},
 				{
-					"name": "(PUT) Edit a comment",
+					"name": "(PUT) Replace a comment",
 					"event": [
 						{
 							"listen": "test",
@@ -2320,13 +2381,54 @@
 							}
 						],
 						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"is_edited\" : true,\r\n    \"content\" : \"Newcontent\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "content",
+									"value": "Newcontent",
+									"type": "text"
+								},
+								{
+									"key": "is_edited",
+									"value": "true",
+									"type": "text"
+								},
+								{
+									"key": "author",
+									"value": "{{user1}}",
+									"type": "text"
+								},
+								{
+									"key": "is_deleted",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "timestamp",
+									"value": "1990-01-01T00:00:00.000Z",
+									"type": "text"
+								},
+								{
+									"key": "likes",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "comments",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "parent_id",
+									"value": "{{user2_post1}}",
+									"type": "text"
+								},
+								{
+									"key": "parent_is_post",
+									"value": "true",
+									"type": "text"
 								}
-							}
+							]
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/comments/{{comment2}}",
@@ -3507,14 +3609,40 @@
 											"type": "text"
 										},
 										{
-											"key": "images",
-											"type": "file",
-											"src": []
-										},
-										{
 											"key": "is_edited",
 											"value": "true",
 											"type": "text"
+										},
+										{
+											"key": "author",
+											"value": "{{user1}}",
+											"type": "text"
+										},
+										{
+											"key": "is_deleted",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "timestamp",
+											"value": "1990-01-01T00:00:00.000Z",
+											"type": "text"
+										},
+										{
+											"key": "likes",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "comments",
+											"value": "",
+											"type": "text"
+										},
+										{
+											"key": "images",
+											"type": "file",
+											"src": [],
+											"disabled": true
 										}
 									]
 								},
@@ -4075,11 +4203,6 @@
 											"mode": "formdata",
 											"formdata": [
 												{
-													"key": "images",
-													"type": "file",
-													"src": []
-												},
-												{
 													"key": "is_edited",
 													"value": "true",
 													"type": "text"
@@ -4088,6 +4211,46 @@
 													"key": "content",
 													"value": "boo",
 													"type": "text"
+												},
+												{
+													"key": "author",
+													"value": "{{user1}}",
+													"type": "text"
+												},
+												{
+													"key": "is_deleted",
+													"value": "false",
+													"type": "text"
+												},
+												{
+													"key": "timestamp",
+													"value": "1990-01-01T00:00:00.000Z",
+													"type": "text"
+												},
+												{
+													"key": "likes",
+													"value": "",
+													"type": "text"
+												},
+												{
+													"key": "comments",
+													"value": "",
+													"type": "text"
+												},
+												{
+													"key": "parent_id",
+													"value": "{{parent}}",
+													"type": "text"
+												},
+												{
+													"key": "parent_is_post",
+													"value": "true",
+													"type": "text"
+												},
+												{
+													"key": "images",
+													"type": "file",
+													"src": []
 												}
 											]
 										},
