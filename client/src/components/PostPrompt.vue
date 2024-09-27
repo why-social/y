@@ -1,23 +1,66 @@
 <template>
-  <form action="post">
+  <form ref="postForm" @submit.prevent="createPost">
     <div class="form-container">
       <div class="form-row">
         <img class="avatar" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"/>
-        <input class="text-input" id="content" type="text" placeholder="What are you thinking about?">
+        <input class="text-input" id="content" type="text" v-model="content" placeholder="What are you thinking about?">
       </div>
       <div class="form-row bottom-row">
         <label class="attach-label" for="images">
+          <span class="file-counter">{{ images.length }}/4</span>
           <span class="material-symbols-outlined attach-icon">attach_file</span>
         </label>
-        <input class="file-input" id="images" type="file" multiple>
-        <input type="submit" value="Post">
+        <input class="file-input" id="images" type="file" accept="image/*" multiple @change="handleFileChange">
+        <input :disabled="isSubmitDisabled" id="submit-button" class="button" type="submit" value="Post">
       </div>
     </div>
   </form>
 </template>
 
 <script>
+import { Api } from '@/Api'
 
+export default {
+  data() {
+    return {
+      content: '',
+      images: []
+    }
+  },
+  computed: {
+    isSubmitDisabled() {
+      return this.content.trim().length === 0 && this.images.length === 0
+    }
+  },
+  methods: {
+    async createPost() {
+      const formData = new FormData()
+      formData.append('content', this.content)
+      for (const image of this.images) {
+        formData.append('images', image)
+      }
+      try {
+        const response = Api.post('v1/posts', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            // PLACEHOLDER AUTH!!!
+            Authorization: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmY2YzJlZmVlMTUzMTU2ZDRiMGIwZjIiLCJpYXQiOjE3Mjc0NDc3OTEsImV4cCI6MTcyNzQ1MTM5MX0.VgqM47aOW7Mpx92c8Fk9p5ZYgXAVcgiCC5MuTqDyyzQ'
+          }
+        })
+        console.log('Post created successfully:', response.data)
+
+        this.$refs.postForm.reset()
+        this.content = ''
+        this.images = []
+      } catch (error) {
+        console.error('Error creating post:', error)
+      }
+    },
+    handleFileChange() {
+      this.images = event.target.files
+    }
+  }
+}
 </script>
 
 <style scoped>
@@ -44,11 +87,6 @@ form {
   border-bottom: 1px solid var(--color-border);
 }
 
-.buttons {
-  justify-content: space-between;
-  margin-left: auto;
-}
-
 .avatar {
   width: 5rem;
   align-self: center;
@@ -68,20 +106,30 @@ input[type=text] {
   border-bottom: 1px solid var(--color-border);
 }
 
-input[type=submit] {
-  float: right;
-  border: none;
+.button {
   color: var(--color-on-accent);
   background: var(--color-accent);
-  padding: 12px 20px;
-  border-radius: 2rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 1.5rem;
   border: 1px solid transparent;
   transition: 0.5s;
 }
 
-input[type=submit]:hover {
+.button:enabled:hover {
   border: 1px solid var(--color-accent);
   background: var(--color-on-background);
+}
+
+.button:disabled {
+  opacity: 40%;
+}
+
+input[type=file] {
+  display: none;
+}
+
+.file-counter {
+  padding: 0.5rem;
 }
 
 .attach-label {
@@ -93,14 +141,6 @@ input[type=submit]:hover {
 .attach-icon {
   color: var(--color-accent);
   vertical-align: center;
-}
-
-.file-input {
-  display: none;
-  float: left;
-}
-
-.attach-icon {
   width: 2rem;
 }
 
