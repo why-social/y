@@ -1,13 +1,17 @@
 <template>
-  <div>
-    <b-container fluid>
-      <h1 class="display-5 fw-bold">DIT342 Frontend</h1>
-      <p class="fs-4">Welcome to your DIT342 Frontend Vue.js App</p>
-      <b-button class="btn_message" variant="primary" v-on:click="getMessage()" >Get Message from Server</b-button>
-      <p class="col-xl-9">Message from the server:<br/>
-      {{ message }}</p>
-    </b-container>
-  </div>
+  <b-container>
+    <b-row>
+      <b-col style="position: sticky; top: 0; height: 100vh">
+        <NavBar />
+      </b-col>
+      <b-col cols="7" class="center">
+        <PostPrompt />
+        <Post />
+        <Post />
+      </b-col>
+      <b-col> test </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script>
@@ -24,10 +28,10 @@ export default {
   methods: {
     getMessage() {
       Api.get('/')
-        .then(response => {
+        .then((response) => {
           this.message = response.data.message
         })
-        .catch(error => {
+        .catch((error) => {
           this.message = error
         })
     }
@@ -36,6 +40,17 @@ export default {
 </script>
 
 <style>
+b-container,
+b-col {
+  height: 100%;
+}
+.center {
+  margin: 2.5rem;
+  padding: 2rem 3rem 0 3rem;
+  box-sizing: border-box;
+  border-right: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-border);
+}
 .btn_message {
   margin-bottom: 1em;
 }
