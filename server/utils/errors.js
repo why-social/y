@@ -88,6 +88,7 @@ const errorMsg = {
 	POST_NOT_LIKED: "Post not liked by the user",
 	COMMENTS_MUST_HAVE_PARENT_ID: "Comments must have a parent id",
 	MISSING_FIELDS: "One or more of the required fields are missing",
+	MISSING_ID: "Id is missing",
 };
 
 function castErrorHandler(err, req, res, next) {

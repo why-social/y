@@ -2358,9 +2358,6 @@
 							}
 						}
 					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2372,7 +2369,7 @@
 								}
 							]
 						},
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "x-http-method-override",
@@ -2427,19 +2424,23 @@
 									"key": "parent_is_post",
 									"value": "true",
 									"type": "text"
+								},
+								{
+									"key": "id",
+									"value": "{{comment2}}",
+									"type": "text"
 								}
 							]
 						},
 						"url": {
-							"raw": "{{host}}/api/v1/comments/{{comment2}}",
+							"raw": "{{host}}/api/v1/comments",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"comments",
-								"{{comment2}}"
+								"comments"
 							]
 						}
 					},
@@ -2469,9 +2470,6 @@
 							}
 						}
 					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2483,7 +2481,7 @@
 								}
 							]
 						},
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "x-http-method-override",
@@ -2493,7 +2491,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"content\" : \"hackerman\"\r\n}",
+							"raw": "{\r\n    \"content\" : \"hackerman\",\r\n    \"id\": \"{{comment1}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2501,15 +2499,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/api/v1/comments/{{comment1}}",
+							"raw": "{{host}}/api/v1/comments",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"comments",
-								"{{comment1}}"
+								"comments"
 							]
 						}
 					},
@@ -2696,7 +2693,7 @@
 								}
 							]
 						},
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "x-http-method-override",
@@ -2704,16 +2701,24 @@
 								"type": "text"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\":\"{{comment1}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{host}}/api/v1/comments/{{comment1}}",
+							"raw": "{{host}}/api/v1/comments",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"comments",
-								"{{comment1}}"
+								"comments"
 							]
 						}
 					},
