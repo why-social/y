@@ -24,12 +24,12 @@
     "url": "git+https://gitlab.com/dit342/group-01-web.git"
   },
   "dependencies": {
+    "@faker-js/faker": "^9.0.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "connect-history-api-fallback": "^2.0.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
-    "@faker-js/faker": "^9.0.1",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.4",

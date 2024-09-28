@@ -4,7 +4,19 @@
     class="inter-tight-regular d-flex flex-column gap-2"
   >
     <Input
+      id="name"
+      title="Names consist of only spaces, uppercase and lowercase letters."
+      pattern="^[a-zA-Z ]{3,40}$"
+      v-model="name"
+      type="text"
+      placeholder="Full name"
+      required
+    />
+
+    <Input
       id="username"
+      title="Usernames consist of only letters, numbers and underscores (_)"
+      pattern="^[a-zA-Z0-9_]{3,20}$"
       v-model="username"
       type="text"
       placeholder="Username"
@@ -22,8 +34,8 @@
     <Input
       id="password"
       v-model="password"
-      title="Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, a special character, and contain no spaces."
-      pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$"
+      title="Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, a special character (#?!@$%^&*-), and no spaces."
+      pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*\-]).{8,40}$"
       placeholder="Password"
       type="password"
       required
@@ -31,8 +43,8 @@
 
     <Input
       id="confirmation"
-      title="Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, a special character, and contain no spaces."
-      pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$"
+      title="Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, a special character (#?!@$%^&*-), and no spaces."
+      pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*\-]).{8,40}$"
       v-model="confirmation"
       placeholder="Confirm password"
       type="password"
@@ -88,6 +100,7 @@
     </div>
 
     <div class="d-flex justify-content-center flex-column gap-2 mt-5">
+      <span class="error text-center inter-tight-regular">{{ message }}</span>
       <Button type="submit" class="w-100">Sign up</Button>
     </div>
 
@@ -105,6 +118,8 @@ import { Api } from '@/Api'
 export default {
   data() {
     return {
+      message: '',
+      name: '',
       username: '',
       email: '',
       password: '',
@@ -115,14 +130,16 @@ export default {
     }
   },
   methods: {
-    onSubmit() {
-      alert(
-        JSON.stringify({
+    async onSubmit() {
+      if (this.password !== this.confirmation) {
+        this.message = 'Passwords do not match'
+      } else {
+        const data = {
+          name: this.name,
           username: this.username,
           email: this.email,
           password: this.password,
-          confirmation: this.confirmation,
-          date: new Date(
+          birthday: new Date(
             (
               [
                 'January',
@@ -150,8 +167,24 @@ export default {
               '/' +
               this.year
           )
-        })
-      )
+        }
+
+        Api.post('/v1/users', data)
+          .then((response) => {
+            if (response.data?.token) {
+              localStorage.setItem('token', response.data?.token)
+
+              this.$router.push('home')
+            } else {
+              this.message = 'Something went wrong'
+            }
+          })
+          .catch((error) => {
+            if (error.response?.data?.message) {
+              this.message = error.response.data.message
+            }
+          })
+      }
     }
   }
 }
@@ -160,5 +193,9 @@ export default {
 <style>
 .cool {
   font-size: 1.5rem;
+}
+.error {
+  font-size: 1.3rem;
+  color: var(--color-error);
 }
 </style>

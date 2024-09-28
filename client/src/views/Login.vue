@@ -4,10 +4,10 @@
     class="inter-tight-regular d-flex flex-column gap-2"
   >
     <Input
-      id="email"
-      v-model="identifier"
+      id="username"
+      v-model="username"
       type="text"
-      placeholder="E-mail or username"
+      placeholder="username"
       required
     />
 
@@ -20,6 +20,7 @@
     />
 
     <div class="d-flex justify-content-center flex-column gap-2 mt-5">
+      <span class="error text-center inter-tight-regular">{{ message }}</span>
       <Button type="submit" class="w-100">Log in</Button>
       <Button secondary class="w-100" @click="$router.push('recover')"
         >Forgot password?</Button
@@ -40,18 +41,35 @@ import { Api } from '@/Api'
 export default {
   data() {
     return {
-      identifier: '',
+      message: '',
+      username: '',
       password: ''
     }
   },
   methods: {
-    onSubmit() {
-      alert(
-        JSON.stringify({
-          identifier: this.identifier,
-          password: this.password
+    async onSubmit() {
+      Api.post('/v1/login', {
+        username: this.username,
+        password: this.password
+      })
+        .then((response) => {
+          if (response.data?.token) {
+            localStorage.setItem('token', response.data?.token)
+
+            this.$router.push('home')
+          } else {
+            this.message = 'Something went wrong'
+          }
         })
-      )
+        .catch((error) => {
+          if (error.response?.status === 404) {
+            this.message = 'User does not exist'
+          } else if (error.response?.status === 401) {
+            this.message = 'Wrong password'
+          } else {
+            this.message = 'Something went wrong'
+          }
+        })
     }
   }
 }
@@ -60,5 +78,9 @@ export default {
 <style>
 .cool {
   font-size: 1.5rem;
+}
+.error {
+  font-size: 1.3rem;
+  color: var(--color-error);
 }
 </style>
