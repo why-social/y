@@ -7,7 +7,7 @@
       id="username"
       v-model="username"
       type="text"
-      placeholder="username"
+      placeholder="Username"
       required
     />
 

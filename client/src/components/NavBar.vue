@@ -1,9 +1,8 @@
 <template>
-  <div>
+  <div id="navbar">
     <a href="#"> <img class="logo" src="/favicon.ico" alt="" /> </a>
-    <b-nav vertical align="right">
-      <NavBarItem to="/" text="Home"> </NavBarItem>
-    </b-nav>
+    <NavBarItem to="/" text="Home"> </NavBarItem>
+    <NavBarItem to="/" text="Test"> </NavBarItem>
   </div>
 </template>
 
@@ -11,6 +10,16 @@
 </script>
 
 <style>
+#navbar {
+  width: 20rem;
+  height: 100vh;
+  position: sticky;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  top: 0;
+}
+
 .logo {
   -webkit-user-drag: none;
   user-select: none;
