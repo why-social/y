@@ -28,7 +28,7 @@ router.post("/api/v1/login", async (req, res, next) => {
 		res.status(200).json({
 			message: "Login successful",
 			user_id: user._id,
-			token
+			token: token
 		});
 	} catch (err){
 		next(err);
