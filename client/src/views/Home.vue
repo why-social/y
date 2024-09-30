@@ -6,8 +6,7 @@
       </b-col>
       <b-col cols="7" class="center">
         <PostPrompt />
-        <Post />
-        <Post />
+        <Post v-for="post in posts" :post="post" :key="post._id" />
       </b-col>
       <b-col> test </b-col>
     </b-row>
@@ -22,7 +21,8 @@ export default {
   name: 'home',
   data() {
     return {
-      message: 'none'
+      message: 'none',
+      posts: []
     }
   },
   methods: {
@@ -34,7 +34,22 @@ export default {
         .catch((error) => {
           this.message = error
         })
+    },
+    getFeed() {
+      Api.get('/v1/feeds', {
+        headers: {
+          //  PLACEHOLDER TOKEN!!!
+          Authorization: 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmZhODk4N2RhMWU0ZDVmNDc2MTQwNmYiLCJpYXQiOjE3Mjc3MDg4NTgsImV4cCI6MTcyNzcxMjQ1OH0.thydxHpWETktvO896sJ8FwIrJeDUUkqRY9yVsYgxwko'
+        }
+      }).then((response) => {
+        this.posts = response.data.posts
+      }).catch((error) => {
+        console.log(error)
+      })
     }
+  },
+  mounted() {
+    this.getFeed()
   }
 }
 </script>

@@ -15,11 +15,11 @@
       <div class="interactions">
         <div class="clickble" ref="like">
           <span class="icon like" ref="like_icon" :class="{ liked: liked }">favorite</span>
-          <span>{{ likes }}</span>
+          <span>{{ likes.length }}</span>
         </div>
         <div class="clickable">
           <span class="icon">forum</span>
-          <span>{{ comments }}</span>
+          <span>{{ comments.length }}</span>
         </div>
         <div class="repost inter-tight-medium">
           <span class="icon" style="font-variation-settings: 'wght' 400">cached</span>
@@ -128,20 +128,52 @@
 </style>
 
 <script>
+import { Api } from '@/Api'
+
 export default {
+  props: ['post'],
   data() {
     return {
-      name: 'Y User',
-      username: 'deleted',
+      user: {},
+      name: '',
+      username: '',
       pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
-      date: 'Jan 1',
-      content:
-      "If you are homeless, just... buy a house!? I mean, that's what Obama did, right?",
-      picture:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRccugr3pNwrjcc64YJ1GEy71vj1hCEhAE4OA&s',
-      likes: '420K',
-      comments: '69K',
+      date: this.post.timestamp,
+      content: this.post.content,
+      images: this.post.images,
+      likes: this.post.likes,
+      comments: this.post.comments,
       liked: true
+    }
+  },
+  async created() {
+    Api.get('v1/users/' + this.post.author)
+      .then((response) => {
+        this.user = response.data
+        this.name = this.user.name
+        this.username = this.user.username
+        if (this.user.profile_picture) {
+          Api.get('v1/images/' + this.user.profile_picture)
+            .then((response) => {
+              this.pfp = response.data.url
+            })
+            .catch((error) => {
+              console.log(error)
+            })
+        }
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+
+    for (const image of this.images) {
+      Api.get('v1/images/' + image)
+        .then((response) => {
+          this.pfp = response.data.url
+        })
+        .catch((error) => {
+          console.log(error)
+        })
     }
   },
   mounted() {

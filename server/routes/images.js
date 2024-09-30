@@ -26,17 +26,17 @@ router.get("/api/v1/images/:hash", async function(req, res, next) {
 		if (!imageObject) throw new NotFoundError(errorMsg.IMAGE_NOT_FOUND);
 
 		const url = imageObject.url;
-
-		res.status(200).sendFile(url, function(err) {
-			if (err) {
-				// hash directory exists, but is empty
-				// TODO: check if files present in directory, delete if empty or try fixing DB/file
-				console.error('Error sending file:', err);
-				throw new NotFoundError(err); // TODO: Change err to what fits best
-			} else {
-				console.log('Sent:', url);
-			}
-		});
+		res.status(200).json(url);
+		// res.status(200).sendFile(url, function(err) {
+		// 	if (err) {
+		// 		// hash directory exists, but is empty
+		// 		// TODO: check if files present in directory, delete if empty or try fixing DB/file
+		// 		console.error('Error sending file:', err);
+		// 		throw new NotFoundError(err); // TODO: Change err to what fits best
+		// 	} else {
+		// 		console.log('Sent:', url);
+		// 	}
+		// });
 	} catch(err) {
 		next(err);
 	}
