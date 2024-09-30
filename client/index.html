@@ -5,12 +5,16 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
   <link rel="icon" href="/favicon.ico">
+
   <title>Y Social</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap"
     rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Math&display=swap">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
@@ -27,22 +31,34 @@
 <style>
   :root {
     --color-background: black;
-    --color-accent: rgb(76, 189, 241);
-    --color-accent-highlight: rgb(130, 202, 236);
-    --color-on-accent: rgb(3, 35, 50);
-    --color-like: rgb(236, 101, 141);
     --color-on-background: white;
-    --color-border: #757575;
+    --color-outline: rgb(92, 101, 103);
+    --color-accent: rgb(63, 183, 239);
+    --color-button-emphasize: rgb(26, 154, 213);
+    --color-button-highlight: rgb(94, 188, 231);
+    --color-button-secondary-emphasize: rgb(8, 23, 30);
+    --color-button-secondary-highlight: rgb(3, 17, 23);
+    --color-on-accent: rgb(2, 26, 36);
+    --color-like: rgb(236, 101, 141);
+    --color-error: rgb(215, 45, 59);
   }
 
   body,
   html {
     width: 100%;
-    height: 100%;
+    min-height: 100vh;
     padding: 0;
     height: 0;
     background: var(--color-background);
     color: var(--color-on-background);
+  }
+
+  #app {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100%;
   }
 
   .inter-tight-light,
@@ -83,6 +99,11 @@
   .inter-tight-bold,
   .inter-tight-bold-italic {
     font-weight: 700;
+  }
+
+  .cool-font {
+    font-family: "Noto Sans Math", sans-serif;
+    font-weight: 400;
   }
 
   .icon {
