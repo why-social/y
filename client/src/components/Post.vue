@@ -129,6 +129,7 @@
 
 <script>
 import { Api } from '@/Api'
+import moment from 'moment'
 
 export default {
   props: ['post'],
@@ -138,7 +139,7 @@ export default {
       name: '',
       username: '',
       pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
-      date: this.post.timestamp,
+      date: moment(this.post.timestamp).fromNow(),
       content: this.post.content,
       images: this.post.images,
       likes: this.post.likes,
