@@ -44,7 +44,7 @@ export default {
           headers: {
             'Content-Type': 'multipart/form-data',
             // PLACEHOLDER AUTH!!!
-            Authorization: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmY2YzJlZmVlMTUzMTU2ZDRiMGIwZjIiLCJpYXQiOjE3Mjc0NDc3OTEsImV4cCI6MTcyNzQ1MTM5MX0.VgqM47aOW7Mpx92c8Fk9p5ZYgXAVcgiCC5MuTqDyyzQ'
+            Authorization: 'Bearer ' + localStorage.getItem('token')
           }
         })
         console.log('Post created successfully:', response.data)
@@ -130,6 +130,7 @@ input[type=file] {
 
 .file-counter {
   padding: 0.5rem;
+  opacity: 0.7;
 }
 
 .attach-label {
