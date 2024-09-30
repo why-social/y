@@ -51,6 +51,8 @@
   display: flex;
   gap: 0.5rem;
   flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 .post-content {
   display: flex;
@@ -61,12 +63,30 @@
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .info > span {
   opacity: 0.7;
+  display: inline-block;
 }
 .info > span:nth-child(1) {
   opacity: 1;
+  flex-shrink: 1; /* Allow it to shrink when necessary */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Truncate with ellipsis */
+  max-width: 50%; /* Limit the name to a maximum width */
+}
+.info > span:nth-child(2) {
+  flex-shrink: 0;
+}
+
+.info > span:nth-child(3) {
+  flex-shrink: 0;
+}
+
+.info > span:nth-child(4) {
+  flex-shrink: 0;
 }
 .picture {
   width: 100%;

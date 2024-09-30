@@ -39,7 +39,7 @@ export default {
       Api.get('/v1/feeds', {
         headers: {
           //  PLACEHOLDER TOKEN!!!
-          Authorization: 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmZhODk4N2RhMWU0ZDVmNDc2MTQwNmYiLCJpYXQiOjE3Mjc3MDg4NTgsImV4cCI6MTcyNzcxMjQ1OH0.thydxHpWETktvO896sJ8FwIrJeDUUkqRY9yVsYgxwko'
+          Authorization: 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmZhODk4N2RhMWU0ZDVmNDc2MTQwNmYiLCJpYXQiOjE3Mjc3MTI1NTYsImV4cCI6MTcyNzcxNjE1Nn0.drn5qSl3lTCkhqeSg1_g6SNbXiDL0y5iYdqfrcwZSYg'
         }
       }).then((response) => {
         this.posts = response.data.posts
