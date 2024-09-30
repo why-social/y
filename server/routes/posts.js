@@ -90,17 +90,7 @@ async function postRequest(req, res, next) {
 	}
 
 	catch (error) {
-		if (error.name === 'ValidationError') {
-			res.status(400).json({ message: error.message });
-		}
-		else if (error.name === 'CastError') {
-			// invalid ObjectId
-			res.status(400).json({ message: 'Invalid ObjectId: ' + error.message });
-		}
-		else {
-			console.error(error);
-			res.status(500).json({ message: error.message });
-		}
+		next(error);
 	}
 }
 
