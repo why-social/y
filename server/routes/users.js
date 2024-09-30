@@ -145,6 +145,8 @@ router.post("/api/v1/users", async (req, res, next) => {
 		// Check if user already exists by email
 		let emailExists = await mongoose.models["Users"].findOne({email}).exec();
 		if(emailExists) throw new ConflictError(errorMsg.EMAIL_EXISTS);
+		
+		// TODO: hash the password
 
 		// Remove all other fields from the request and add necessary
 		req.body = {
