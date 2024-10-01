@@ -1,6 +1,6 @@
 <template>
   <div class="post-container">
-    <img class="pfp" v-bind:src="user.profile_picture" />
+    <img class="pfp" v-bind:src="pfp" />
     <div class="post-data">
       <div class="info">
         <span class="inter-tight-medium">{{ name }}</span>
@@ -173,7 +173,7 @@ export default {
         user: this.post.author,
         name: this.post.author.name,
         username: this.post.author.username,
-        pfp: this.post.author.profile_picture,
+        pfp: this.post.author.profile_picture || 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
         date: moment(this.post.timestamp).fromNow(),
         content: this.post.content,
         images: this.post.images || [],
