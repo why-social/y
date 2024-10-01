@@ -7,6 +7,7 @@ import Auth from './views/Auth.vue'
 import Login from './views/Login.vue'
 import Recover from './views/Recover.vue'
 import Register from './views/Register.vue'
+import Profile from './views/Profile.vue'
 
 const routes = [
   {
@@ -14,6 +15,16 @@ const routes = [
     name: 'home',
     meta: { requiresAuth: true },
     component: Home
+  },
+  {
+    path: '/profile/:userId',
+    name: 'profile',
+    component: Profile
+  },
+  {
+    path: '/profile',
+    redirect: '/profile/me',
+    meta: { requiresAuth: true }
   },
   {
     path: '/auth',
