@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require("../db/database").mongoose;
 const models = mongoose.models;
 const { ValidationError, UnauthorizedError, errorMsg } = require("../utils/errors");
+const { toPublicPath } = require('../utils/utils')
 const authMiddleware = require("../middleware/auth");
 
 //#region GET
@@ -58,6 +59,43 @@ router.get("/api/v1/feeds/", authMiddleware,
                         timestamp: sorting
                     }
                 },
+                 // Populate the 'author' field
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'author',
+                        foreignField: '_id',
+                        as: 'author'
+                    }
+                },
+                // Unwind the 'author' array (since lookup returns an array)
+                {
+                    $unwind: '$author'
+                },
+                {
+                    $project: {
+                        author: {
+                            email: 0,
+                            password: 0,
+                            about_me: 0,
+                            birthday: 0,
+                            join_date: 0,
+                            last_time_posted: 0
+                        }
+                    }
+                },
+                // Populate 'profile_picture'
+                {
+                    $lookup: {
+                        from: 'images',
+                        localField: 'author.profile_picture',
+                        foreignField: 'hash',
+                        as: 'author.profile_picture'
+                    }
+                },
+                {
+                    $unwind: { path: '$author.profile_picture', preserveNullAndEmptyArrays: true } // Unwind profile picture data, allow null values
+                },
                 {
                     $facet: {
                         metadata: [{ $count: "total" }, { $addFields: { page: pageNumber } }],
@@ -65,16 +103,28 @@ router.get("/api/v1/feeds/", authMiddleware,
                     }
                 }]).exec();
 
-                if (result && result.length &&
-                    result[0] && result[0].data) {
+                if (result && result.length && result[0] && result[0].data) {
                     result = {
                         posts: result[0].data
                     };
+                    
+                    for (let post of result.posts) {
+                        if (post.author && post.author.profile_picture) {
+                            post.author.profile_picture = toPublicPath(req, post.author.profile_picture.url);
+                        }
+                
+                        post.images = await Promise.all(
+                            post.images.map(async image => {
+                                const imageData = await models.Images.findOne({ hash: image }).lean();
+                                return toPublicPath(req, imageData.url);
+                            })
+                        );
+                    }
 
                     if (result.posts.length == limit) {
                         result._links = {
                             next: {
-                                href: `${req.protocol + '://' + req.get('host')}/api/v1/feeds/?page=${pageNumber + 1}`
+                                href: `${req.protocol}://${req.get('host')}/api/v1/feeds/?page=${pageNumber + 1}`
                             }
                         };
                     }
