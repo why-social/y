@@ -1,8 +1,8 @@
 <template>
   <div id="navbar">
     <a href="#"> <img class="logo" src="/favicon.ico" alt="" /> </a>
-    <NavBarItem to="/" text="Home"> </NavBarItem>
-    <NavBarItem to="/" text="Test"> </NavBarItem>
+    <NavigationItem to="/" text="Home"> </NavigationItem>
+    <NavigationItem to="/" text="Test"> </NavigationItem>
   </div>
 </template>
 
@@ -11,13 +11,13 @@
 
 <style>
 #navbar {
-  width: 20rem;
   height: 100vh;
   position: sticky;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   top: 0;
+  flex: 0 0 15rem;
 }
 
 .logo {
