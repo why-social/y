@@ -186,7 +186,7 @@ export default {
       return {
         user: {},
         name: 'Shawn Dawgson',
-        username: 'coolguylikesdawgs',
+        username: 'colguylikesdawgs',
         pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
         date: moment(new Date()).fromNow(),
         content: 'Can I pet that dawg',
