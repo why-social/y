@@ -1,6 +1,6 @@
 <template>
   <div class="post-container">
-    <img class="pfp" v-bind:src="pfp" />
+    <img class="pfp" v-bind:src="user.profile_picture" />
     <div class="post-data">
       <div class="info">
         <span class="inter-tight-medium">{{ name }}</span>
