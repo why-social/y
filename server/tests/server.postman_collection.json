@@ -1239,7 +1239,7 @@
 											"\r",
 											"pm.test(\"Author matches the creator\", function () {\r",
 											"    var post = pm.response.json();\r",
-											"    pm.expect(post.author).to.equal(pm.environment.get(\"user1\"));\r",
+											"    pm.expect(post.author._id).to.equal(pm.environment.get(\"user1\"));\r",
 											"});\r",
 											""
 										],

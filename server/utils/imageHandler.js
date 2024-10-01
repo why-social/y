@@ -59,7 +59,8 @@ async function saveFile(file) {
     // Saves the file from multer buffer (memory) to disk and updates images DB
     const fileBuffer = file.buffer; // read file from multer buffer
     const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex'); // generate hash from the file content
-    const dir = path.join(appRoot, '/uploads/', hash);
+    const dir = path.join(appRoot, '/uploads/', hash)
+    const relPath = path.join('/uploads/', hash, file.originalname);
     const filePath = path.join(dir, file.originalname);
     
     // check if the directory (image) already exists
@@ -72,7 +73,7 @@ async function saveFile(file) {
     fs.mkdirSync(dir, { recursive: true });         
     fs.writeFileSync(filePath, fileBuffer);
 
-    var imageEntry = await new models.Images({hash: hash, url: filePath, usageCount: 0});
+    var imageEntry = await new models.Images({hash: hash, url: relPath, usageCount: 0});
     await imageEntry.save();
     return imageEntry.hash; // insert new entry into Images collection
 }

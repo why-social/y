@@ -3,7 +3,7 @@ const router = express.Router();
 const models = require("../db/database").mongoose.models;
 const authMiddleware = require("../middleware/auth");
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
-const { except, getCommentById } = require("../utils/utils");
+const { toPublicPath, getCommentById } = require("../utils/utils");
 const { updateImages, removeUsage } = require("../utils/imageHandler");
 const uploadMiddleware = require("../middleware/upload");
 
@@ -12,9 +12,23 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 	try{
 		let comment = await getCommentById(req.params.id, true, next);
 
+		// populate profile_picture with the public url to the resource
+		if (comment.author.profile_picture) {
+			const relPath = (await models.Images.findOne({hash : comment.author.profile_picture})).url;
+			comment.author.profile_picture = toPublicPath(req, relPath);
+		}
+		
+		// populate images with public urls to the resources
+		comment.images = await Promise.all(
+			comment.images.map(async image => {
+				const imageData = await (models.Images.findOne({hash : image}).lean());
+				return toPublicPath(req, imageData.url)
+			})
+		);
+
 		comment._links = {
 			user: {
-				href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${comment.author}`
+				href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${comment.author._id}`
 			}
 		};
 		
@@ -41,8 +55,25 @@ router.get("/api/v1/comments/users/:id", async function (req, res, next) {
 			if(!userExists) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
 		let result = await models.Comments
-		.find({ author: req.params.id })
-		.lean().exec();
+			.find({ author: req.params.id })
+			.populate({
+				path: 'author', select: '_id name username profile_picture',
+			})
+			.lean().exec();
+		
+		if (result[0].author.profile_picture) {
+			const relPath = (await models.Images.findOne({hash : result[0].author.profile_picture})).url;
+			result[0].author.profile_picture = toPublicPath(req, relPath);
+		} // changes the author pfp in all the comments, since they are reference-shared
+
+		for (var comment of result) {
+			comment.images = await Promise.all(
+				comment.images.map(async image => {
+					const imageData = await (models.Images.findOne({hash : image}).lean());
+					return toPublicPath(req, imageData.url)
+				})
+			);
+		}
 		
 		return res.status(200).json(result);
 	} catch (err) {
@@ -200,7 +231,7 @@ async function patchForId(req, res, next) {
 		if (!comment)
 			throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
 
-		if (!req.isAuth || comment.author != req.user.userId)
+		if (!req.isAuth || comment.author._id != req.user.userId)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 		
 		if (comment.is_deleted)
@@ -244,7 +275,7 @@ async function deleteForId(req, res, next) {
 	try {
 		let comment = await getCommentById(req.params.id, false, next);
 		
-		if (!(req.isAuth && comment && comment.author == req.user.userId))
+		if (!(req.isAuth && comment && comment.author._id == req.user.userId))
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 		
 		const target = await models.Comments.findById(req.params.id);

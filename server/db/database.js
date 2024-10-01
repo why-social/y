@@ -24,7 +24,7 @@ schemas = {
 		follows: { type: mongoose.Types.ObjectId, ref: "Users" },
 	}, { collection: 'user_follows_user' }),
 	Images: new mongoose.Schema({
-		hash: { type: String, unique: true, index: true },
+		hash: { type: String, index: true },
 		url: String,
 		usageCount: {
 			type: Number,

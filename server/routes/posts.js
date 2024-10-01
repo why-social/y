@@ -4,8 +4,8 @@ const authMiddleware = require('../middleware/auth');
 const uploadMiddleware = require('../middleware/upload');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
-const { except } = require("../utils/utils");
 const { updateImages, removeUsage } = require("../utils/imageHandler");
+const { toPublicPath } = require('../utils/utils')
 
 const router = express.Router();
 
@@ -13,13 +13,31 @@ const router = express.Router();
 // Returns a post with id :id
 router.get("/api/v1/posts/:id", async function (req, res, next) {
 	try {
-		const post = await models.Posts.findById(req.params.id).populate('comments').lean().exec();
+		const post = await models.Posts.findById(req.params.id)
+			.populate({
+				path: 'author', select: '_id name username profile_picture',
+			}).lean();
+		
+		// populate profile_picture with the public url to the resource
+		if (post.author.profile_picture) {
+			const relPath = (await models.Images.findOne({hash : post.author.profile_picture})).url;
+			post.author.profile_picture = toPublicPath(req, relPath);
+		}
+		
+		// populate images with public urls to the resources
+		post.images = await Promise.all(
+			post.images.map(async image => {
+				const imageData = await (models.Images.findOne({hash : image}).lean());
+				return toPublicPath(req, imageData.url)
+			})
+		);
+		
 		if (!post)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
 
 		post._links = {
 			user: {
-				href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${post.author}`
+				href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${post.author._id}`
 			}
 		};
 
@@ -38,9 +56,26 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 // Returns all posts authored by the user with id :id
 router.get("/api/v1/posts/users/:id", async function (req, res, next) {
 	try {
-		const posts = await models.Posts.find({ author: req.params.id }).populate('comments').exec();
+		const posts = await models.Posts.find({ author: req.params.id }).populate({
+			path: 'author', select: '_id name username profile_picture',
+		}).lean().exec();
+
 		if (!posts || posts.length == 0)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
+
+		if (posts[0].author.profile_picture) {
+			const relPath = (await models.Images.findOne({hash : posts[0].author.profile_picture})).url;
+			posts[0].author.profile_picture = toPublicPath(req, relPath);
+		} // changes the author pfp in all the posts, since they are reference-shared
+
+		for (var post of posts) {
+			post.images = await Promise.all(
+				post.images.map(async image => {
+					const imageData = await (models.Images.findOne({hash : image}).lean());
+					return toPublicPath(req, imageData.url)
+				})
+			);
+		}	
 
 		res.status(200).json(posts);
 	} catch (err) {
