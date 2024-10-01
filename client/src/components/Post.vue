@@ -10,21 +10,34 @@
       </div>
       <div class="post-content">
         <span class="content">{{ content }}</span>
-        <img class="picture" v-bind:src="picture" />
+        <div class="picture-container">
+          <img
+            class="picture"
+            v-for="image in images"
+            v-bind:src="image"
+            :key="image._id"
+          />
+        </div>
       </div>
       <div class="interactions">
-        <div class="clickble" ref="like">
-          <span class="icon like" ref="like_icon" :class="{ liked: liked }">favorite</span>
+        <div
+          class="clickable"
+          ref="like"
+          :class="{ liked: liked, like: !liked }"
+        >
+          <span class="icon" ref="like_icon">favorite</span>
           <span>{{ likes.length }}</span>
         </div>
-        <div class="clickable">
+        <div class="clickable comment">
           <span class="icon">forum</span>
           <span>{{ comments.length }}</span>
         </div>
-        <div class="repost inter-tight-medium">
-          <span class="icon" style="font-variation-settings: 'wght' 400">cached</span>
+        <Button class="inter-tight-medium" style="margin-left: auto">
+          <span class="icon" style="font-variation-settings: 'wght' 400"
+            >cached</span
+          >
           <span style="padding-right: 0.4rem">Repost</span>
-        </div>
+        </Button>
       </div>
     </div>
   </div>
@@ -44,6 +57,7 @@
   height: 4rem;
   border-radius: 100%;
 }
+
 .post-data {
   width: 100%;
   padding-left: 0.5rem;
@@ -59,6 +73,7 @@
   gap: 1rem;
   flex-direction: column;
 }
+
 .info {
   display: flex;
   flex-direction: row;
@@ -70,6 +85,9 @@
   opacity: 0.7;
   display: inline-block;
 }
+.info > span {
+  flex-shrink: 0;
+}
 .info > span:nth-child(1) {
   opacity: 1;
   flex-shrink: 1; /* Allow it to shrink when necessary */
@@ -77,73 +95,70 @@
   text-overflow: ellipsis; /* Truncate with ellipsis */
   max-width: 50%; /* Limit the name to a maximum width */
 }
-.info > span:nth-child(2) {
-  flex-shrink: 0;
-}
 
-.info > span:nth-child(3) {
-  flex-shrink: 0;
-}
-
-.info > span:nth-child(4) {
-  flex-shrink: 0;
+.picture-container {
+  display: flex;
+  height: fit-content;
+  gap: 1vmin;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
 .picture {
-  width: 100%;
-  height: 100%;
+  box-sizing: border-box;
+  min-width: calc(50% - 1vmin);
+  flex: 1;
   border-radius: 1rem;
-  object-fit: contain;
+  object-fit: cover;
 }
+.picture:nth-child(2n) {
+  flex-basis: calc(50% - 1vmin);
+  aspect-ratio: 1/1;
+}
+
 .interactions {
   display: flex;
   padding-top: 0.5rem;
   flex-direction: row;
 }
-.interactions > * {
-  flex: 1;
-}
 .clickable {
+  margin-right: 3rem;
   display: flex;
   flex-direction: row;
+  justify-content: center;
   align-items: center;
   gap: 0.2rem;
-}
-.clickable > * {
+  cursor: pointer;
+  transition: 0.3s;
   opacity: 0.7;
-  transition: 0.5s;
 }
 .icon {
-  cursor: pointer;
   font-size: 2rem;
 }
+
 .like:hover {
   opacity: 1;
   color: var(--color-like);
 }
+.like:hover .icon {
+  font-variation-settings: 'FILL' 1, 'wght' 100;
+}
 .liked {
   opacity: 1;
   color: var(--color-like);
-  font-variation-settings: 'FILL' 1;
+}
+.liked .icon {
+  font-variation-settings: 'FILL' 1, 'wght' 100;
 }
 .liked:hover {
-  opacity: 0.7;
   color: var(--color-on-background);
 }
-.repost {
-  transition: 0.5s;
-  cursor: pointer;
-  background: var(--color-accent);
-  padding: 0.5rem;
-  display: flex;
-  gap: 0.5rem;
-  font-size: 1.5rem;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-on-accent);
-  border-radius: 100rem;
+
+.comment:hover {
+  opacity: 1;
+  color: var(--color-accent);
 }
-.repost:hover {
-  background: var(--color-accent-highlight);
+.comment:hover .icon {
+  font-variation-settings: 'FILL' 1, 'wght' 100, 'GRAD' 0, 'opsz' 20;
 }
 </style>
 
@@ -154,52 +169,74 @@ import moment from 'moment'
 export default {
   props: ['post'],
   data() {
-    return {
-      user: {},
-      name: '',
-      username: '',
-      pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
-      date: moment(this.post.timestamp).fromNow(),
-      content: this.post.content,
-      images: this.post.images,
-      likes: this.post.likes,
-      comments: this.post.comments,
-      liked: true
+    if (this.post) {
+      return {
+        user: {},
+        name: '',
+        username: '',
+        pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
+        date: moment(this.post.timestamp).fromNow(),
+        content: this.post.content,
+        images: this.post.images,
+        likes: this.post?.likes,
+        comments: this.post?.comments,
+        liked: true
+      }
+    } else {
+      return {
+        user: {},
+        name: 'Shawn Dawgson',
+        username: 'coolguylikesdawgs',
+        pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
+        date: moment(new Date()).fromNow(),
+        content: 'Can I pet that dawg',
+        images: [
+          'https://st3.depositphotos.com/29384342/34115/i/450/depositphotos_341157888-stock-photo-recommendation-sports-student.jpg',
+          'https://randomwordgenerator.com/img/picture-generator/52e4d1424f5aa914f1dc8460962e33791c3ad6e04e5074417d2e72d2954ac5_640.jpg',
+          'https://www.kdnuggets.com/wp-content/uploads/tree-todd-quackenbush-unsplash.jpg'
+        ],
+        likes: [],
+        comments: [],
+        liked: true
+      }
     }
   },
   async created() {
-    Api.get('v1/users/' + this.post.author)
-      .then((response) => {
-        this.user = response.data
-        this.name = this.user.name
-        this.username = this.user.username
-        if (this.user.profile_picture) {
-          Api.get('v1/images/' + this.user.profile_picture)
-            .then((response) => {
-              this.pfp = response.data.url
-            })
-            .catch((error) => {
-              console.log(error)
-            })
-        }
-      })
-      .catch((error) => {
-        console.log(error)
-      })
-
-    for (const image of this.images) {
-      Api.get('v1/images/' + image)
+    if (this.post) {
+      Api.get('v1/users/' + this.post.author)
         .then((response) => {
-          this.pfp = response.data.url
+          this.user = response.data
+          this.name = this.user.name
+          this.username = this.user.username
+          if (this.user.profile_picture) {
+            Api.get('v1/images/' + this.user.profile_picture)
+              .then((response) => {
+                this.pfp = response.data.url
+              })
+              .catch((error) => {
+                console.log(error)
+              })
+          }
         })
         .catch((error) => {
           console.log(error)
         })
+
+      for (const image of this.images) {
+        Api.get('v1/images/' + image)
+          .then((response) => {
+            this.pfp = response.data.url
+          })
+          .catch((error) => {
+            console.log(error)
+          })
+      }
     }
   },
   mounted() {
     this.$refs.like.addEventListener('click', () => {
-      this.$refs.like_icon.classList.toggle('liked')
+      this.$refs.like.classList.toggle('liked')
+      this.$refs.like.classList.toggle('like')
       // TODO: update db
     })
   }
