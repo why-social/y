@@ -6,6 +6,7 @@ const mongoose = require("../db/database").mongoose;
 const authMiddleware = require('../middleware/auth');
 const { NotFoundError, UnauthorizedError, ConflictError, errorMsg } = require("../utils/errors");
 const { toPublicPath } = require('../utils/utils')
+const uploadDir = process.env.UPLOAD_DIR || '/uploads/';
 
 //#region GET
 // Get image from the server
@@ -56,7 +57,7 @@ router.delete("/api/v1/images/:hash", authMiddleware, async function(req, res, n
 		
 		console.log("Deleting " + path.join(__dirname, imageObject.url));
 
-		fs.rmSync(path.join(appRoot, "/uploads/" + imageObject.hash), { recursive: true, force: true }); // delete the directory
+		fs.rmSync(path.join(appRoot, uploadDir, imageObject.hash), { recursive: true, force: true }); // delete the directory
 		await mongoose.models["Images"].deleteOne({_id : imageObject._id}).exec(); // delete the DB entry
 
 		res.status(200).send();
@@ -75,7 +76,7 @@ router.delete("/api/v1/images", async function(req, res, next) {
 		await mongoose.models["Images"].deleteMany({}).exec();
 
 		// Delete all files in the uploads directory
-		const uploadsPath = path.join(appRoot, "/uploads");
+		const uploadsPath = path.join(appRoot, uploadDir);
 		fs.readdirSync(uploadsPath).forEach(file => {
 			const filePath = path.join(uploadsPath, file);
 			fs.rmSync(filePath, { recursive: true, force: true });

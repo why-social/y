@@ -4,6 +4,8 @@ const crypto = require('crypto');
 var models = require('../db/database').mongoose.models;
 const { except, removeFromArray } = require("./utils");
 
+const uploadDir = process.env.UPLOAD_DIR || '/uploads/';
+
 /**
  * Adds images to the given post and updates the file usage in the DB.
  * @param images Images list to update.
@@ -50,7 +52,7 @@ async function addUsage(hash) {
 async function removeUsage(hash) {
     const image = await models.Images.findOneAndUpdate({hash : hash}, {$inc: {usageCount: -1}}, {new: true});
     if (image && image?.usageCount <= 0) {
-        fs.rmSync(path.join(appRoot, "/uploads/" + image.hash), { recursive: true, force: true }); // delete the directory
+        fs.rmSync(path.join(appRoot, uploadDir + image.hash), { recursive: true, force: true }); // delete the directory
         await image.deleteOne().exec(); // delete the DB entry
     }
 }
@@ -59,8 +61,8 @@ async function saveFile(file) {
     // Saves the file from multer buffer (memory) to disk and updates images DB
     const fileBuffer = file.buffer; // read file from multer buffer
     const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex'); // generate hash from the file content
-    const dir = path.join(appRoot, '/uploads/', hash)
-    const relPath = path.join('/uploads/', hash, file.originalname);
+    const dir = path.join(appRoot, uploadDir, hash)
+    const relPath = path.join(uploadDir, hash, file.originalname);
     const filePath = path.join(dir, file.originalname);
     
     // check if the directory (image) already exists
