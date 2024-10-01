@@ -10,37 +10,26 @@ const uploadMiddleware = require("../middleware/upload");
 //#region GET
 router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, next) {
 	try{
-		if (req.headers["x-http-method-override"]) {
-			if (req.headers["x-http-method-override"] == "PUT") {
-				return await putForId(req, res, next);
-			} else if (req.headers["x-http-method-override"] == "PATCH") {
-				return await patchForId(req, res, next);
-			} else if (req.headers["x-http-method-override"] == "DELETE") {
-				return await deleteForId(req, res, next);
-			} else {
-				throw new ValidationError(errorMsg.UNSUPPORTED);
-			}
-		} else {
-			let comment = await getCommentById(req.params.id, true, next);
+		let comment = await getCommentById(req.params.id, true, next);
 
-			comment._links = {
-				user: {
-					href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${comment.author}`
-				}
-			};
-			
-			if (comment.parent_is_post) {
-				comment._links.parent = {
-					href: `${req.protocol + '://' + req.get('host')}/api/v1/posts/${comment.parent_id}`
-				};
-			} else {
-				comment._links.parent = {
-					href: `${req.protocol + '://' + req.get('host')}/api/v1/comments/${comment.parent_id}`
-				};
+		comment._links = {
+			user: {
+				href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${comment.author}`
 			}
-			
-			return res.status(200).json(comment);
+		};
+		
+		if (comment.parent_is_post) {
+			comment._links.parent = {
+				href: `${req.protocol + '://' + req.get('host')}/api/v1/posts/${comment.parent_id}`
+			};
+		} else {
+			comment._links.parent = {
+				href: `${req.protocol + '://' + req.get('host')}/api/v1/comments/${comment.parent_id}`
+			};
 		}
+		
+		return res.status(200).json(comment);
+
 	} catch(err) {
 		next(err);
 	}
@@ -78,6 +67,23 @@ router.get("/api/v1/comments/:comment_id/likes/:user_id", async function (req, r
 //#region POST
 async function postRequest(req, res, next) {
 	try {
+		if (req.headers["x-http-method-override"]) {
+			if (!req.body.id)
+				throw new ValidationError(errorMsg.MISSING_ID);
+			else 
+				req.params.id = req.body.id;
+
+			if (req.headers["x-http-method-override"] == "PUT") {
+				return await putForId(req, res, next);
+			} else if (req.headers["x-http-method-override"] == "PATCH") {
+				return await patchForId(req, res, next);
+			} else if (req.headers["x-http-method-override"] == "DELETE") {
+				return await deleteForId(req, res, next);
+			} else {
+				throw new ValidationError(errorMsg.UNSUPPORTED);
+			}
+		}
+
 		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
@@ -154,63 +160,30 @@ router.post("/api/v1/comments/:comment_id/likes", authMiddleware, async function
 //#region PUT
 async function putForId(req, res, next) {
 	try {
-		let comment = await getCommentById(req.params.id, false, next);
+		if (!req.isAuth || !req.user)
+			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
+		let comment = await getCommentById(req.params.id, false, next);
 		if (!comment)
 			return postRequest(req, res, next);
 
-		if (!req.isAuth || comment.author != req.user.userId)
-			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
-
-		if (comment.is_deleted)
-			throw new ValidationError(errorMsg.CANNOT_EDIT_DELETED_COMMENT);
-
-		if (req.body.is_deleted)
-			throw new ValidationError(errorMsg.DELETE_COMMENTS_ONLY);
-
-		if (!req.body.is_edited)
-			throw new ValidationError(errorMsg.EDITED_POSTS_NEED_IS_EDITED_TRUE);
-
-		if (req.body.author && req.body.author != comment.author)
-			throw new ValidationError(errorMsg.CANNOT_CHANGE_AUTHOR);
-
-		if (req.body.timestamp && req.body.timestamp != comment.timestamp)
-			throw new ValidationError(errorMsg.CANNOT_CHANGE_TIMESTAMP);
-
-		if (req.body.parent_id && req.body.parent_id != comment.parent_id)
-			throw new ValidationError(errorMsg.CANNOT_CHANGE_PARENT_ID);
-
-		if (req.body.parent_is_post && req.body.parent_is_post != comment.parent_is_post)
-			throw new ValidationError(errorMsg.CANNOT_CHANGE_PARENT_TYPE);
-
-		if (req.body.likes) {
-			let likesDiff = except(req.body.likes, comment.likes);
-
-			if (likesDiff.length == 0) {
-				likesDiff = except(comment.likes, req.body.likes);
-			}
-
-			if (likesDiff.length > 0 && (likesDiff.length > 1 || likesDiff[0] != req.user))
-				throw new ValidationError(errorMsg.CANNOT_CHANGE_OTHER_USERS_LIKES);
+		const newData = req.body;
+		if (!newData.author || newData.is_edited === undefined || newData.is_deleted === undefined
+			|| !newData.content || newData.likes === undefined || newData.comments === undefined
+			|| !newData.parent_id || newData.parent_is_post === undefined) {
+			throw new ValidationError(errorMsg.MISSING_FIELDS);
 		}
 
-		if (req.body.content?.length || req.files?.length) {
-			comment.is_edited = true;
-			comment.content = req.body.content;
-			comment.likes = req.body.likes;
+		newData.likes = newData.likes || [];
+		newData.comments = newData.comments || [];
+		const files = req.files || [];
 
-			if (req.files?.length > 0) {
-				await updateImages(comment.images, req.files);
-			} else {
-				await updateImages(comment.images, []);
-			}
+		Object.assign(comment, newData);
+		await updateImages(comment.images, files);
+		await comment.save();
 
-			await comment.save();
+		return res.status(200).json(comment);
 
-			return res.status(200).json(comment);
-		} else {
-			throw new ValidationError(errorMsg.AT_LEAST_IMAGE_OR_CONTENT_REQUIRED);
-		}
 	} catch (err) {
 		next(err);
 	}

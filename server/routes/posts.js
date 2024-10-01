@@ -124,54 +124,21 @@ router.put("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, async
 		let post = await models.Posts.findById(req.params.id).exec();
 		if (!post) return postRequest(req, res);
 
-		if (post.is_deleted)
-			throw new ValidationError(errorMsg.CANNOT_EDIT_DELETED_COMMENT);
-
-		if (req.body.is_deleted)
-			throw new ValidationError(errorMsg.DELETE_COMMENTS_ONLY);
-
-		if (!req.body.is_edited)
-			throw new ValidationError(errorMsg.EDITED_POSTS_NEED_IS_EDITED_TRUE);
-
-		if (req.body.author && req.body.author != post.author)
-			throw new ValidationError(errorMsg.CANNOT_CHANGE_AUTHOR);
-
-		if (req.body.timestamp && req.body.timestamp != post.timestamp)
-			throw new ValidationError(errorMsg.CANNOT_CHANGE_TIMESTAMP);
-
-		if (req.body.original_post_id && req.body.original_post_id != post.original_post_id)
-			throw new ValidationError(errorMsg.CANNOT_CHANGE_PARENT_ID);
-
-		if (req.body.likes) {
-			let likesDiff = except(req.body.likes, post.likes);
-
-			if (likesDiff.length == 0) {
-				likesDiff = except(post.likes, req.body.likes);
-			}
-
-			if (likesDiff.length > 0 && (likesDiff.length > 1 || likesDiff[0] != req.user))
-				throw new ValidationError(errorMsg.CANNOT_CHANGE_OTHER_USERS_LIKES);
+		const newData = req.body;
+		if (!newData.author || newData.is_edited === undefined || newData.is_deleted === undefined
+			|| !newData.content || newData.likes === undefined || newData.comments === undefined) {
+			throw new ValidationError(errorMsg.MISSING_FIELDS);
 		}
+		
+		newData.likes = newData.likes || [];
+		newData.comments = newData.comments || [];
+		const files = req.files || [];
 
-		if (req.body.content?.length || req.files?.length) {
+		Object.assign(post, newData);
+		await updateImages(post.images, files);
+		await post.save();
 
-			post.is_edited = true;
-			post.content = req.body.content;
-			post.likes = req.body.likes;
-
-			if (req.files?.length > 0) {
-				await updateImages(post.images, req.files);
-			} else {
-				await updateImages(post.images, []);
-			}
-
-
-			await post.save();
-
-			return res.status(200).json(post);
-		} else {
-			throw new ValidationError(errorMsg.AT_LEAST_IMAGE_OR_CONTENT_REQUIRED);
-		}
+		return res.status(200).json(post);
 	} catch (err) {
 		next(err);
 	}
