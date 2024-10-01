@@ -163,7 +163,6 @@
 </style>
 
 <script>
-import { Api } from '@/Api'
 import moment from 'moment'
 
 export default {
@@ -171,18 +170,19 @@ export default {
   data() {
     if (this.post) {
       return {
-        user: {},
-        name: '',
-        username: '',
-        pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
+        user: this.post.author,
+        name: this.post.author.name,
+        username: this.post.author.username,
+        pfp: this.post.author.profile_picture,
         date: moment(this.post.timestamp).fromNow(),
         content: this.post.content,
-        images: this.post.images,
-        likes: this.post?.likes,
-        comments: this.post?.comments,
+        images: this.post.images || [],
+        likes: this.post.likes,
+        comments: this.post.comments,
         liked: true
       }
     } else {
+      // placeholder post
       return {
         user: {},
         name: 'Shawn Dawgson',
@@ -198,38 +198,6 @@ export default {
         likes: [],
         comments: [],
         liked: true
-      }
-    }
-  },
-  async created() {
-    if (this.post) {
-      Api.get('v1/users/' + this.post.author)
-        .then((response) => {
-          this.user = response.data
-          this.name = this.user.name
-          this.username = this.user.username
-          if (this.user.profile_picture) {
-            Api.get('v1/images/' + this.user.profile_picture)
-              .then((response) => {
-                this.pfp = response.data.url
-              })
-              .catch((error) => {
-                console.log(error)
-              })
-          }
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-
-      for (const image of this.images) {
-        Api.get('v1/images/' + image)
-          .then((response) => {
-            this.pfp = response.data.url
-          })
-          .catch((error) => {
-            console.log(error)
-          })
       }
     }
   },
