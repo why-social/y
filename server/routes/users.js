@@ -70,7 +70,7 @@ router.get("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 			join_date: user.join_date,
 			birthday: user.birthday,
 			last_time_posted: user.last_time_posted,
-			profile_picture: await getPublicPathFromHash(result.profile_picture),
+			profile_picture: await getPublicPathFromHash(user.profile_picture),
 		}
 
 		// If user is not authenticated, do not return email
