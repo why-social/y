@@ -44,8 +44,15 @@ async function getCommentById(id, lean, next) {
 	}
 }
 
+async function getPublicPathFromHash(req, hash) {
+	const image = await models.Images.findOne({hash}).lean();
+	if (!image) return null;
+
+	return toPublicPath(req, image.url);
+}
+
 function toPublicPath(req, localPath) {
 	return `${req.protocol}://${req.get('host')}${localPath?.replace(/\\/g, '/')}`
 }
 
-module.exports = { except, removeFromArray, getCommentById, toPublicPath, secrets };
+module.exports = { except, removeFromArray, getCommentById, toPublicPath, getPublicPathFromHash, secrets };

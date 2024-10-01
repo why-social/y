@@ -3,7 +3,7 @@ const router = express.Router();
 const mongoose = require("../db/database").mongoose;
 const models = mongoose.models;
 const { ValidationError, UnauthorizedError, errorMsg } = require("../utils/errors");
-const { toPublicPath } = require('../utils/utils')
+const { toPublicPath, getPublicPathFromHash } = require('../utils/utils')
 const authMiddleware = require("../middleware/auth");
 
 //#region GET
@@ -115,8 +115,7 @@ router.get("/api/v1/feeds/", authMiddleware,
                 
                         post.images = await Promise.all(
                             post.images.map(async image => {
-                                const imageData = await models.Images.findOne({ hash: image }).lean();
-                                return toPublicPath(req, imageData.url);
+                                return await getPublicPathFromHash(req, image);
                             })
                         );
                     }

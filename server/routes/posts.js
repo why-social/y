@@ -5,7 +5,7 @@ const uploadMiddleware = require('../middleware/upload');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
 const { updateImages, removeUsage } = require("../utils/imageHandler");
-const { toPublicPath } = require('../utils/utils')
+const { getPublicPathFromHash } = require('../utils/utils')
 
 const router = express.Router();
 
@@ -20,15 +20,13 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 		
 		// populate profile_picture with the public url to the resource
 		if (post.author.profile_picture) {
-			const relPath = (await models.Images.findOne({hash : post.author.profile_picture})).url;
-			post.author.profile_picture = toPublicPath(req, relPath);
+			post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
 		}
 		
 		// populate images with public urls to the resources
 		post.images = await Promise.all(
 			post.images.map(async image => {
-				const imageData = await (models.Images.findOne({hash : image}).lean());
-				return toPublicPath(req, imageData.url)
+				return await getPublicPathFromHash(req, image);
 			})
 		);
 		
@@ -64,15 +62,13 @@ router.get("/api/v1/posts/users/:id", async function (req, res, next) {
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
 
 		if (posts[0].author.profile_picture) {
-			const relPath = (await models.Images.findOne({hash : posts[0].author.profile_picture})).url;
-			posts[0].author.profile_picture = toPublicPath(req, relPath);
+			posts[0].author.profile_picture = await getPublicPathFromHash(posts[0].author.profile_picture, image);
 		} // changes the author pfp in all the posts, since they are reference-shared
 
 		for (var post of posts) {
 			post.images = await Promise.all(
 				post.images.map(async image => {
-					const imageData = await (models.Images.findOne({hash : image}).lean());
-					return toPublicPath(req, imageData.url)
+					return await getPublicPathFromHash(req, image);
 				})
 			);
 		}	

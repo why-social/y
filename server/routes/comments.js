@@ -3,7 +3,7 @@ const router = express.Router();
 const models = require("../db/database").mongoose.models;
 const authMiddleware = require("../middleware/auth");
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
-const { toPublicPath, getCommentById } = require("../utils/utils");
+const { getPublicPathFromHash, getCommentById } = require("../utils/utils");
 const { updateImages, removeUsage } = require("../utils/imageHandler");
 const uploadMiddleware = require("../middleware/upload");
 
@@ -14,15 +14,13 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 
 		// populate profile_picture with the public url to the resource
 		if (comment.author.profile_picture) {
-			const relPath = (await models.Images.findOne({hash : comment.author.profile_picture})).url;
-			comment.author.profile_picture = toPublicPath(req, relPath);
+			comment.author.profile_picture = await getPublicPathFromHash(req, hash);
 		}
 		
 		// populate images with public urls to the resources
 		comment.images = await Promise.all(
 			comment.images.map(async image => {
-				const imageData = await (models.Images.findOne({hash : image}).lean());
-				return toPublicPath(req, imageData.url)
+				return await getPublicPathFromHash(req, image);
 			})
 		);
 
@@ -62,15 +60,13 @@ router.get("/api/v1/comments/users/:id", async function (req, res, next) {
 			.lean().exec();
 		
 		if (result[0].author.profile_picture) {
-			const relPath = (await models.Images.findOne({hash : result[0].author.profile_picture})).url;
-			result[0].author.profile_picture = toPublicPath(req, relPath);
+			result[0].author.profile_picture = await getPublicPathFromHash(req, result[0].author.profile_picture);
 		} // changes the author pfp in all the comments, since they are reference-shared
 
 		for (var comment of result) {
 			comment.images = await Promise.all(
 				comment.images.map(async image => {
-					const imageData = await (models.Images.findOne({hash : image}).lean());
-					return toPublicPath(req, imageData.url)
+					return await getPublicPathFromHash(req, image);
 				})
 			);
 		}
