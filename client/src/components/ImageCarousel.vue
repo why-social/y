@@ -1,18 +1,18 @@
 <template>
-  <div class="modal-overlay" @click="closeModal">
+  <div class="modal-overlay" @click="closeModal" v-on:keydown.esc="closeModal">
     <span class="material-symbols-outlined modal-icon modal-button-container" @click="closeModal">arrow_left_alt</span>
 
     <div class="modal-center">
       <div class="modal-button-container" :class="{disabled: currentIndex === 0}" @click.stop>
         <span class="material-symbols-outlined modal-icon"
-          @click="currentIndex > 0 ? currentIndex-- : null">chevron_left</span>
+          @click="prevImage">chevron_left</span>
       </div>
 
       <img :src="images[currentIndex]" class="full-image" @click.stop />
 
       <div class="modal-button-container" :class="{disabled: currentIndex === images.length - 1}" @click.stop>
         <span class="material-symbols-outlined modal-icon"
-          @click="currentIndex < images.length - 1 ? currentIndex++ : null">chevron_right</span>
+          @click="nextImage">chevron_right</span>
       </div>
     </div>
   </div>
@@ -29,13 +29,34 @@ export default {
   methods: {
     closeModal() {
       this.$emit('close')
+    },
+    nextImage() {
+      if (this.currentIndex < this.images.length - 1) {
+        this.currentIndex++
+      }
+    },
+    prevImage() {
+      if (this.currentIndex > 0) {
+        this.currentIndex--
+      }
+    },
+    handleKeydown(event) {
+      if (event.key === 'Escape') {
+        this.closeModal()
+      } else if (event.key === 'ArrowLeft') {
+        this.prevImage()
+      } else if (event.key === 'ArrowRight') {
+        this.nextImage()
+      }
     }
   },
   mounted() {
     document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', this.handleKeydown)
   },
   beforeUnmount() {
     document.body.style.overflow = ''
+    window.removeEventListener('keydown', this.handleKeydown)
   }
 }
 </script>
