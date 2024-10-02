@@ -1,43 +1,64 @@
 <template>
-  <div class="post-container">
-    <img class="pfp" v-bind:src="pfp" />
-    <div class="post-data">
-      <div class="info">
-        <span class="inter-tight-medium">{{ name }}</span>
-        <span>@{{ username }}</span>
-        <span class="inter-tight-medium">·</span>
-        <span>{{ date }}</span>
-      </div>
-      <div class="post-content">
-        <span class="content">{{ content }}</span>
-        <div class="picture-container">
-          <img
-            class="picture"
-            v-for="image in images"
-            v-bind:src="image"
-            :key="image._id"
-          />
+  <div>
+    <div class="post-container">
+      <img class="pfp" v-bind:src="pfp" />
+      <div class="post-data">
+        <div class="info">
+          <span class="inter-tight-medium">{{ name }}</span>
+          <span>@{{ username }}</span>
+          <span class="inter-tight-medium">·</span>
+          <span>{{ date }}</span>
         </div>
-      </div>
-      <div class="interactions">
-        <div
-          class="clickable"
-          ref="like"
-          :class="{ liked: liked, like: !liked }"
-        >
-          <span class="icon" ref="like_icon">favorite</span>
-          <span>{{ likes.length }}</span>
+        <div class="post-content">
+          <span class="content">{{ content }}</span>
+          <div class="picture-container">
+            <img
+              class="picture"
+              v-for="image in images"
+              v-bind:src="image"
+              :key="image._id"
+              @click="showModal(images.indexOf(image))"
+            />
+          </div>
         </div>
-        <div class="clickable comment">
-          <span class="icon">forum</span>
-          <span>{{ comments.length }}</span>
-        </div>
-        <Button class="inter-tight-medium" style="margin-left: auto">
-          <span class="icon" style="font-variation-settings: 'wght' 400"
-            >cached</span
+        <div class="interactions">
+          <div
+            class="clickable"
+            ref="like"
+            :class="{ liked: liked, like: !liked }"
           >
-          <span style="padding-right: 0.4rem">Repost</span>
-        </Button>
+            <span class="icon" ref="like_icon">favorite</span>
+            <span>{{ likes.length }}</span>
+          </div>
+          <div class="clickable comment">
+            <span class="icon">forum</span>
+            <span>{{ comments.length }}</span>
+          </div>
+          <Button class="inter-tight-medium" style="margin-left: auto">
+            <span class="icon" style="font-variation-settings: 'wght' 400"
+              >cached</span
+            >
+            <span style="padding-right: 0.4rem">Repost</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+    <div v-if="isModalOpen" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-button-container" @click="modalImageIndex > 0 ? modalImageIndex-- : null">
+          <span class="material-symbols-outlined icon modal-button"
+            :disabled="modalImageIndex === 0">chevron_left</span>
+        </div>
+
+        <div class="modal-center">
+          <span class="material-symbols-outlined icon modal-close" @click="closeModal">close</span>
+          <img :v-if="modalImageIndex !== null" :src="images[modalImageIndex]" class="full-image" @click.stop />
+        </div>
+
+        <div class="modal-button-container" @click="modalImageIndex < images.length - 1 ? modalImageIndex++ : null">
+          <span class="material-symbols-outlined icon modal-button"
+            :disabled="modalImageIndex === images.length - 1">chevron_right</span>
+        </div>
       </div>
     </div>
   </div>
@@ -110,6 +131,9 @@
   border-radius: 1rem;
   object-fit: cover;
 }
+.picture:hover {
+  cursor: pointer;
+}
 .picture:nth-child(2n) {
   flex-basis: calc(50% - 1vmin);
   aspect-ratio: 1/1;
@@ -160,6 +184,77 @@
 .comment:hover .icon {
   font-variation-settings: 'FILL' 1, 'wght' 100, 'GRAD' 0, 'opsz' 20;
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 69;
+}
+
+.modal-content {
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+}
+
+.full-image {
+  max-width: 60vw;
+  max-height: 85vh;
+  min-width: 50vh;
+  min-height: 50vh;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.modal-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.modal-close {
+  align-self: flex-end;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  font-size: 2.5rem;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 0.25rem;
+  border-radius: 50%;
+  color: black;
+}
+
+.modal-button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  height: 100%;
+  background: red;
+  cursor: pointer;
+}
+
+.modal-button {
+  border: none;
+  padding: 1rem;
+  color: var(--color-on-background);
+  user-select: none;
+}
+
+.modal-button:disabled {
+  color: red;
+}
+
 </style>
 
 <script>
@@ -168,37 +263,32 @@ import moment from 'moment'
 export default {
   props: ['post'],
   data() {
-    if (this.post) {
-      return {
-        user: this.post.author,
-        name: this.post.author.name,
-        username: this.post.author.username,
-        pfp: this.post.author.profile_picture || 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
-        date: moment(this.post.timestamp).fromNow(),
-        content: this.post.content,
-        images: this.post.images || [],
-        likes: this.post.likes,
-        comments: this.post.comments,
-        liked: true
-      }
-    } else {
-      // placeholder post
-      return {
-        user: {},
-        name: 'Shawn Dawgson',
-        username: 'colguylikesdawgs',
-        pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
-        date: moment(new Date()).fromNow(),
-        content: 'Can I pet that dawg',
-        images: [
-          'https://st3.depositphotos.com/29384342/34115/i/450/depositphotos_341157888-stock-photo-recommendation-sports-student.jpg',
-          'https://randomwordgenerator.com/img/picture-generator/52e4d1424f5aa914f1dc8460962e33791c3ad6e04e5074417d2e72d2954ac5_640.jpg',
-          'https://www.kdnuggets.com/wp-content/uploads/tree-todd-quackenbush-unsplash.jpg'
-        ],
-        likes: [],
-        comments: [],
-        liked: true
-      }
+    return {
+      user: this.post.author,
+      name: this.post.author.name,
+      username: this.post.author.username,
+      pfp:
+        this.post.author.profile_picture ||
+        'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
+      date: moment(this.post.timestamp).fromNow(),
+      content: this.post.content,
+      images: this.post.images || [],
+      likes: this.post.likes,
+      comments: this.post.comments,
+      liked: true,
+      modalImageIndex: null,
+      isModalOpen: false
+    }
+  },
+  methods: {
+    showModal(index) {
+      this.isModalOpen = true
+      this.modalImageIndex = index
+      console.log(this.modalImageIndex)
+    },
+    closeModal() {
+      this.isModalOpen = false
+      this.modalImageIndex = null
     }
   },
   mounted() {
