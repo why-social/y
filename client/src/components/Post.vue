@@ -1,45 +1,49 @@
 <template>
-  <div class="post-container">
-    <img class="pfp" v-bind:src="pfp" />
-    <div class="post-data">
-      <div class="info">
-        <span class="inter-tight-medium">{{ name }}</span>
-        <span>@{{ username }}</span>
-        <span class="inter-tight-medium">·</span>
-        <span>{{ date }}</span>
-      </div>
-      <div class="post-content">
-        <span class="content">{{ content }}</span>
-        <div class="picture-container">
-          <img
-            class="picture"
-            v-for="image in images"
-            v-bind:src="image"
-            :key="image._id"
-          />
+  <div>
+    <div class="post-container">
+      <img class="pfp" v-bind:src="pfp" />
+      <div class="post-data">
+        <div class="info">
+          <span class="inter-tight-medium">{{ name }}</span>
+          <span>@{{ username }}</span>
+          <span class="inter-tight-medium">·</span>
+          <span>{{ date }}</span>
         </div>
-      </div>
-      <div class="interactions">
-        <div
-          class="clickable"
-          ref="like"
-          :class="{ liked: liked, like: !liked }"
-        >
-          <span class="icon" ref="like_icon">favorite</span>
-          <span>{{ likes.length }}</span>
+        <div class="post-content">
+          <span class="content">{{ content }}</span>
+          <div class="picture-container">
+            <img
+              class="picture"
+              v-for="image in images"
+              v-bind:src="image"
+              :key="image._id"
+              @click="showModal(images.indexOf(image))"
+            />
+          </div>
         </div>
-        <div class="clickable comment">
-          <span class="icon">forum</span>
-          <span>{{ comments.length }}</span>
-        </div>
-        <Button class="inter-tight-medium" style="margin-left: auto">
-          <span class="icon" style="font-variation-settings: 'wght' 400"
-            >cached</span
+        <div class="interactions">
+          <div
+            class="clickable"
+            ref="like"
+            :class="{ liked: liked, like: !liked }"
           >
-          <span style="padding-right: 0.4rem">Repost</span>
-        </Button>
+            <span class="icon" ref="like_icon">favorite</span>
+            <span>{{ likes.length }}</span>
+          </div>
+          <div class="clickable comment">
+            <span class="icon">forum</span>
+            <span>{{ comments.length }}</span>
+          </div>
+          <Button class="inter-tight-medium" style="margin-left: auto">
+            <span class="icon" style="font-variation-settings: 'wght' 400"
+              >cached</span
+            >
+            <span style="padding-right: 0.4rem">Repost</span>
+          </Button>
+        </div>
       </div>
     </div>
+    <ImageCarousel v-if="isModalOpen" :images="images" :startIndex="modalImageIndex" @close="closeModal"/>
   </div>
 </template>
 
@@ -110,6 +114,9 @@
   border-radius: 1rem;
   object-fit: cover;
 }
+.picture:hover {
+  cursor: pointer;
+}
 .picture:nth-child(2n) {
   flex-basis: calc(50% - 1vmin);
   aspect-ratio: 1/1;
@@ -168,37 +175,31 @@ import moment from 'moment'
 export default {
   props: ['post'],
   data() {
-    if (this.post) {
-      return {
-        user: this.post.author,
-        name: this.post.author.name,
-        username: this.post.author.username,
-        pfp: this.post.author.profile_picture || 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
-        date: moment(this.post.timestamp).fromNow(),
-        content: this.post.content,
-        images: this.post.images || [],
-        likes: this.post.likes,
-        comments: this.post.comments,
-        liked: true
-      }
-    } else {
-      // placeholder post
-      return {
-        user: {},
-        name: 'Shawn Dawgson',
-        username: 'colguylikesdawgs',
-        pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
-        date: moment(new Date()).fromNow(),
-        content: 'Can I pet that dawg',
-        images: [
-          'https://st3.depositphotos.com/29384342/34115/i/450/depositphotos_341157888-stock-photo-recommendation-sports-student.jpg',
-          'https://randomwordgenerator.com/img/picture-generator/52e4d1424f5aa914f1dc8460962e33791c3ad6e04e5074417d2e72d2954ac5_640.jpg',
-          'https://www.kdnuggets.com/wp-content/uploads/tree-todd-quackenbush-unsplash.jpg'
-        ],
-        likes: [],
-        comments: [],
-        liked: true
-      }
+    return {
+      user: this.post.author,
+      name: this.post.author.name,
+      username: this.post.author.username,
+      pfp:
+        this.post.author.profile_picture ||
+        'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
+      date: moment(this.post.timestamp).fromNow(),
+      content: this.post.content,
+      images: this.post.images || [],
+      likes: this.post.likes,
+      comments: this.post.comments,
+      liked: true,
+      modalImageIndex: null,
+      isModalOpen: false
+    }
+  },
+  methods: {
+    showModal(index) {
+      this.isModalOpen = true
+      this.modalImageIndex = index
+    },
+    closeModal() {
+      this.isModalOpen = false
+      this.modalImageIndex = null
     }
   },
   mounted() {
