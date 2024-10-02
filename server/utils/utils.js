@@ -28,12 +28,12 @@ async function getCommentById(id, lean, next) {
 			result = await models.Comments.findById(id)
 			.populate({
 				path: 'author', select: '_id name username profile_picture',
-			}).lean().exec();
+			}).populate('comments').lean().exec();
 		else
 			result = await models.Comments.findById(id)
 			.populate({
 				path: 'author', select: '_id name username profile_picture',
-			}).exec();
+			}).populate('comments').exec();
 		
 		if (!result)
 			throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);

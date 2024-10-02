@@ -2,7 +2,7 @@
   <div id="navbar">
     <a href="#"> <img class="logo" src="/favicon.ico" alt="" /> </a>
     <NavigationItem to="/" text="Home"> </NavigationItem>
-    <NavigationItem to="/" text="Test"> </NavigationItem>
+    <NavigationItem to="/post" text="Post"> </NavigationItem>
   </div>
 </template>
 

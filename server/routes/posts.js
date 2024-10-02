@@ -16,7 +16,7 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 		const post = await models.Posts.findById(req.params.id)
 			.populate({
 				path: 'author', select: '_id name username profile_picture',
-			}).lean();
+			}).populate('comments').lean();
 		
 		// populate profile_picture with the public url to the resource
 		if (post.author.profile_picture) {

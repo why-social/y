@@ -1,10 +1,10 @@
 <template>
-  <div class="post-container">
-    <img class="pfp" v-bind:src="pfp" />
+  <div class="post-container" @click="goToThread">
+    <img class="pfp" v-bind:src="pfp" @click.stop="goToUser" />
     <div class="post-data">
       <div class="info">
-        <span class="inter-tight-medium">{{ name }}</span>
-        <span>@{{ username }}</span>
+        <span class="inter-tight-medium" @click.stop="goToUser">{{ name }}</span>
+        <span @click.stop="goToUser">@{{ username }}</span>
         <span class="inter-tight-medium">·</span>
         <span>{{ date }}</span>
       </div>
@@ -26,11 +26,11 @@
           :class="{ liked: liked, like: !liked }"
         >
           <span class="icon" ref="like_icon">favorite</span>
-          <span>{{ likes.length }}</span>
+          <span>{{ likes?.length || 0 }}</span>
         </div>
         <div class="clickable comment">
           <span class="icon">forum</span>
-          <span>{{ comments.length }}</span>
+          <span>{{ comments?.length || 0 }}</span>
         </div>
         <Button class="inter-tight-medium" style="margin-left: auto">
           <span class="icon" style="font-variation-settings: 'wght' 400"
@@ -173,7 +173,9 @@ export default {
         user: this.post.author,
         name: this.post.author.name,
         username: this.post.author.username,
-        pfp: this.post.author.profile_picture || 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
+        pfp:
+          this.post.author.profile_picture ||
+          'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
         date: moment(this.post.timestamp).fromNow(),
         content: this.post.content,
         images: this.post.images || [],
@@ -198,6 +200,18 @@ export default {
         likes: [],
         comments: [],
         liked: true
+      }
+    }
+  },
+  methods: {
+    goToUser() {
+      if (this.post) {
+        this.$router.push(`/profile/${this.post.author}`)
+      }
+    },
+    goToThread() {
+      if (this.post) {
+        this.$router.push(`/thread/${this.post._id}`)
       }
     }
   },
