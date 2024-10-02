@@ -92,7 +92,7 @@ router.get("/api/v1/users/:id/profile_picture", async (req, res, next) => {
 		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
 		let result = user.profile_picture ? await getPublicPathFromHash(req, user.profile_picture) : null;
-
+		console.log(result);
 		res.status(200).json(result);
 	} catch (err) {
 		next(err);

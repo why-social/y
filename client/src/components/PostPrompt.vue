@@ -45,7 +45,6 @@ export default {
         const response = Api.post('v1/posts', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
-            // PLACEHOLDER AUTH!!!
             Authorization: 'Bearer ' + localStorage.getItem('token')
           }
         })
@@ -64,6 +63,10 @@ export default {
   },
   mounted() {
     Api.get(`v1/users/${VueJwtDecode.decode(localStorage.getItem('token')).userId}/profile_picture`)
+      .then(response => {
+        console.log('PFP: \n' + response)
+        this.pfp = response.data
+      })
   }
 }
 </script>
