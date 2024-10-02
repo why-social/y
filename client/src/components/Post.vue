@@ -36,7 +36,7 @@
           <span class="icon" style="font-variation-settings: 'wght' 400"
             >cached</span
           >
-          <span style="padding-right: 0.4rem">Repost</span>
+          <span style="padding-right: 0.3rem">Repost</span>
         </Button>
       </div>
     </div>
@@ -56,6 +56,10 @@
   width: 4rem;
   height: 4rem;
   border-radius: 100%;
+}
+
+button {
+  padding: 0.7rem;
 }
 
 .post-data {
@@ -133,6 +137,7 @@
 }
 .icon {
   font-size: 2rem;
+  line-height: 80%;
 }
 
 .like:hover {
@@ -173,7 +178,9 @@ export default {
         user: this.post.author,
         name: this.post.author.name,
         username: this.post.author.username,
-        pfp: this.post.author.profile_picture || 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
+        pfp:
+          this.post.author.profile_picture ||
+          'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
         date: moment(this.post.timestamp).fromNow(),
         content: this.post.content,
         images: this.post.images || [],

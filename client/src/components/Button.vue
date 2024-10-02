@@ -8,15 +8,12 @@
 button {
   transition: 0.2s;
   cursor: pointer;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
   display: flex;
   gap: 0.5rem;
   border: none;
   user-select: none;
   font-size: 1.5rem;
+  padding: 1rem;
   align-items: center;
   justify-content: center;
   background: var(--color-accent);
