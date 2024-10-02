@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middleware/auth");
 const { ValidationError, UnauthorizedError, NotFoundError, ConflictError, errorMsg } = require("../utils/errors");
 const { nameRegex, usernameRegex, emailRegex, passwordRegex } = require("../utils/customRegex");
-const { secrets } = require("../utils/utils");
+const { secrets, getPublicPathFromHash } = require("../utils/utils");
 const uploadMiddleware = require("../middleware/upload");
 const imageHandler = require("../utils/imageHandler");
 
@@ -32,7 +32,7 @@ router.get("/api/v1/users/search", async (req, res, next) => {
 		let partialResponse = {
 			name: result.name,
 			username: result.username,
-			profile_picture: result.profile_picture,
+			profile_picture: await getPublicPathFromHash(result.profile_picture),
 		}
 
 		res.status(200).json(partialResponse);
@@ -70,7 +70,7 @@ router.get("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 			join_date: user.join_date,
 			birthday: user.birthday,
 			last_time_posted: user.last_time_posted,
-			profile_picture: user.profile_picture,
+			profile_picture: await getPublicPathFromHash(user.profile_picture),
 		}
 
 		// If user is not authenticated, do not return email
@@ -78,6 +78,22 @@ router.get("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 			delete partialResponse.email;
 
 		res.status(200).json(partialResponse);
+	} catch (err) {
+		next(err);
+	}
+});
+
+router.get("/api/v1/users/:id/profile_picture", async (req, res, next) => {
+	try {
+		// Get user by id from db
+		let user = await mongoose.models["Users"].findById(req.params.id).lean().exec();
+
+		// If user not found return 404
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
+		let result = user.profile_picture ? await getPublicPathFromHash(req, user.profile_picture) : null;
+
+		res.status(200).json(result);
 	} catch (err) {
 		next(err);
 	}
