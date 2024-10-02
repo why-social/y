@@ -2,7 +2,7 @@
   <div id="navbar">
     <a href="#"> <img class="logo" src="/favicon.ico" alt="" /> </a>
     <NavBarItem to="/" text="Home"> </NavBarItem>
-    <NavBarItem to="/profile/me" text="Profile"> </NavBarItem>
+    <NavBarItem to="/profile/me" text="My profile"> </NavBarItem>
     <NavBarItem to="/" text="Test"> </NavBarItem>
   </div>
 </template>
