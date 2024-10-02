@@ -44,20 +44,19 @@
       </div>
     </div>
     <div v-if="isModalOpen" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-button-container" @click="modalImageIndex > 0 ? modalImageIndex-- : null">
-          <span class="material-symbols-outlined icon modal-button"
-            :disabled="modalImageIndex === 0">chevron_left</span>
+      <span class="material-symbols-outlined icon modal-icon modal-button-container" @click="closeModal">arrow_left_alt</span>
+
+      <div class="modal-center">
+        <div class="modal-button-container" :class="{disabled: modalImageIndex === 0}" @click.stop>
+          <span class="material-symbols-outlined icon modal-icon"
+            @click="modalImageIndex > 0 ? modalImageIndex-- : null">chevron_left</span>
         </div>
 
-        <div class="modal-center">
-          <span class="material-symbols-outlined icon modal-close" @click="closeModal">close</span>
-          <img :v-if="modalImageIndex !== null" :src="images[modalImageIndex]" class="full-image" @click.stop />
-        </div>
+        <img :src="images[modalImageIndex]" class="full-image" @click.stop />
 
-        <div class="modal-button-container" @click="modalImageIndex < images.length - 1 ? modalImageIndex++ : null">
-          <span class="material-symbols-outlined icon modal-button"
-            :disabled="modalImageIndex === images.length - 1">chevron_right</span>
+        <div class="modal-button-container" :class="{disabled: modalImageIndex === images.length - 1}" @click.stop>
+          <span class="material-symbols-outlined icon modal-icon"
+            @click="modalImageIndex < images.length - 1 ? modalImageIndex++ : null">chevron_right</span>
         </div>
       </div>
     </div>
@@ -191,20 +190,14 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   z-index: 69;
 }
 
-.modal-content {
-  width: fit-content;
-  height: fit-content;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
+.modal-icon {
+  font-variation-settings: 'FILL' 1, 'wght' 200;
+  padding: 1rem;
 }
 
 .full-image {
@@ -212,47 +205,43 @@
   max-height: 85vh;
   min-width: 50vh;
   min-height: 50vh;
-  object-fit: contain;
-  border-radius: 10px;
+  object-fit: cover;
+  border-radius: 1rem;
+}
+
+.modal-row {
+  flex-direction: row;
+  width: 100%;
 }
 
 .modal-center {
+  position: absolute;
+  top: 50%;
+  bottom: 50%;
+  width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  position: relative;
-}
-
-.modal-close {
-  align-self: flex-end;
-  margin-bottom: 1rem;
-  cursor: pointer;
-  font-size: 2.5rem;
-  background-color: rgba(255, 255, 255, 0.7);
-  padding: 0.25rem;
-  border-radius: 50%;
-  color: black;
+  justify-content: space-between;
 }
 
 .modal-button-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  height: 100%;
-  background: red;
+  width: fit-content;
+  margin-bottom: 1rem;
   cursor: pointer;
-}
-
-.modal-button {
-  border: none;
-  padding: 1rem;
+  font-size: 2.5rem;
+  background-color: rgba(49, 49, 49, 0.85);
+  margin: 2rem;
+  border-radius: 50%;
   color: var(--color-on-background);
+  border: none;
   user-select: none;
+  transition: 0.25s;
 }
 
-.modal-button:disabled {
-  color: red;
+.disabled {
+  cursor: default;
+  opacity: 20%;
 }
 
 </style>
