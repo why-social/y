@@ -109,6 +109,6 @@ export default {
 <style>
 #container {
   width: 100%;
-  padding: 10px;
+  padding: 20px;
 }
 </style>

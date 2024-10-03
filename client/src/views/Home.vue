@@ -1,10 +1,7 @@
 <template>
   <div id="content">
     <PostPrompt />
-    <div
-      style="padding-bottom: 1rem; border-bottom: 1px solid var(--color-border)"
-    ></div>
-    <Post :post="examplePost"/>
+    <hr />
     <Post v-for="post in posts" :post="post" :key="post._id" />
   </div>
 </template>
@@ -41,7 +38,8 @@ export default {
         author: {
           name: 'Shawn Dawgson',
           username: 'colguylikesdawgs',
-          profile_picture: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg'
+          profile_picture:
+            'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg'
         },
         timestamp: Date.now(),
         content: 'Can I pet that dawg',

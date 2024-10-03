@@ -4,6 +4,7 @@ import VueJwtDecode from 'vue-jwt-decode'
 
 import Main from './views/Main.vue'
 import Home from './views/Home.vue'
+import Thread from './views/Thread.vue'
 import Discover from './views/Discover.vue'
 import Auth from './views/Auth.vue'
 import Login from './views/Login.vue'
@@ -25,6 +26,11 @@ const routes = [
         component: Home
       },
       {
+        path: 'thread/:id',
+        name: 'thread',
+        component: Thread
+      },
+      {
         path: 'discover',
         name: 'discover',
         component: Discover
@@ -38,7 +44,7 @@ const routes = [
         path: '/profile',
         redirect: '/profile/me',
         meta: { requiresAuth: true }
-      },
+      }
     ]
   },
   {
