@@ -1,8 +1,8 @@
 <template>
   <div class="follower-container">
-    <img class="pfp" v-bind:src="pfp" />
+    <img class="pfp" v-bind:src="pfp" @click="redirectToProfile" />
     <div class="follower-info">
-      <span class="info-name">{{ name }}</span>
+      <span class="info-name" @click="redirectToProfile">{{ name }}</span>
       <span class="info-username">@{{ username }}</span>
     </div>
   </div>
@@ -31,6 +31,11 @@ export default {
     this.name = followerReq.data.name
     this.username = followerReq.data.username
     // TODO add profile picture support
+  },
+  methods: {
+    redirectToProfile() {
+      this.$router.push(`/profile/${this.follower.follower}`)
+    }
   }
 }
 </script>
@@ -50,6 +55,9 @@ export default {
   height: 4rem;
   border-radius: 100%;
 }
+.pfp:hover{
+  cursor: pointer;
+}
 .follower-info {
   width: 100%;
   padding-left: 0.5rem;
@@ -64,6 +72,10 @@ export default {
 .info-name {
   font-size: 1rem;
   font-weight: 600;
+}
+.info-name:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }
 .info-username {
   font-size: 1rem;
