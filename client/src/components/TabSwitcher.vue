@@ -20,6 +20,16 @@ export default {
       this.activeTab = this.tabs.indexOf(tab)
       this.$router.push(tab.route)
     }
+  },
+  watch: {
+    $route(to, from) {
+      const newUserId = to.params.userId
+      const oldUserId = from.params.userId
+
+      if (newUserId !== oldUserId) {
+        this.activeTab = 0
+      }
+    }
   }
 }
 </script>
