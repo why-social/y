@@ -25,7 +25,7 @@ export default {
   },
   data() {
     return {
-      pfp: 'https://via.placeholder.com/150',
+      pfp: '',
       name: '',
       username: '',
       redirectToProfileId: ''
@@ -42,7 +42,7 @@ export default {
     }
     this.name = followerReq.data.name
     this.username = followerReq.data.username
-    // TODO add profile picture support
+    this.pfp = followerReq.data.profile_picture || 'https://via.placeholder.com/150'
   },
   methods: {
     redirectToProfile() {
