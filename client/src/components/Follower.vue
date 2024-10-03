@@ -1,6 +1,6 @@
 <template>
   <div class="follower-container">
-    <img class="pfp" v-bind:src="pfp" @click="redirectToProfile" />
+    <img class="pfp" :src="pfp" @click="redirectToProfile" />
     <div class="follower-info">
       <span class="info-name" @click="redirectToProfile">{{ name }}</span>
       <span class="info-username">@{{ username }}</span>
@@ -13,16 +13,7 @@ import { Api } from '@/Api'
 
 export default {
   name: 'Profile',
-  props: {
-    follower: {
-      type: Object,
-      required: true
-    },
-    followFlag: {
-      type: Boolean,
-      required: true
-    }
-  },
+  props: ['userId'],
   data() {
     return {
       pfp: '',
@@ -32,28 +23,15 @@ export default {
     }
   },
   async mounted() {
-    let followerReq
-    if (this.followFlag) {
-      followerReq = await this.getFollowerInfo()
-      this.redirectToProfileId = this.follower.follower
-    } else {
-      followerReq = await this.getFollowingInfo()
-      this.redirectToProfileId = this.follower.follows
-    }
-    this.name = followerReq.data.name
-    this.username = followerReq.data.username
-    this.pfp = followerReq.data.profile_picture || 'https://via.placeholder.com/150'
+    const response = await Api.get('/v1/users/' + this.userId)
+
+    this.name = response.data.name
+    this.username = response.data.username
+    this.pfp = response.data.profile_picture || 'https://via.placeholder.com/150'
   },
   methods: {
     redirectToProfile() {
-      this.$router.push(`/profile/${this.redirectToProfileId}`)
-      this.$emit('change-tab', 'posts')
-    },
-    getFollowerInfo() {
-      return Api.get(`/v1/users/${this.follower.follower}`)
-    },
-    getFollowingInfo() {
-      return Api.get(`/v1/users/${this.follower.follows}`)
+      this.$router.push(`/profile/${this.userId}`)
     }
   }
 }

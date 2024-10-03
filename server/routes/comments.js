@@ -50,7 +50,7 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 router.get("/api/v1/comments/users/:id", async function (req, res, next) {
 	try {
 		let userExists = await models.Users.exists({ _id: req.params.id });
-			if(!userExists) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+		if(!userExists) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
 		let result = await models.Comments
 			.find({ author: req.params.id })
@@ -59,7 +59,7 @@ router.get("/api/v1/comments/users/:id", async function (req, res, next) {
 			})
 			.lean().exec();
 		
-		if (result[0].author.profile_picture) {
+		if (result[0]?.author.profile_picture) {
 			result[0].author.profile_picture = await getPublicPathFromHash(req, result[0].author.profile_picture);
 		} // changes the author pfp in all the comments, since they are reference-shared
 
