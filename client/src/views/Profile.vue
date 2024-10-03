@@ -1,9 +1,6 @@
 <template>
   <b-container>
     <b-row>
-      <b-col style="position: sticky; top: 0; height: 100vh">
-        <NavBar />
-      </b-col>
       <b-col cols="7" class="center">
         <ProfileHeader :userData="userData"/>
         <hr>
