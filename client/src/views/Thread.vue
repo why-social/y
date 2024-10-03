@@ -323,6 +323,7 @@ export default {
       this.content = data.content
       this.likes = data.likes
       this.images = data.images
+      this.pfp = data.author.profile_picture || 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg'
 
       if (this.type === 'post') {
         if (data.original_post_id) {
