@@ -1,18 +1,18 @@
 <template>
-  <div class="modal-overlay" @click="closeModal" v-on:keydown.esc="closeModal">
-    <span class="material-symbols-outlined modal-icon modal-button-container" @click="closeModal">arrow_left_alt</span>
+  <div class="modal-overlay" @click.stop="closeModal" v-on:keydown.esc="closeModal">
+    <span class="material-symbols-outlined modal-icon modal-button-container" @click.stop="closeModal">arrow_left_alt</span>
 
     <div class="modal-center">
       <div class="modal-button-container" :class="{disabled: currentIndex === 0}" @click.stop>
         <span class="material-symbols-outlined modal-icon"
-          @click="prevImage">chevron_left</span>
+          @click.stop="prevImage">chevron_left</span>
       </div>
 
       <img :src="images[currentIndex]" class="full-image" @click.stop />
 
       <div class="modal-button-container" :class="{disabled: currentIndex === images.length - 1}" @click.stop>
         <span class="material-symbols-outlined modal-icon"
-          @click="nextImage">chevron_right</span>
+          @click.stop="nextImage">chevron_right</span>
       </div>
     </div>
   </div>

@@ -1,20 +1,36 @@
 <template>
-  <div id="content">
-    <div class="post-container">
-      <img class="pfp" v-bind:src="pfp" />
-      <div class="post-data">
-        <div class="info">
+  <div id="container">
+    <div
+      class="thread-parent"
+      :class="{ hidden: !this.origin_type?.length }"
+      @click.stop="goToParent"
+    >
+      <span class="icon" style="font-variation-settings: 'wght' 300"
+        >step_out</span
+      >
+      <span style="padding-right: 0.7rem">Original {{ origin_type }}</span>
+    </div>
+    <div class="thread-container">
+      <img class="thread-pfp" v-bind:src="pfp" @click.stop="goToUser" />
+      <div class="thread-data">
+        <div class="thread-name" @click.stop="goToUser">
           <span class="inter-tight-medium">{{ name }}</span>
           <span>@{{ username }}</span>
         </div>
-        <div class="post-content">
-          <span class="content">{{ content }}</span>
-          <div class="picture-container">
+        <div class="thread-content">
+          <span class="content" :class="{ hidden: !this.content?.length }">{{
+            content
+          }}</span>
+          <div
+            class="picture-container"
+            :class="{ hidden: !this.images?.length }"
+          >
             <img
               class="picture"
               v-for="image in images"
               v-bind:src="image"
               :key="image._id"
+              @click.stop="showModal(images.indexOf(image))"
             />
           </div>
         </div>
@@ -27,6 +43,7 @@
 
         <div class="interactions">
           <div
+            @click.stop=""
             class="clickable"
             ref="like"
             :class="{ liked: liked, like: !liked }"
@@ -38,41 +55,59 @@
             <span class="icon">forum</span>
             <span>{{ comments?.length || 0 }}</span>
           </div>
-          <Button class="inter-tight-medium" style="margin-left: auto">
-            <span class="icon" style="font-variation-settings: 'wght' 400"
-              >cached</span
-            >
-            <span style="padding-right: 0.4rem">Repost</span>
-          </Button>
         </div>
       </div>
+      <ImageCarousel
+        v-if="isModalOpen"
+        :images="images"
+        :startIndex="modalImageIndex"
+        @close="closeModal"
+      />
     </div>
   </div>
 </template>
 
 <style scoped>
-#content {
-  overflow: hidden;
-  display: block;
-  height: 100%;
+#container {
   width: 100%;
+  height: 100%;
+  padding: 20px;
 }
-
-.post-container {
+.thread-parent {
+  margin-left: 1rem;
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  width: fit-content;
+  user-select: none;
+  font-size: 1.4rem;
+  padding: 0.7rem;
+  transition: 0.3s background;
+  border-radius: 100vmax;
+}
+.thread-parent:hover {
+  background: var(--color-background-highlight);
+}
+.thread-container {
   user-select: none;
   display: flex;
   width: 100%;
   font-size: 1.4rem;
-  padding: 2rem 2.5rem;
-  gap: 1rem;
+  padding: 1rem;
+  gap: 0.5rem;
 }
-.pfp {
+.thread-pfp {
+  cursor: pointer;
   width: 4rem;
   height: 4rem;
   border-radius: 100%;
 }
 
-.post-data {
+button {
+  padding: 0.7rem;
+}
+
+.thread-data {
   width: 100%;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
@@ -82,30 +117,33 @@
   overflow: hidden;
   box-sizing: border-box;
 }
-.post-content {
+.thread-content {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   display: flex;
   gap: 1rem;
   flex-direction: column;
 }
 
-.info {
+.thread-name {
   display: flex;
+  width: fit-content;
+  cursor: pointer;
   flex-direction: column;
+  line-height: 130%;
 }
-.info > span {
-  opacity: 0.7;
-  line-height: 120%;
-  display: inline-block;
-}
-.info > span:last-child {
-  font-size: 1.2rem;
-}
-.info > span:nth-child(1) {
+
+.thread-name > span {
   opacity: 1;
-  flex-shrink: 1; /* Allow it to shrink when necessary */
-  overflow: hidden;
-  text-overflow: ellipsis; /* Truncate with ellipsis */
-  max-width: 50%; /* Limit the name to a maximum width */
+}
+
+.thread-name:hover > span:nth-child(1) {
+  text-decoration: underline;
+}
+
+.thread-name > span:nth-child(2) {
+  opacity: 0.5;
+  font-size: 1.2rem;
 }
 
 .picture-container {
@@ -119,12 +157,22 @@
   box-sizing: border-box;
   min-width: calc(50% - 1vmin);
   flex: 1;
-  border-radius: 1rem;
+  border-radius: 1vmax;
   object-fit: cover;
+}
+.picture:hover {
+  cursor: pointer;
 }
 .picture:nth-child(2n) {
   flex-basis: calc(50% - 1vmin);
   aspect-ratio: 1/1;
+}
+
+.timestamp {
+  display: flex;
+  gap: 0.4rem;
+  font-size: 1.2rem;
+  opacity: 0.5;
 }
 
 .interactions {
@@ -145,13 +193,11 @@
 }
 .icon {
   font-size: 2rem;
+  line-height: 80%;
 }
 
-.timestamp {
-  opacity: 0.7;
-  display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
+.hidden {
+  display: none;
 }
 
 .like:hover {
@@ -171,6 +217,47 @@
 .liked:hover {
   color: var(--color-on-background);
 }
+
+.comment:hover {
+  opacity: 1;
+  color: var(--color-accent);
+}
+.comment:hover .icon {
+  font-variation-settings: 'FILL' 1, 'wght' 100, 'GRAD' 0, 'opsz' 20;
+}
+
+@media (max-width: 630px) {
+  .thread-pfp {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .thread-container {
+    font-size: 1.2rem;
+  }
+
+  .thread-info > span:nth-child(2) {
+    font-size: 1rem;
+  }
+
+  .timestamp {
+    font-size: 1rem;
+  }
+
+  .clickable {
+    margin-right: 1rem;
+  }
+
+  button {
+    padding: 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  .icon {
+    font-size: 1.5rem;
+    line-height: 80%;
+  }
+}
 </style>
 
 <script>
@@ -181,7 +268,9 @@ export default {
   data() {
     return {
       type: 'post',
-      user: '',
+      origin_type: '',
+      parent: '',
+      author: '',
       name: '',
       username: '',
       pfp: '',
@@ -191,7 +280,9 @@ export default {
       images: [],
       likes: [],
       comments: [],
-      liked: true
+      liked: true,
+      modalImageIndex: null,
+      isModalOpen: false
     }
   },
   methods: {
@@ -224,6 +315,7 @@ export default {
     loadData(data) {
       const momentDate = moment(data.timestamp)
 
+      this.author = data.author._id
       this.name = data.author.name
       this.username = data.author.username
       this.time = momentDate.format('hh:mm')
@@ -231,6 +323,39 @@ export default {
       this.content = data.content
       this.likes = data.likes
       this.images = data.images
+
+      if (this.type === 'post') {
+        if (data.original_post_id) {
+          this.origin_type = 'post'
+          this.parent = data.original_post_id
+        }
+      } else {
+        if (data.parent_is_post) {
+          this.origin_type = 'post'
+        } else {
+          this.origin_type = 'comment'
+        }
+
+        this.parent = data.parent_id
+      }
+    },
+    showModal(index) {
+      this.isModalOpen = true
+      this.modalImageIndex = index
+    },
+    closeModal() {
+      this.isModalOpen = false
+      this.modalImageIndex = null
+    },
+    goToUser() {
+      if (this.author) {
+        this.$router.push(`/profile/${this.author}`)
+      }
+    },
+    goToParent() {
+      if (this.parent) {
+        this.$router.push(`/thread/${this.parent}`)
+      }
     }
   },
   async mounted() {

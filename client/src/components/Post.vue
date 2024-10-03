@@ -2,27 +2,30 @@
   <div class="post-container" @click="goToThread">
     <img class="post-pfp" v-bind:src="pfp" @click.stop="goToUser" />
     <div class="post-data">
-      <div class="post-info">
-        <span class="inter-tight-medium" @click.stop="goToUser">{{
-          name
-        }}</span>
-        <span @click.stop="goToUser">@{{ username }}</span>
+      <div class="post-name" @click.stop="goToUser">
+        <span class="inter-tight-medium">{{ name }}</span>
+        <span>@{{ username }}</span>
       </div>
       <div class="post-content">
-        <span class="content">{{ content }}</span>
-        <div class="picture-container">
+        <span class="content" :class="{ hidden: !this.content?.length }">{{
+          content
+        }}</span>
+        <div class="picture-container" :class="{ hidden: !this.images?.length }">
           <img
             class="picture"
             v-for="image in images"
             v-bind:src="image"
             :key="image._id"
-            @click="showModal(images.indexOf(image))"
+            @click.stop="showModal(images.indexOf(image))"
           />
         </div>
       </div>
+
       <span class="post-date">{{ date }}</span>
+
       <div class="interactions">
         <div
+          @click.stop=""
           class="clickable"
           ref="like"
           :class="{ liked: liked, like: !liked }"
@@ -30,11 +33,15 @@
           <span class="icon" ref="like_icon">favorite</span>
           <span>{{ likes?.length || 0 }}</span>
         </div>
-        <div class="clickable comment">
+        <div class="clickable comment" @click.stop="">
           <span class="icon">forum</span>
           <span>{{ comments?.length || 0 }}</span>
         </div>
-        <Button class="inter-tight-medium" style="margin-left: auto">
+        <Button
+          class="inter-tight-medium"
+          @click.stop=""
+          style="margin-left: auto"
+        >
           <span class="icon" style="font-variation-settings: 'wght' 400"
             >cached</span
           >
@@ -53,6 +60,7 @@
 
 <style scoped>
 .post-container {
+  cursor: pointer;
   user-select: none;
   display: flex;
   width: 100%;
@@ -61,6 +69,7 @@
   gap: 0.5rem;
 }
 .post-pfp {
+  cursor: pointer;
   width: 4rem;
   height: 4rem;
   border-radius: 100%;
@@ -81,22 +90,30 @@ button {
   box-sizing: border-box;
 }
 .post-content {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   display: flex;
   gap: 1rem;
   flex-direction: column;
 }
 
-.post-info {
+.post-name {
   display: flex;
+  width: fit-content;
+  cursor: pointer;
   flex-direction: column;
   line-height: 130%;
 }
 
-.post-info > span {
+.post-name > span {
   opacity: 1;
 }
 
-.post-info > span:nth-child(2) {
+.post-name:hover > span:nth-child(1) {
+  text-decoration: underline;
+}
+
+.post-name > span:nth-child(2) {
   opacity: 0.5;
   font-size: 1.2rem;
 }
@@ -147,6 +164,10 @@ button {
 .icon {
   font-size: 2rem;
   line-height: 80%;
+}
+
+.hidden {
+  display: none;
 }
 
 .like:hover {
@@ -255,7 +276,7 @@ export default {
   methods: {
     goToUser() {
       if (this.post) {
-        this.$router.push(`/profile/${this.post.author}`)
+        this.$router.push(`/profile/${this.post.author._id}`)
       }
     },
     goToThread() {
