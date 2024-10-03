@@ -62,7 +62,7 @@ router.get("/api/v1/posts/users/:id", async function (req, res, next) {
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
 
 		if (posts[0].author.profile_picture) {
-			posts[0].author.profile_picture = await getPublicPathFromHash(posts[0].author.profile_picture, image);
+			posts[0].author.profile_picture = await getPublicPathFromHash(req, posts[0].author.profile_picture);
 		} // changes the author pfp in all the posts, since they are reference-shared
 
 		for (var post of posts) {

@@ -9,7 +9,7 @@
           ondrop="return false"
           contenteditable="true"
           placeholder="What are you thinking about?"
-          @returned="enterPressed"
+          @keyup="keyUp"
         ></contenteditable>
       </div>
       <div class="form-row">
@@ -73,6 +73,9 @@ export default {
     },
     handleFileChange() {
       this.images = event.target.files
+    },
+    keyUp(event) {
+      this.content = event?.srcElement?.innerText
     }
   },
   mounted() {

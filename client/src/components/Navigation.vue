@@ -3,7 +3,7 @@
     <div class="nav-logo cool-font" @click="$router.push({ path: '/' })">
       <p>𝕐</p>
     </div>
-    <div class="divider"></div>
+    <hr>
     <NavigationItem to="/" icon="home" text="Home"> </NavigationItem>
     <NavigationItem to="/discover" icon="search" text="Discover">
     </NavigationItem>
@@ -12,7 +12,7 @@
       icon="person"
       text="Profile"
     ></NavigationItem>
-    <div class="divider"></div>
+    <hr>
     <NavigationItem @click="this.logout()" icon="logout" text="Logout">
     </NavigationItem>
     <Button @click="$router.push({ path: '/post' })" style="margin-top: auto"
@@ -40,12 +40,8 @@
   flex-direction: column;
 }
 
-.divider {
-  width: 100%;
-  height: 1px;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  background: var(--color-border);
+hr {
+  display: block;
 }
 
 .nav-logo {
@@ -104,7 +100,7 @@
     display: none;
   }
 
-  .divider {
+  hr {
     display: none;
   }
 

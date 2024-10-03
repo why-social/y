@@ -27,6 +27,7 @@
 
 .search-content-container {
   display: flex;
+  width: 100%;
   overflow: hidden;
 }
 

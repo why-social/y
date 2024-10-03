@@ -14,6 +14,7 @@
             v-for="image in images"
             v-bind:src="image"
             :key="image._id"
+            @click="showModal(images.indexOf(image))"
           />
         </div>
       </div>
@@ -39,6 +40,12 @@
         </Button>
       </div>
     </div>
+    <ImageCarousel
+      v-if="isModalOpen"
+      :images="images"
+      :startIndex="modalImageIndex"
+      @close="closeModal"
+    />
   </div>
 </template>
 
@@ -105,6 +112,9 @@ button {
   flex: 1;
   border-radius: 1vmax;
   object-fit: cover;
+}
+.picture:hover {
+  cursor: pointer;
 }
 .picture:nth-child(2n) {
   flex-basis: calc(50% - 1vmin);
@@ -216,7 +226,9 @@ export default {
         images: this.post.images || [],
         likes: this.post.likes,
         comments: this.post.comments,
-        liked: true
+        liked: true,
+        modalImageIndex: null,
+        isModalOpen: false
       }
     } else {
       // placeholder post
@@ -236,6 +248,16 @@ export default {
         comments: [],
         liked: true
       }
+    }
+  },
+  methods: {
+    showModal(index) {
+      this.isModalOpen = true
+      this.modalImageIndex = index
+    },
+    closeModal() {
+      this.isModalOpen = false
+      this.modalImageIndex = null
     }
   },
   mounted() {
