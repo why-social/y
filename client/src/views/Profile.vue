@@ -28,7 +28,16 @@ export default {
   },
   data() {
     return {
-      userData: {},
+      userData: {
+        _id: '',
+        name: '',
+        username: '',
+        joinDate: '',
+        followers: [],
+        following: [],
+        avatarUrl: '',
+        email: ''
+      },
       avatarUrl: 'https://via.placeholder.com/150'
     }
   },
@@ -80,17 +89,15 @@ export default {
 
       // TODO Add profile picture support
 
-      let followersReq = await Api.get('/v1/users/' + userId + '/followers')
-      let followingsReq = await Api.get('/v1/users/' + userId + '/followings')
-      followersReq = followersReq.data.length
-      followingsReq = followingsReq.data.length
+      const followersReq = await Api.get('/v1/users/' + userId + '/followers')
+      const followingsReq = await Api.get('/v1/users/' + userId + '/followings')
 
       this.userData._id = userId
       this.userData.name = userReqData.name
       this.userData.username = userReqData.username
       this.userData.joinDate = moment(userReqData.joinDate).format('DD MMMM YYYY')
-      this.userData.followers = followersReq
-      this.userData.following = followingsReq
+      this.userData.followers = followersReq.data
+      this.userData.following = followingsReq.data
       this.userData.avatarUrl = userReqData.profile_picture || this.avatarUrl
       if (userReqData.email) {
         this.userData.email = userReqData.email

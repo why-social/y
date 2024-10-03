@@ -35,10 +35,10 @@
       <!-- TODO render the comments with 'Comments' component-->
     </div>
     <div v-else-if="activeTab === 'followers'">
-      <!-- TODO render the followers with 'Follower' component-->
+      <Follower v-for="follower in followers" :follower="follower" :key="follower._id" />
     </div>
     <div v-else-if="activeTab === 'followings'">
-      <!-- TODO render the followers with 'Follower' component-->
+      <!-- TODO render the followings with 'Follower' component-->
     </div>
     <div v-else-if="activeTab === 'liked'">
       <!-- Render liked posts -->
@@ -47,10 +47,14 @@
 </template>
 
 <script>
+import Follower from '../components/Follower.vue'
 import { Api } from '@/Api'
 
 export default {
   name: 'Profile',
+  components: {
+    Follower
+  },
   props: {
     userData: {
       type: Object,
@@ -68,8 +72,6 @@ export default {
     }
   },
   async mounted() {
-    this.followers = this.userData.followers
-    this.followings = this.userData.followings
     await this.loadTabData(this.activeTab)
   },
   computed: {
@@ -96,6 +98,11 @@ export default {
           this.comments = response.data
           break
         }
+        case 'followers': {
+          const response = await Api.get('/v1/users/' + this.userData._id + '/followers')
+          this.followers = response.data
+          break
+        }
           // case 'liked': {
           //   const response = await Api.get('/v1/posts/users/' + this.userData._id + '/liked')
           //   this.likedPosts = response.data
@@ -110,7 +117,6 @@ export default {
     },
     userData: {
       handler: async function (newData, oldData) {
-        console.log('userData changed')
         this.loadTabData(this.activeTab)
       },
       deep: true

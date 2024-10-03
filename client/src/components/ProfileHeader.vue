@@ -33,10 +33,10 @@
     <div class="profile-joinDate">Joined {{ userData.joinDate }}</div>
     <div class="profile-follow-container">
       <a class="profile-following">
-        <span class="profile-follow-number">{{ userData.followers }}</span> Followers
+        <span class="profile-follow-number">{{ userData.followers.length }}</span> Followers
       </a>
       <a class="profile-followers">
-        <span class="profile-follow-number">{{ userData.following }}</span> Following
+        <span class="profile-follow-number">{{ userData.following.length }}</span> Following
       </a>
     </div>
   </div>
