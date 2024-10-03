@@ -2,7 +2,7 @@
   <form ref="postForm" @submit.prevent="createPost">
     <div class="form-container">
       <div class="form-row">
-        <img class="avatar" src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"/>
+        <img class="avatar" :src="pfp"/>
         <input class="text-input" id="content" type="text" v-model="content" placeholder="What are you thinking about?">
       </div>
       <div class="form-row bottom-row">
@@ -19,12 +19,14 @@
 
 <script>
 import { Api } from '@/Api'
+import VueJwtDecode from 'vue-jwt-decode'
 
 export default {
   data() {
     return {
       content: '',
-      images: []
+      images: [],
+      pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg'
     }
   },
   computed: {
@@ -43,7 +45,6 @@ export default {
         const response = Api.post('v1/posts', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
-            // PLACEHOLDER AUTH!!!
             Authorization: 'Bearer ' + localStorage.getItem('token')
           }
         })
@@ -59,6 +60,13 @@ export default {
     handleFileChange() {
       this.images = event.target.files
     }
+  },
+  mounted() {
+    Api.get(`v1/users/${VueJwtDecode.decode(localStorage.getItem('token')).userId}/profile_picture`)
+      .then(response => {
+        console.log('PFP: \n' + response)
+        this.pfp = response.data
+      })
   }
 }
 </script>

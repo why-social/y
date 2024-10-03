@@ -25,9 +25,15 @@ async function getCommentById(id, lean, next) {
 	try{
 		let result;
 		if (lean)
-			result = await models.Comments.findById(id).lean().exec();
+			result = await models.Comments.findById(id)
+			.populate({
+				path: 'author', select: '_id name username profile_picture',
+			}).lean().exec();
 		else
-			result = await models.Comments.findById(id).exec();
+			result = await models.Comments.findById(id)
+			.populate({
+				path: 'author', select: '_id name username profile_picture',
+			}).exec();
 		
 		if (!result)
 			throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
@@ -38,4 +44,15 @@ async function getCommentById(id, lean, next) {
 	}
 }
 
-module.exports = { except, removeFromArray, getCommentById, secrets };
+async function getPublicPathFromHash(req, hash) {
+	const image = await models.Images.findOne({hash}).lean();
+	if (!image) return null;
+
+	return toPublicPath(req, image.url);
+}
+
+function toPublicPath(req, localPath) {
+	return `${req.protocol}://${req.get('host')}${localPath?.replace(/\\/g, '/')}`
+}
+
+module.exports = { except, removeFromArray, getCommentById, toPublicPath, getPublicPathFromHash, secrets };

@@ -174,7 +174,7 @@ export default {
             if (response.data?.token) {
               localStorage.setItem('token', response.data?.token)
 
-              this.$router.push('home')
+              this.$router.push('/')
             } else {
               this.message = 'Something went wrong'
             }

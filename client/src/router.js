@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import VueJwtDecode from 'vue-jwt-decode'
 
+import Main from './views/Main.vue'
 import Home from './views/Home.vue'
 import Auth from './views/Auth.vue'
 import Login from './views/Login.vue'
@@ -12,9 +13,17 @@ import Profile from './views/Profile.vue'
 const routes = [
   {
     path: '/',
-    name: 'home',
+    name: 'main',
+    redirect: { name: 'home' },
     meta: { requiresAuth: true },
-    component: Home
+    component: Main,
+    children: [
+      {
+        path: 'home',
+        name: 'home',
+        component: Home
+      }
+    ]
   },
   {
     path: '/profile/:userId',
@@ -27,8 +36,10 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/auth',
+    path: '/',
+    name: 'auth',
     redirect: { name: 'login' },
+    meta: { requiresAuth: false },
     component: Auth,
     children: [
       {
@@ -58,7 +69,11 @@ router.beforeEach((to, from) => {
   if (to.matched?.length) {
     if (to.meta.requiresAuth && !isLoggedIn()) {
       return {
-        path: '/auth'
+        path: '/login'
+      }
+    } else if (to.matched[0].name === 'auth' && isLoggedIn()) {
+      return {
+        path: '/home'
       }
     }
   } else {

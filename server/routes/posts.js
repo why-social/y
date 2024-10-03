@@ -4,8 +4,8 @@ const authMiddleware = require('../middleware/auth');
 const uploadMiddleware = require('../middleware/upload');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
-const { except } = require("../utils/utils");
 const { updateImages, removeUsage } = require("../utils/imageHandler");
+const { getPublicPathFromHash } = require('../utils/utils')
 
 const router = express.Router();
 
@@ -13,13 +13,29 @@ const router = express.Router();
 // Returns a post with id :id
 router.get("/api/v1/posts/:id", async function (req, res, next) {
 	try {
-		const post = await models.Posts.findById(req.params.id).populate('comments').lean().exec();
+		const post = await models.Posts.findById(req.params.id)
+			.populate({
+				path: 'author', select: '_id name username profile_picture',
+			}).lean();
+		
+		// populate profile_picture with the public url to the resource
+		if (post.author.profile_picture) {
+			post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
+		}
+		
+		// populate images with public urls to the resources
+		post.images = await Promise.all(
+			post.images.map(async image => {
+				return await getPublicPathFromHash(req, image);
+			})
+		);
+		
 		if (!post)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
 
 		post._links = {
 			user: {
-				href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${post.author}`
+				href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${post.author._id}`
 			}
 		};
 
@@ -38,9 +54,24 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 // Returns all posts authored by the user with id :id
 router.get("/api/v1/posts/users/:id", async function (req, res, next) {
 	try {
-		const posts = await models.Posts.find({ author: req.params.id }).populate('comments').exec();
+		const posts = await models.Posts.find({ author: req.params.id }).populate({
+			path: 'author', select: '_id name username profile_picture',
+		}).lean().exec();
+
 		if (!posts || posts.length == 0)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
+
+		if (posts[0].author.profile_picture) {
+			posts[0].author.profile_picture = await getPublicPathFromHash(req, posts[0].author.profile_picture);
+		} // changes the author pfp in all the posts, since they are reference-shared
+
+		for (var post of posts) {
+			post.images = await Promise.all(
+				post.images.map(async image => {
+					return await getPublicPathFromHash(req, image);
+				})
+			);
+		}	
 
 		res.status(200).json(posts);
 	} catch (err) {
@@ -124,54 +155,21 @@ router.put("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, async
 		let post = await models.Posts.findById(req.params.id).exec();
 		if (!post) return postRequest(req, res);
 
-		if (post.is_deleted)
-			throw new ValidationError(errorMsg.CANNOT_EDIT_DELETED_COMMENT);
-
-		if (req.body.is_deleted)
-			throw new ValidationError(errorMsg.DELETE_COMMENTS_ONLY);
-
-		if (!req.body.is_edited)
-			throw new ValidationError(errorMsg.EDITED_POSTS_NEED_IS_EDITED_TRUE);
-
-		if (req.body.author && req.body.author != post.author)
-			throw new ValidationError(errorMsg.CANNOT_CHANGE_AUTHOR);
-
-		if (req.body.timestamp && req.body.timestamp != post.timestamp)
-			throw new ValidationError(errorMsg.CANNOT_CHANGE_TIMESTAMP);
-
-		if (req.body.original_post_id && req.body.original_post_id != post.original_post_id)
-			throw new ValidationError(errorMsg.CANNOT_CHANGE_PARENT_ID);
-
-		if (req.body.likes) {
-			let likesDiff = except(req.body.likes, post.likes);
-
-			if (likesDiff.length == 0) {
-				likesDiff = except(post.likes, req.body.likes);
-			}
-
-			if (likesDiff.length > 0 && (likesDiff.length > 1 || likesDiff[0] != req.user))
-				throw new ValidationError(errorMsg.CANNOT_CHANGE_OTHER_USERS_LIKES);
+		const newData = req.body;
+		if (!newData.author || newData.is_edited === undefined || newData.is_deleted === undefined
+			|| !newData.content || newData.likes === undefined || newData.comments === undefined) {
+			throw new ValidationError(errorMsg.MISSING_FIELDS);
 		}
+		
+		newData.likes = newData.likes || [];
+		newData.comments = newData.comments || [];
+		const files = req.files || [];
 
-		if (req.body.content?.length || req.files?.length) {
+		Object.assign(post, newData);
+		await updateImages(post.images, files);
+		await post.save();
 
-			post.is_edited = true;
-			post.content = req.body.content;
-			post.likes = req.body.likes;
-
-			if (req.files?.length > 0) {
-				await updateImages(post.images, req.files);
-			} else {
-				await updateImages(post.images, []);
-			}
-
-
-			await post.save();
-
-			return res.status(200).json(post);
-		} else {
-			throw new ValidationError(errorMsg.AT_LEAST_IMAGE_OR_CONTENT_REQUIRED);
-		}
+		return res.status(200).json(post);
 	} catch (err) {
 		next(err);
 	}
