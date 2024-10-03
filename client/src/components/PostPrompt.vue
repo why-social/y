@@ -4,6 +4,7 @@
       <div class="form-row">
         <img class="avatar" :src="pfp" />
         <contenteditable
+          ref="textInput"
           id="content"
           v-model="content"
           ondrop="return false"
@@ -65,6 +66,7 @@ export default {
         console.log('Post created successfully:', response.data)
 
         this.$refs.postForm.reset()
+        this.$refs.textInput.innerText = ''
         this.content = ''
         this.images = []
       } catch (error) {
