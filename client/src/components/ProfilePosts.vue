@@ -4,57 +4,39 @@
       <div
         class="navbar-element"
         :class="{ active: activeTab === 'posts' }"
-        @click="activeTab = 'posts'">Posts</div>
+        @click="updateTab('posts')">Posts</div>
       <div
         class="navbar-element"
         :class="{ active: activeTab === 'comments' }"
-        @click="activeTab = 'comments'">Comments</div>
+        @click="updateTab('comments')">Comments</div>
       <div
         class="navbar-element"
         :class="{ active: activeTab === 'followers' }"
-        @click="activeTab = 'followers'">Followers</div>
+        @click="updateTab('followers')">Followers</div>
       <div
         class="navbar-element"
         :class="{ active: activeTab === 'followings' }"
-        @click="activeTab = 'followings'">Followings</div>
+        @click="updateTab('followings')">Followings</div>
       <div
         v-if="isMe"
         class="navbar-element"
         :class="{ active: activeTab === 'liked' }"
-        @click="activeTab = 'liked'">Liked</div>
+        @click="updateTab('liked')">Liked</div>
     </div>
-    <div v-if="activeTab === 'posts'">
-      <div v-if="posts.length != 0">
-        <Post v-for="post in posts" :post="post" :key="post._id" />
-      </div>
-      <div v-else class="posts-no-posts">
-        <span>No posts yet</span>
-      </div>
-    </div>
-    <div v-else-if="activeTab === 'comments'">
-      <!-- TODO render the comments with 'Comments' component-->
-    </div>
-    <div v-else-if="activeTab === 'followers'">
-      <Follower v-for="follower in followers" :follower="follower" :key="follower._id" :followFlag="true" @change-tab="updateTab"/>
-    </div>
-    <div v-else-if="activeTab === 'followings'">
-      <Follower v-for="following in followings" :follower="following" :key="following._id" :followFlag="false" @change-tab="updateTab"/>
-    </div>
-    <div v-else-if="activeTab === 'liked'">
-      <!-- TODO render the comments with 'Liked' component-->
-    </div>
+
+    <router-view v-if="activeTab === 'posts'" :posts="posts"/>
+    <router-view v-else-if="activeTab === 'comments'" :comments="comments"/>
+    <router-view v-else-if="activeTab === 'followers'" :users="followers" :followFlag="true"/>
+    <router-view v-else-if="activeTab === 'followings'" :users="followings" :followFlag="false"/>
+    <router-view v-else-if="activeTab === 'liked' && isMe" :posts="posts"/>
   </div>
 </template>
 
 <script>
-import Follower from '../components/Follower.vue'
 import { Api } from '@/Api'
 
 export default {
   name: 'Profile',
-  components: {
-    Follower
-  },
   props: {
     userData: {
       type: Object,
@@ -76,7 +58,7 @@ export default {
   },
   computed: {
     isMe() {
-      return this.$route.path === '/profile/me'
+      return this.$route.path.match('/profile/me/.*')
     }
   },
   methods: {
@@ -106,14 +88,17 @@ export default {
         case 'followings': {
           const response = await Api.get('/v1/users/' + this.userData._id + '/followings')
           this.followings = response.data
+          console.log(this.followings)
           break
         }
         // TODO: add 'liked' case
       }
     },
     updateTab(tab) {
-      this.activeTab = tab
-      this.loadTabData(tab)
+      if (tab !== this.activeTab) {
+        this.activeTab = tab
+        this.$router.push(tab)
+      }
     }
   },
   watch: {
@@ -153,11 +138,5 @@ export default {
 }
 .navbar-element.active {
   border-bottom: 2px solid var(--color-button-emphasize);
-}
-.posts-no-posts {
-  padding-top: 1rem;
-  font-size: 1.5rem;
-  color: var(--color-on-background);
-  text-align: center;
 }
 </style>

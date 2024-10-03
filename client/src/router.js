@@ -9,6 +9,9 @@ import Login from './views/Login.vue'
 import Recover from './views/Recover.vue'
 import Register from './views/Register.vue'
 import Profile from './views/Profile.vue'
+import Posts from './views/profileTabs/Posts.vue'
+import Comments from './views/profileTabs/Comments.vue'
+import UserList from './views/profileTabs/UserList.vue'
 
 const routes = [
   {
@@ -28,7 +31,31 @@ const routes = [
   {
     path: '/profile/:userId',
     name: 'profile',
-    component: Profile
+    redirect: { name: 'posts' },
+    meta: { requiresAuth: true },
+    component: Profile,
+    children: [
+      {
+        path: 'posts',
+        name: 'posts',
+        component: Posts
+      },
+      {
+        path: 'comments',
+        name: 'comments',
+        component: Comments
+      },
+      {
+        path: 'followers',
+        name: 'followers',
+        component: UserList
+      },
+      {
+        path: 'followings',
+        name: 'followings',
+        component: UserList
+      }
+    ]
   },
   {
     path: '/profile',

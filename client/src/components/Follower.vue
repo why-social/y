@@ -1,6 +1,6 @@
 <template>
   <div class="follower-container">
-    <img class="pfp" v-bind:src="pfp" @click="redirectToProfile" />
+    <img class="pfp" :src="pfp" @click="redirectToProfile" />
     <div class="follower-info">
       <span class="info-name" @click="redirectToProfile">{{ name }}</span>
       <span class="info-username">@{{ username }}</span>
