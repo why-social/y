@@ -1,34 +1,8 @@
 <template>
   <div class="profile-feed">
-    <div class="profile-navbar">
-      <div
-        class="navbar-element"
-        :class="{ active: activeTab === 'posts' }"
-        @click="updateTab('posts')">Posts</div>
-      <div
-        class="navbar-element"
-        :class="{ active: activeTab === 'comments' }"
-        @click="updateTab('comments')">Comments</div>
-      <div
-        class="navbar-element"
-        :class="{ active: activeTab === 'followers' }"
-        @click="updateTab('followers')">Followers</div>
-      <div
-        class="navbar-element"
-        :class="{ active: activeTab === 'followings' }"
-        @click="updateTab('followings')">Followings</div>
-      <div
-        v-if="isMe"
-        class="navbar-element"
-        :class="{ active: activeTab === 'liked' }"
-        @click="updateTab('liked')">Liked</div>
-    </div>
+    <TabSwitcher :tabs="tabs" @switch="updateTab" />
 
-    <router-view v-if="activeTab === 'posts'" :posts="posts"/>
-    <router-view v-else-if="activeTab === 'comments'" :comments="comments"/>
-    <router-view v-else-if="activeTab === 'followers'" :users="followers" :followFlag="true"/>
-    <router-view v-else-if="activeTab === 'followings'" :users="followings" :followFlag="false"/>
-    <router-view v-else-if="activeTab === 'liked' && isMe" :posts="posts"/>
+    <router-view v-if="activeTab?.dataReady" :tabData="activeTab.data" />
   </div>
 </template>
 
@@ -45,16 +19,14 @@ export default {
   },
   data() {
     return {
-      posts: [],
-      comments: [],
-      followers: [],
-      followings: [],
-      likedPosts: [],
-      activeTab: 'posts'
+      tabs: [],
+      activeTab: null
     }
   },
   async mounted() {
-    await this.loadTabData(this.activeTab)
+    this.resetData()
+    this.activeTab = this.tabs[0]
+    console.log('Got data')
   },
   computed: {
     isMe() {
@@ -62,52 +34,110 @@ export default {
     }
   },
   methods: {
+    resetData() {
+      this.tabs = [
+        {
+          title: 'Posts',
+          route: 'posts',
+          data: {
+            posts: []
+          },
+          dataReady: false
+        },
+        {
+          title: 'Comments',
+          route: 'comments',
+          data: {
+            comments: []
+          },
+          dataReady: false
+        },
+        {
+          title: 'Followers',
+          route: 'followers',
+          data: {
+            users: [],
+            followFlag: true
+          },
+          dataReady: false
+        },
+        {
+          title: 'Followings',
+          route: 'followings',
+          data: {
+            users: [],
+            followFlag: false
+          },
+          dataReady: false
+        },
+        {
+          title: 'Liked',
+          route: 'liked',
+          data: {
+            posts: []
+          },
+          dataReady: false
+        }
+      ]
+    },
     async loadTabData(tab) {
-      switch (tab) {
+      switch (tab.route) {
         case 'posts': {
           try {
             const response = await Api.get('/v1/posts/users/' + this.userData._id)
-            this.posts = response.data
+            tab.data.posts = response.data
+            tab.dataReady = true
           } catch (error) {
-            if (error.response.status === 404) {
-              this.posts = []
+            console.error(error)
+            if (error.response?.status === 404) {
+              tab.data.posts = []
             }
           }
           break
         }
         case 'comments': {
           const response = await Api.get('/v1/comments/users/' + this.userData._id)
-          this.comments = response.data
+          tab.data.comments = response.data
+          tab.dataReady = true
           break
         }
         case 'followers': {
           const response = await Api.get('/v1/users/' + this.userData._id + '/followers')
-          this.followers = response.data
+          tab.data.users = response.data
+          tab.dataReady = true
           break
         }
         case 'followings': {
           const response = await Api.get('/v1/users/' + this.userData._id + '/followings')
-          this.followings = response.data
-          console.log(this.followings)
+          tab.data.users = response.data
+          tab.dataReady = true
           break
         }
-        // TODO: add 'liked' case
+        case 'liked': {
+          this.data.posts = []
+          tab.dataReady = true
+        }
       }
     },
     updateTab(tab) {
       if (tab !== this.activeTab) {
         this.activeTab = tab
-        this.$router.push(tab)
       }
     }
   },
   watch: {
     async activeTab(newTab, oldTab) {
-      this.loadTabData(newTab)
+      if (!newTab.dataReady) {
+        this.loadTabData(newTab)
+      }
     },
     userData: {
       handler: async function (newData, oldData) {
-        this.loadTabData(this.activeTab)
+        this.resetData()
+        this.activeTab = this.tabs[0]
+        if (!newData.dataReady) {
+          this.loadTabData(this.activeTab)
+        }
       },
       deep: true
     }

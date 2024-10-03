@@ -1,5 +1,5 @@
 <template>
-  <div v-if="posts?.length != 0">
+  <div v-if="posts.length != 0">
     <Post v-for="post in posts" :post="post" :key="post._id" />
   </div>
   <div v-else class="posts-no-posts">
@@ -9,7 +9,20 @@
 
 <script>
 export default {
-  props: ['posts']
+  props: {
+    tabData: {
+      type: Object,
+      required: true
+    }
+  },
+  computed: {
+    posts() {
+      return this.tabData.posts || []
+    }
+  },
+  mounted() {
+    console.log(this.posts)
+  }
 }
 </script>
 
