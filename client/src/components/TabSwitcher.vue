@@ -12,20 +12,13 @@ export default {
   props: ['tabs'],
   data() {
     return {
-      activeTab: 0,
-      tabIds: []
+      activeTab: 0
     }
   },
   methods: {
     switchTab(tab) {
       this.activeTab = this.tabs.indexOf(tab)
       this.$router.push(tab.route)
-      this.$emit('switch', tab)
-    }
-  },
-  watch: {
-    tabs(oldData, newData) {
-      this.activeTab = 0
     }
   }
 }

@@ -7,8 +7,6 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-
 export default {
   name: 'Profile',
   props: {
@@ -24,8 +22,7 @@ export default {
         { title: 'Comments', route: 'comments' },
         { title: 'Followers', route: 'followers' },
         { title: 'Followings', route: 'followings' }
-      ],
-      activeTab: 'posts'
+      ]
     }
   },
   async mounted() {
@@ -36,37 +33,6 @@ export default {
   computed: {
     isMe() {
       return this.$route.path.match('/profile/me/.*')
-    }
-  },
-  methods: {
-    async loadTabData(tab) {
-      switch (tab.route) {
-        case 'posts': {
-          break
-        }
-        case 'comments': {
-          const response = await Api.get('/v1/comments/users/' + this.userData._id)
-          tab.data.comments = response.data
-          tab.dataReady = true
-          break
-        }
-        case 'followers': {
-          const response = await Api.get('/v1/users/' + this.userData._id + '/followers')
-          tab.data.users = response.data
-          tab.dataReady = true
-          break
-        }
-        case 'followings': {
-          const response = await Api.get('/v1/users/' + this.userData._id + '/followings')
-          tab.data.users = response.data
-          tab.dataReady = true
-          break
-        }
-        case 'liked': {
-          this.data.posts = []
-          tab.dataReady = true
-        }
-      }
     }
   }
 }
