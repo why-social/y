@@ -59,7 +59,7 @@ input {
   padding-left: 1.3rem;
   padding-right: 1.3rem;
   color: var(--color-on-background);
-  transition: 0.5s;
+  transition: border 0.5s, background 0.5s;
 }
 
 input:focus {

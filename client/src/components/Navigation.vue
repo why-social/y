@@ -3,7 +3,8 @@
     <div class="nav-logo" @click="$router.push({ path: '/' })">𝕐</div>
     <div class="divider"></div>
     <NavigationItem to="/" icon="home" text="Home"> </NavigationItem>
-    <NavigationItem to="/search" icon="search" text="Search"> </NavigationItem>
+    <NavigationItem to="/search" icon="search" text="Discover">
+    </NavigationItem>
     <NavigationItem
       to="/profile/me"
       icon="person"
@@ -32,12 +33,11 @@
   padding-bottom: 20px;
   padding-right: 20px;
   box-sizing: border-box;
-  border-right: 1px solid var(--color-outline);
-  height: 100vh;
-  position: sticky;
+  border-right: 1px solid var(--color-border);
+  height: 100%;
+  position: fixed;
   display: flex;
   flex-direction: column;
-  top: 0;
 }
 
 .divider {
@@ -45,7 +45,7 @@
   height: 1px;
   margin-top: 1rem;
   margin-bottom: 1rem;
-  background: var(--color-outline);
+  background: var(--color-border);
 }
 
 .nav-logo {
@@ -77,9 +77,19 @@
   display: none;
 }
 
-@media (min-width: 1200px) {
+/* god bless */
+@media (max-width: 630px) {
   #navbar {
-    padding-right: 60px;
+    position: sticky;
+    height: 100vh;
+    top: 0;
+    left: 0;
+  }
+}
+
+@media (min-width: 1400px) {
+  #navbar {
+    padding-right: 40px;
   }
 
   .nav-label {

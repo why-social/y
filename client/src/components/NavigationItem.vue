@@ -54,7 +54,7 @@ export default {
   background: var(--color-background-highlight);
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1400px) {
   .label {
     display: unset;
   }
