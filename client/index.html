@@ -31,8 +31,9 @@
 <style>
   :root {
     --color-background: black;
+    --color-background-highlight: rgb(25, 24, 24);
     --color-on-background: white;
-    --color-outline: rgb(92, 101, 103);
+    --color-outline: rgb(75, 81, 82);
     --color-accent: rgb(63, 183, 239);
     --color-button-emphasize: rgb(26, 154, 213);
     --color-button-highlight: rgb(94, 188, 231);
@@ -54,12 +55,19 @@
     color: var(--color-on-background);
   }
 
+  hr {
+    opacity: 1;
+    background-color: var(--color-border);
+    height: 1px;
+    border: 0;
+  }
+
   #app {
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100%;
+    min-height: calc(100vh + 1px);
   }
 
   .inter-tight-light,

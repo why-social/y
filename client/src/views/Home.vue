@@ -1,7 +1,7 @@
 <template>
   <div id="content">
     <PostPrompt />
-    <Post :post="examplePost"/>
+    <hr />
     <Post v-for="post in posts" :post="post" :key="post._id" />
   </div>
 </template>
@@ -10,8 +10,18 @@
 #content {
   overflow: hidden;
   display: block;
+  padding-left: 20px;
+  padding-right: 20px;
   height: 100%;
   width: 100%;
+}
+
+@media (max-width: 630px) {
+  #content {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 20rem;
+  }
 }
 </style>
 
@@ -28,7 +38,8 @@ export default {
         author: {
           name: 'Shawn Dawgson',
           username: 'colguylikesdawgs',
-          profile_picture: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg'
+          profile_picture:
+            'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg'
         },
         timestamp: Date.now(),
         content: 'Can I pet that dawg',
@@ -51,7 +62,6 @@ export default {
       })
         .then((response) => {
           this.posts = response.data.posts
-          console.log(response.data.posts)
         })
         .catch((error) => {
           console.log(error)
