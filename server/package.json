@@ -15,7 +15,7 @@
     "ci-test": "npm run newman-server",
     "newman-server": "cross-env-shell PORT=3001 UPLOAD_DIR=/testUploads/ \"npm run dropdb && run-p --race start newman-wait\"",
     "newman-wait": "wait-on http://localhost:3001/api && npm run newman",
-    "newman": "newman run ./tests/server.postman_collection.json --env-var host=http://localhost:3001",
+    "newman": "dotenv -- bash -c 'newman run ./tests/server.postman_collection.json --env-var host=http://localhost:3001 --env-var ADMIN_KEY=\"$ADMIN_KEY\"'",
     "populatedb": "node ./tests/populatedb.js",
     "dropdb": "node ./tests/dropdb.js"
   },
@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
+    "dotenv": "^16.4.5",
     "newman": "^6.2.1",
     "nodemon": "^3.1.4",
     "npm-run-all": "^4.1.5",

@@ -69,7 +69,7 @@ router.delete("/api/v1/images/:hash", authMiddleware, async function(req, res, n
 router.delete("/api/v1/images", async function(req, res, next) {
 	try{
 		// Check if the user has admin privileges
-		if(req.headers["razvan_admin_privileges"] !== "awooga") 
+		if(!req.headers["authorization"] || req.headers["authorization"] !== process.env.ADMIN_KEY)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED); // TODO: secret admin key?
 
 		// Delete all images
