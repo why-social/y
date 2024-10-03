@@ -1,8 +1,8 @@
 <template>
   <div class="profile-feed">
-    <TabSwitcher :tabs="tabs" @switch="updateTab" />
+    <TabSwitcher :tabs="tabs" />
 
-    <router-view v-if="activeTab?.dataReady" :tabData="activeTab.data" />
+    <router-view :key="$route.path"/>
   </div>
 </template>
 
@@ -19,14 +19,19 @@ export default {
   },
   data() {
     return {
-      tabs: [],
-      activeTab: null
+      tabs: [
+        { title: 'Posts', route: 'posts' },
+        { title: 'Comments', route: 'comments' },
+        { title: 'Followers', route: 'followers' },
+        { title: 'Followings', route: 'followings' }
+      ],
+      activeTab: 'posts'
     }
   },
   async mounted() {
-    this.resetData()
-    this.activeTab = this.tabs[0]
-    console.log('Got data')
+    if (this.isMe) {
+      this.tabs.push({ title: 'Liked', route: 'liked' })
+    }
   },
   computed: {
     isMe() {
@@ -34,65 +39,9 @@ export default {
     }
   },
   methods: {
-    resetData() {
-      this.tabs = [
-        {
-          title: 'Posts',
-          route: 'posts',
-          data: {
-            posts: []
-          },
-          dataReady: false
-        },
-        {
-          title: 'Comments',
-          route: 'comments',
-          data: {
-            comments: []
-          },
-          dataReady: false
-        },
-        {
-          title: 'Followers',
-          route: 'followers',
-          data: {
-            users: [],
-            followFlag: true
-          },
-          dataReady: false
-        },
-        {
-          title: 'Followings',
-          route: 'followings',
-          data: {
-            users: [],
-            followFlag: false
-          },
-          dataReady: false
-        },
-        {
-          title: 'Liked',
-          route: 'liked',
-          data: {
-            posts: []
-          },
-          dataReady: false
-        }
-      ]
-    },
     async loadTabData(tab) {
       switch (tab.route) {
         case 'posts': {
-          try {
-            const response = await Api.get('/v1/posts/users/' + this.userData._id)
-            tab.data.posts = response.data
-            tab.dataReady = true
-          } catch (error) {
-            console.error(error)
-            if (error.response?.status === 404) {
-              tab.data.posts = []
-            }
-          }
           break
         }
         case 'comments': {
@@ -118,28 +67,6 @@ export default {
           tab.dataReady = true
         }
       }
-    },
-    updateTab(tab) {
-      if (tab !== this.activeTab) {
-        this.activeTab = tab
-      }
-    }
-  },
-  watch: {
-    async activeTab(newTab, oldTab) {
-      if (!newTab.dataReady) {
-        this.loadTabData(newTab)
-      }
-    },
-    userData: {
-      handler: async function (newData, oldData) {
-        this.resetData()
-        this.activeTab = this.tabs[0]
-        if (!newData.dataReady) {
-          this.loadTabData(this.activeTab)
-        }
-      },
-      deep: true
     }
   }
 }

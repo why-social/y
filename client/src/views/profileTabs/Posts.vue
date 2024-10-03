@@ -8,20 +8,26 @@
 </template>
 
 <script>
+import { Api } from '@/Api'
+import VueJwtDecode from 'vue-jwt-decode'
+
 export default {
-  props: {
-    tabData: {
-      type: Object,
-      required: true
+  data() {
+    return {
+      posts: []
     }
   },
-  computed: {
-    posts() {
-      return this.tabData.posts || []
+  async mounted() {
+    try {
+      const userId = this.$route.params.userId === 'me' ? VueJwtDecode.decode(localStorage.getItem('token')).userId : this.$route.params.userId
+      const response = await Api.get('/v1/posts/users/' + userId)
+      this.posts = response.data
+    } catch (error) {
+      console.error(error)
+      if (error.response?.status === 404) {
+        this.posts = []
+      }
     }
-  },
-  mounted() {
-    console.log(this.posts)
   }
 }
 </script>
