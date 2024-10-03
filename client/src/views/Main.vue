@@ -1,5 +1,5 @@
 <template>
-  <b-container id="container" class="d-flex">
+  <b-container class="d-flex">
     <div class="nav-container">
       <Navigation />
     </div>
@@ -13,10 +13,16 @@
 </template>
 
 <style scoped>
+.container {
+  padding-left: 0;
+  padding-right: 0;
+}
+
 .nav-container {
+  min-height: 100vh;
   box-sizing: border-box;
   display: relative;
-  padding-right: calc(4.4rem + 20px);
+  padding-right: calc(4.4rem + 40px);
 }
 
 .search-content-container {
@@ -25,6 +31,7 @@
 }
 
 .search-container {
+  min-height: 100vh;
   box-sizing: border-box;
   display: none;
   padding-right: 0;
@@ -32,13 +39,10 @@
 
 /* god bless */
 @media (max-width: 630px) {
-  .container {
-    max-width: unset;
-    width: 630px;
-  }
-
   .nav-container {
     padding-right: 0;
+    position: fixed;
+    z-index: 100000;
   }
 }
 
@@ -82,7 +86,7 @@
   }
 
   .nav-container {
-    padding-right: calc(13rem + 40px);
+    padding-right: calc(13rem + 60px);
   }
 }
 

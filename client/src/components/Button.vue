@@ -6,14 +6,14 @@
 
 <style scoped>
 button {
-  transition: 0.2s;
+  transition: 0.3s background, 0.3s border, 0.3s opacity;
   cursor: pointer;
   display: flex;
   gap: 0.5rem;
   border: none;
   user-select: none;
   font-size: 1.5rem;
-  padding: 1rem;
+  padding: 0.7rem;
   align-items: center;
   justify-content: center;
   background: var(--color-accent);
@@ -44,6 +44,11 @@ button[secondary]:hover {
 
 button[secondary]:active {
   background: var(--color-button-secondary-emphasize);
+}
+
+button[disabled] {
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 button:focus {

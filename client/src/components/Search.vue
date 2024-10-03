@@ -1,6 +1,6 @@
 <template>
   <div id="search">
-    <Input />
+    <Input icon="search" type="text"/>
   </div>
 </template>
 
@@ -19,21 +19,6 @@
   flex-direction: column;
 }
 
-input {
-  width: 100%;
-  padding: 0.7rem;
-  background: var(--color-background-highlight);
-  outline: none;
-  border-radius: 100vmax;
-  color: white;
-  font-size: 1.3rem;
-}
-
-input:focus {
-  background: none;
-  border: 2px solid var(--color-accent);
-}
-
 @media (min-width: 1200px) {
   #search {
     padding-top: 20px;
@@ -48,13 +33,13 @@ input:focus {
     border-left: 1px solid var(--color-border);
   }
 
-  input {
+  .input-container {
     width: 18rem;
   }
 }
 
 @media (min-width: 1600px) {
-  input {
+  .input-container {
     width: 24rem;
   }
 }

@@ -1,6 +1,9 @@
 <template>
   <div id="content">
     <PostPrompt />
+    <div
+      style="padding-bottom: 1rem; border-bottom: 1px solid var(--color-border)"
+    ></div>
     <Post />
     <Post v-for="post in posts" :post="post" :key="post._id" />
   </div>
@@ -10,8 +13,18 @@
 #content {
   overflow: hidden;
   display: block;
+  padding-left: 20px;
+  padding-right: 20px;
   height: 100%;
   width: 100%;
+}
+
+@media (max-width: 630px) {
+  #content {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 20rem;
+  }
 }
 </style>
 

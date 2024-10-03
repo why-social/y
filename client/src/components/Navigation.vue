@@ -1,9 +1,11 @@
 <template>
   <div id="navbar">
-    <div class="nav-logo" @click="$router.push({ path: '/' })">𝕐</div>
+    <div class="nav-logo cool-font" @click="$router.push({ path: '/' })">
+      <p>𝕐</p>
+    </div>
     <div class="divider"></div>
     <NavigationItem to="/" icon="home" text="Home"> </NavigationItem>
-    <NavigationItem to="/search" icon="search" text="Discover">
+    <NavigationItem to="/discover" icon="search" text="Discover">
     </NavigationItem>
     <NavigationItem
       to="/profile/me"
@@ -29,9 +31,7 @@
 
 <style scoped>
 #navbar {
-  padding-top: 20px;
-  padding-bottom: 20px;
-  padding-right: 20px;
+  padding: 20px;
   box-sizing: border-box;
   border-right: 1px solid var(--color-border);
   height: 100%;
@@ -55,7 +55,12 @@
   border-radius: 100vmax;
   padding: 1.2rem;
   transition: 0.3s;
-  line-height: 70%;
+  line-height: 60%;
+}
+
+.nav-logo p {
+  margin: 0;
+  transform: translateY(10%);
 }
 
 .nav-logo:hover {
@@ -66,9 +71,8 @@
 .nav-icon {
   font-size: 2.5rem;
   display: flex;
-  line-height: 80%;
   width: 2rem;
-  height: 2rem;
+  height: 2.7rem;
   align-items: center;
   justify-content: center;
 }
@@ -80,16 +84,47 @@
 /* god bless */
 @media (max-width: 630px) {
   #navbar {
-    position: sticky;
-    height: 100vh;
-    top: 0;
-    left: 0;
+    width: 100%;
+    height: fit-content;
+    flex-direction: row;
+    border-top: 1px solid var(--color-border);
+    border-right: none;
+    bottom: 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+  }
+
+  #navbar > * {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .nav-logo {
+    display: none;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  button {
+    position: absolute;
+    right: 8%;
+    width: 4.2rem;
+    height: 4.2rem;
+    bottom: 120%;
+    filter: drop-shadow(0px 0px 10px #000000);
   }
 }
 
 @media (min-width: 1400px) {
   #navbar {
     padding-right: 40px;
+  }
+
+  .nav-icon {
+    height: 2rem;
   }
 
   .nav-label {
@@ -113,7 +148,7 @@ export default {
     logout() {
       localStorage.removeItem('token')
 
-      this.$router.push({ path: '/' })
+      this.$router.push({ path: '/login' })
     }
   }
 }
