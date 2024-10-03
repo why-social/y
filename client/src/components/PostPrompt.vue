@@ -2,16 +2,30 @@
   <form ref="postForm" @submit.prevent="createPost">
     <div class="form-container">
       <div class="form-row">
-        <img class="avatar" :src="pfp"/>
-        <input class="text-input" id="content" type="text" v-model="content" placeholder="What are you thinking about?">
+        <img class="avatar" :src="pfp" />
+        <contenteditable
+          id="content"
+          v-model="content"
+          ondrop="return false"
+          contenteditable="true"
+          placeholder="What are you thinking about?"
+          @keyup="keyUp"
+        ></contenteditable>
       </div>
-      <div class="form-row bottom-row">
+      <div class="form-row">
         <label class="attach-label" for="images">
-          <span class="file-counter">{{ images.length }}/4</span>
           <span class="material-symbols-outlined attach-icon">attach_file</span>
+          <span class="file-counter">{{ images.length }}/4</span>
         </label>
-        <input class="file-input" id="images" type="file" accept="image/*" multiple @change="handleFileChange">
-        <input :disabled="isSubmitDisabled" id="submit-button" class="button" type="submit" value="Post">
+        <input
+          class="file-input"
+          id="images"
+          type="file"
+          accept="image/*"
+          multiple
+          @change="handleFileChange"
+        />
+        <Button :disabled="isSubmitDisabled"> Post </Button>
       </div>
     </div>
   </form>
@@ -59,26 +73,35 @@ export default {
     },
     handleFileChange() {
       this.images = event.target.files
+    },
+    keyUp(event) {
+      this.content = event?.srcElement?.innerText
     }
   },
   mounted() {
-    Api.get(`v1/users/${VueJwtDecode.decode(localStorage.getItem('token')).userId}/profile_picture`)
-      .then(response => {
-        console.log('PFP: \n' + response)
+    Api.get(
+      `v1/users/${
+        VueJwtDecode.decode(localStorage.getItem('token')).userId
+      }/profile_picture`
+    ).then((response) => {
+      if (response.data) {
         this.pfp = response.data
-      })
+      }
+    })
   }
 }
 </script>
 
 <style scoped>
 form {
-  padding: 2rem 2.5rem 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   overflow: hidden;
   width: 100%;
 }
 
 .form-container {
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -86,54 +109,48 @@ form {
 
 .form-row {
   display: flex;
-  align-items: center;
   gap: 1rem;
 }
 
-.bottom-row {
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
 .avatar {
-  width: 5rem;
-  align-self: center;
+  width: 4rem;
+  height: 4rem;
   border-radius: 100%;
 }
 
-input[type=text] {
+contenteditable {
   flex-grow: 1;
-  height: 5rem;
-  padding: 1rem 1rem 1rem 0.5rem;
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
+  resize: none;
+  padding: 1rem;
+  overflow: hidden;
+  font-size: 1.4rem;
   background: var(--color-background);
   color: var(--color-on-background);
-  resize: vertical;
   border: none;
-  border-bottom: 1px solid var(--color-border);
 }
 
-.button {
-  color: var(--color-on-accent);
-  background: var(--color-accent);
-  padding: 0.75rem 1.5rem;
-  border-radius: 1.5rem;
-  border: 1px solid transparent;
-  transition: 0.5s;
+contenteditable:focus {
+  outline: none;
+  border: none;
 }
 
-.button:enabled:hover {
-  border: 1px solid var(--color-accent);
-  background: var(--color-on-background);
+[contenteditable='true']:empty:before {
+  content: attr(placeholder);
+  cursor: text;
+  opacity: 0.7;
+  color: var(--color-on-background);
 }
 
-.button:disabled {
-  opacity: 40%;
-}
-
-input[type=file] {
+input[type='file'] {
   display: none;
+}
+
+button {
+  margin-left: auto;
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .file-counter {
@@ -142,15 +159,24 @@ input[type=file] {
 }
 
 .attach-label {
-  margin-left: auto;
+  display: flex;
+  user-select: none;
+  font-size: 1.3rem;
   align-items: center;
   cursor: pointer;
 }
 
 .attach-icon {
+  user-select: none;
   color: var(--color-accent);
   vertical-align: center;
-  width: 2rem;
+  font-size: 2rem;
 }
 
+@media (max-width: 630px) {
+  .avatar {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+}
 </style>

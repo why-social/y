@@ -1,12 +1,12 @@
 <template>
   <div class="post-container" @click="goToThread">
-    <img class="pfp" v-bind:src="pfp" @click.stop="goToUser" />
+    <img class="post-pfp" v-bind:src="pfp" @click.stop="goToUser" />
     <div class="post-data">
-      <div class="info">
-        <span class="inter-tight-medium" @click.stop="goToUser">{{ name }}</span>
+      <div class="post-info">
+        <span class="inter-tight-medium" @click.stop="goToUser">{{
+          name
+        }}</span>
         <span @click.stop="goToUser">@{{ username }}</span>
-        <span class="inter-tight-medium">·</span>
-        <span>{{ date }}</span>
       </div>
       <div class="post-content">
         <span class="content">{{ content }}</span>
@@ -16,9 +16,11 @@
             v-for="image in images"
             v-bind:src="image"
             :key="image._id"
+            @click="showModal(images.indexOf(image))"
           />
         </div>
       </div>
+      <span class="post-date">{{ date }}</span>
       <div class="interactions">
         <div
           class="clickable"
@@ -36,10 +38,16 @@
           <span class="icon" style="font-variation-settings: 'wght' 400"
             >cached</span
           >
-          <span style="padding-right: 0.4rem">Repost</span>
+          <span style="padding-right: 0.3rem">Repost</span>
         </Button>
       </div>
     </div>
+    <ImageCarousel
+      v-if="isModalOpen"
+      :images="images"
+      :startIndex="modalImageIndex"
+      @close="closeModal"
+    />
   </div>
 </template>
 
@@ -49,13 +57,17 @@
   display: flex;
   width: 100%;
   font-size: 1.4rem;
-  padding: 2rem 2.5rem;
-  gap: 1rem;
+  padding: 1rem;
+  gap: 0.5rem;
 }
-.pfp {
+.post-pfp {
   width: 4rem;
   height: 4rem;
   border-radius: 100%;
+}
+
+button {
+  padding: 0.7rem;
 }
 
 .post-data {
@@ -74,26 +86,19 @@
   flex-direction: column;
 }
 
-.info {
+.post-info {
   display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
-  white-space: nowrap;
-  overflow: hidden;
+  flex-direction: column;
+  line-height: 130%;
 }
-.info > span {
-  opacity: 0.7;
-  display: inline-block;
-}
-.info > span {
-  flex-shrink: 0;
-}
-.info > span:nth-child(1) {
+
+.post-info > span {
   opacity: 1;
-  flex-shrink: 1; /* Allow it to shrink when necessary */
-  overflow: hidden;
-  text-overflow: ellipsis; /* Truncate with ellipsis */
-  max-width: 50%; /* Limit the name to a maximum width */
+}
+
+.post-info > span:nth-child(2) {
+  opacity: 0.5;
+  font-size: 1.2rem;
 }
 
 .picture-container {
@@ -107,12 +112,20 @@
   box-sizing: border-box;
   min-width: calc(50% - 1vmin);
   flex: 1;
-  border-radius: 1rem;
+  border-radius: 1vmax;
   object-fit: cover;
+}
+.picture:hover {
+  cursor: pointer;
 }
 .picture:nth-child(2n) {
   flex-basis: calc(50% - 1vmin);
   aspect-ratio: 1/1;
+}
+
+.post-date {
+  font-size: 1.2rem;
+  opacity: 0.5;
 }
 
 .interactions {
@@ -133,6 +146,7 @@
 }
 .icon {
   font-size: 2rem;
+  line-height: 80%;
 }
 
 .like:hover {
@@ -160,6 +174,39 @@
 .comment:hover .icon {
   font-variation-settings: 'FILL' 1, 'wght' 100, 'GRAD' 0, 'opsz' 20;
 }
+
+@media (max-width: 630px) {
+  .post-pfp {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .post-container {
+    font-size: 1.2rem;
+  }
+
+  .post-info > span:nth-child(2) {
+    font-size: 1rem;
+  }
+
+  .post-date {
+    font-size: 1rem;
+  }
+
+  .clickable {
+    margin-right: 1rem;
+  }
+
+  button {
+    padding: 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  .icon {
+    font-size: 1.5rem;
+    line-height: 80%;
+  }
+}
 </style>
 
 <script>
@@ -181,7 +228,9 @@ export default {
         images: this.post.images || [],
         likes: this.post.likes,
         comments: this.post.comments,
-        liked: true
+        liked: true,
+        modalImageIndex: null,
+        isModalOpen: false
       }
     } else {
       // placeholder post
@@ -213,6 +262,14 @@ export default {
       if (this.post) {
         this.$router.push(`/thread/${this.post._id}`)
       }
+    },
+    showModal(index) {
+      this.isModalOpen = true
+      this.modalImageIndex = index
+    },
+    closeModal() {
+      this.isModalOpen = false
+      this.modalImageIndex = null
     }
   },
   mounted() {

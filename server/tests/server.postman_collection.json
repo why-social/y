@@ -4334,8 +4334,8 @@
 										"method": "DELETE",
 										"header": [
 											{
-												"key": "razvan_admin_privileges",
-												"value": "awooga",
+												"key": "authorization",
+												"value": "{{ADMIN_KEY}}",
 												"type": "text"
 											}
 										],
@@ -4816,8 +4816,8 @@
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "razvan_admin_privileges",
-								"value": "awooga",
+								"key": "authorization",
+								"value": "{{ADMIN_KEY}}",
 								"type": "text"
 							}
 						],
@@ -4859,8 +4859,8 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "razvan_admin_privileges",
-								"value": "awooga",
+								"key": "authorization",
+								"value": "{{ADMIN_KEY}}",
 								"type": "text"
 							}
 						],
