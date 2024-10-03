@@ -35,13 +35,13 @@
       <!-- TODO render the comments with 'Comments' component-->
     </div>
     <div v-else-if="activeTab === 'followers'">
-      <Follower v-for="follower in followers" :follower="follower" :key="follower._id" />
+      <Follower v-for="follower in followers" :follower="follower" :key="follower._id" :followFlag="true" @change-tab="updateTab"/>
     </div>
     <div v-else-if="activeTab === 'followings'">
-      <!-- TODO render the followings with 'Follower' component-->
+      <Follower v-for="following in followings" :follower="following" :key="following._id" :followFlag="false" @change-tab="updateTab"/>
     </div>
     <div v-else-if="activeTab === 'liked'">
-      <!-- Render liked posts -->
+      <!-- TODO render the comments with 'Liked' component-->
     </div>
   </div>
 </template>
@@ -103,12 +103,17 @@ export default {
           this.followers = response.data
           break
         }
-          // case 'liked': {
-          //   const response = await Api.get('/v1/posts/users/' + this.userData._id + '/liked')
-          //   this.likedPosts = response.data
-          //   break
-          // }
+        case 'followings': {
+          const response = await Api.get('/v1/users/' + this.userData._id + '/followings')
+          this.followings = response.data
+          break
+        }
+        // TODO: add 'liked' case
       }
+    },
+    updateTab(tab) {
+      this.activeTab = tab
+      this.loadTabData(tab)
     }
   },
   watch: {

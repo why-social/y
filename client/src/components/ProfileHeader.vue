@@ -27,7 +27,7 @@
         </div>
       </div>
       <div class="profile-editButton">
-        <Button secondary>Edit profile</Button>
+        <Button v-show="userData.email" secondary>Edit profile</Button>
       </div>
     </div>
     <div class="profile-joinDate">Joined {{ userData.joinDate }}</div>

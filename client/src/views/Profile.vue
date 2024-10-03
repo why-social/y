@@ -101,6 +101,8 @@ export default {
       this.userData.avatarUrl = userReqData.profile_picture || this.avatarUrl
       if (userReqData.email) {
         this.userData.email = userReqData.email
+      } else {
+        this.userData.email = ''
       }
     }
   }

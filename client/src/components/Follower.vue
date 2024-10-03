@@ -17,24 +17,43 @@ export default {
     follower: {
       type: Object,
       required: true
+    },
+    followFlag: {
+      type: Boolean,
+      required: true
     }
   },
   data() {
     return {
       pfp: 'https://via.placeholder.com/150',
       name: '',
-      username: ''
+      username: '',
+      redirectToProfileId: ''
     }
   },
   async mounted() {
-    const followerReq = await Api.get(`/v1/users/${this.follower.follower}`)
+    let followerReq
+    if (this.followFlag) {
+      followerReq = await this.getFollowerInfo()
+      this.redirectToProfileId = this.follower.follower
+    } else {
+      followerReq = await this.getFollowingInfo()
+      this.redirectToProfileId = this.follower.follows
+    }
     this.name = followerReq.data.name
     this.username = followerReq.data.username
     // TODO add profile picture support
   },
   methods: {
     redirectToProfile() {
-      this.$router.push(`/profile/${this.follower.follower}`)
+      this.$router.push(`/profile/${this.redirectToProfileId}`)
+      this.$emit('change-tab', 'posts')
+    },
+    getFollowerInfo() {
+      return Api.get(`/v1/users/${this.follower.follower}`)
+    },
+    getFollowingInfo() {
+      return Api.get(`/v1/users/${this.follower.follows}`)
     }
   }
 }
