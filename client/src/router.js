@@ -4,6 +4,7 @@ import VueJwtDecode from 'vue-jwt-decode'
 
 import Main from './views/Main.vue'
 import Home from './views/Home.vue'
+import Discover from './views/Discover.vue'
 import Auth from './views/Auth.vue'
 import Login from './views/Login.vue'
 import Recover from './views/Recover.vue'
@@ -22,18 +23,23 @@ const routes = [
         path: 'home',
         name: 'home',
         component: Home
-      }
+      },
+      {
+        path: 'discover',
+        name: 'discover',
+        component: Discover
+      },
+      {
+        path: '/profile/:userId',
+        name: 'profile',
+        component: Profile
+      },
+      {
+        path: '/profile',
+        redirect: '/profile/me',
+        meta: { requiresAuth: true }
+      },
     ]
-  },
-  {
-    path: '/profile/:userId',
-    name: 'profile',
-    component: Profile
-  },
-  {
-    path: '/profile',
-    redirect: '/profile/me',
-    meta: { requiresAuth: true }
   },
   {
     path: '/',

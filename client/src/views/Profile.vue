@@ -1,14 +1,9 @@
 <template>
-  <b-container>
-    <b-row>
-      <b-col cols="7" class="center">
-        <ProfileHeader :userData="userData"/>
-        <hr>
-        <ProfilePosts :userData="userData"/>
-      </b-col>
-      <b-col> test col </b-col>
-    </b-row>
-  </b-container>
+  <div id="container">
+    <ProfileHeader :userData="userData" />
+    <hr />
+    <ProfilePosts :userData="userData" />
+  </div>
 </template>
 
 <script>
@@ -52,7 +47,7 @@ export default {
       if (token) {
         // Check if token has expired
         const decoded = VueJwtDecode.decode(localStorage.getItem('token'))
-        const expired = decoded.exp - (Date.now() / 1000) < 0
+        const expired = decoded.exp - Date.now() / 1000 < 0
         if (expired) return this.$router.push('/auth/login')
 
         decodedUserId = decoded.userId
@@ -65,7 +60,9 @@ export default {
 
       if (paramId === 'me') {
         this.userData._id = decodedUserId
-        const userReq = await Api.get('/v1/users/' + decodedUserId, { headers: { Authorization: token } })
+        const userReq = await Api.get('/v1/users/' + decodedUserId, {
+          headers: { Authorization: token }
+        })
 
         await this.fetchUserData(decodedUserId, userReq)
       } else {
@@ -74,7 +71,8 @@ export default {
           const userReq = await Api.get('/v1/users/' + paramId)
 
           await this.fetchUserData(paramId, userReq)
-        } catch (error) { // User not found by id
+        } catch (error) {
+          // User not found by id
           if (error.response.status === 404) {
             return this.$router.push('/404')
           }
@@ -92,7 +90,9 @@ export default {
       this.userData._id = userId
       this.userData.name = userReqData.name
       this.userData.username = userReqData.username
-      this.userData.joinDate = moment(userReqData.joinDate).format('DD MMMM YYYY')
+      this.userData.joinDate = moment(userReqData.joinDate).format(
+        'DD MMMM YYYY'
+      )
       this.userData.followers = followersReq.data
       this.userData.following = followingsReq.data
       this.userData.avatarUrl = userReqData.profile_picture || this.avatarUrl
@@ -107,4 +107,8 @@ export default {
 </script>
 
 <style>
+#container {
+  width: 100%;
+  padding: 10px;
+}
 </style>
