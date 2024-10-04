@@ -10,6 +10,34 @@ const { getPublicPathFromHash } = require('../utils/utils')
 const router = express.Router();
 
 //#region GET
+router.get("/api/v1/posts", async function (req, res, next) {
+	try {
+		const posts = await models.Posts.find()
+			.populate({
+				path: 'author', select: '_id name username profile_picture'
+			})
+			.sort([['timestamp', -1]])
+			.lean();
+
+		for (let post of posts) {
+			console.log(post)
+			if (post.author.profile_picture) {
+				post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
+			}
+
+			post.images = await Promise.all(
+				post.images.map(async image => {
+					return await getPublicPathFromHash(req, image);
+				})
+			);
+		}
+
+		return res.json(posts);
+	} catch (err) {
+		next(err);
+	};
+})
+
 // Returns a post with id :id
 router.get("/api/v1/posts/:id", async function (req, res, next) {
 	try {

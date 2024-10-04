@@ -14,6 +14,8 @@ import Profile from './views/Profile.vue'
 import Posts from './views/profileTabs/Posts.vue'
 import Comments from './views/profileTabs/Comments.vue'
 import UserList from './views/profileTabs/UserList.vue'
+import Feed from './views/homeTabs/Feed.vue'
+import Recent from './views/homeTabs/Recent.vue'
 
 const routes = [
   {
@@ -26,7 +28,20 @@ const routes = [
       {
         path: 'home',
         name: 'home',
-        component: Home
+        component: Home,
+        redirect: { name: 'feed' },
+        children: [
+          {
+            name: 'feed',
+            path: 'feed',
+            component: Feed
+          },
+          {
+            name: 'recent',
+            path: 'recent',
+            component: Recent
+          }
+        ]
       },
       {
         path: 'thread/:id',
@@ -42,7 +57,6 @@ const routes = [
         path: '/profile/:userId',
         name: 'profile',
         redirect: { name: 'posts' },
-        meta: { requiresAuth: true },
         component: Profile,
         children: [
           {
