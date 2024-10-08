@@ -135,6 +135,11 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 - DELETE /api/v1/comments/:id
 - DELETE /api/v1/comments/:comment_id/likes/:user_id
 
+## Advanced Feature Proposal
+  Our advanced feature is feed generation. Each user will have a personalized feed generated for them when they enter the ‘Feed’ page of the site. The feed is generated based on the user's followings. On the backend, the feature will be implemented in a special endpoint (‘api/v1/feeds’) that returns the generated feed, sorted chronologically. The user can also select newest-first or oldest-first sorting.
+
+  On the frontend, the feed will be the central part of the website. To support best UX practices, the feed will be infinitely scrollable, without the need for the user to switch pages manually. This also has an added benefit of efficiency, as the client requests for only a part of the feed, not the whole. This functionality will be achieved by adding pagination to the feeds endpoint and using it on the frontend to dynamically load the pages.
+
 ## Teaser (MS3)
 
 ![Teaser](./images/teaser.png)
