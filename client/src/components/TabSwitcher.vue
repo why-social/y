@@ -19,7 +19,18 @@ export default {
     switchTab(tab) {
       this.activeTab = this.tabs.indexOf(tab)
       this.$router.push(tab.route)
+    },
+    loadTab() {
+      const route = this.$route.name
+      const tab = this.tabs.find(tab => tab.route === route)
+      console.log(route)
+      if (tab) {
+        this.activeTab = this.tabs.indexOf(tab)
+      }
     }
+  },
+  created() {
+    this.loadTab()
   },
   watch: {
     $route(to, from) {
