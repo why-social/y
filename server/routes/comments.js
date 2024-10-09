@@ -47,36 +47,6 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 	}
 });
 
-router.get("/api/v1/comments/users/:id", async function (req, res, next) {
-	try {
-		let userExists = await models.Users.exists({ _id: req.params.id });
-		if(!userExists) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
-		
-		let result = await models.Comments
-			.find({ author: req.params.id })
-			.populate({
-				path: 'author', select: '_id name username profile_picture',
-			})
-			.lean().exec();
-		
-		if (result[0]?.author.profile_picture) {
-			result[0].author.profile_picture = await getPublicPathFromHash(req, result[0].author.profile_picture);
-		} // changes the author pfp in all the comments, since they are reference-shared
-
-		for (var comment of result) {
-			comment.images = await Promise.all(
-				comment.images.map(async image => {
-					return await getPublicPathFromHash(req, image);
-				})
-			);
-		}
-		
-		return res.status(200).json(result);
-	} catch (err) {
-		next(err);
-	}
-});
-
 router.get("/api/v1/comments/:comment_id/likes/:user_id", async function (req, res, next) {
 	try {
 		let comment = await getCommentById(req.params.comment_id, false, next);
