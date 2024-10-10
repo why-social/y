@@ -104,6 +104,8 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 - GET /api/v1/users/:id
 - GET /api/v1/users/:id/followers
 - GET /api/v1/users/:id/followings
+- GET /api/v1/users/:id/posts
+- GET /api/v1/users/:id/comments
 - POST /api/v1/users
 - POST /api/v1/users/:id/images
 - POST /api/v1/users/followings/:following_id
@@ -115,7 +117,6 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 
 #### Posts
 - GET /api/v1/posts/:id
-- GET /api/v1/posts/users/:id
 - GET /api/v1/posts/:post_id/likes/:user_id
 - POST /api/v1/posts/
 - POST /api/v1/posts/:post_id/likes/
@@ -126,7 +127,6 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 
 #### Comments
 - GET /api/v1/comments/:id
-- GET /api/v1/comments/users/:id
 - GET /api/v1/comments/:comment_id/likes/
 - POST /api/v1/comments
 - POST /api/v1/comments/:comment_id/likes

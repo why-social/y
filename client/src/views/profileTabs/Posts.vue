@@ -20,7 +20,7 @@ export default {
   async mounted() {
     try {
       const userId = this.$route.params.userId === 'me' ? VueJwtDecode.decode(localStorage.getItem('token')).userId : this.$route.params.userId
-      const response = await Api.get('/v1/posts/users/' + userId)
+      const response = await Api.get('/v1/users/' + userId + '/posts')
       this.posts = response.data
     } catch (error) {
       console.error(error)
