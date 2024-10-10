@@ -19,15 +19,24 @@ export default {
     switchTab(tab) {
       this.activeTab = this.tabs.indexOf(tab)
       this.$router.push(tab.route)
+    },
+    resetTab() {
+      const route = this.$route.name
+      const tab = this.tabs.find(tab => tab.route === route)
+      if (tab) {
+        this.activeTab = this.tabs.indexOf(tab)
+      } else {
+        this.activeTab = 0
+      }
     }
+  },
+  created() {
+    this.resetTab()
   },
   watch: {
     $route(to, from) {
-      const newUserId = to.params.userId
-      const oldUserId = from.params.userId
-
-      if (newUserId !== oldUserId) {
-        this.activeTab = 0
+      if (to.meta.resetTab) {
+        this.resetTab()
       }
     }
   }
