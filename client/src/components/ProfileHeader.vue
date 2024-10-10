@@ -5,7 +5,14 @@
         <img :src="userData.avatarUrl" alt="avatar" />
       </div>
       <div class="profile-name-container">
-        <div class="profile-name">{{ userData.name }}</div>
+        <div class="profile-name">
+          <template v-if="editMode">
+              <Input customClass="profile-edit-input" v-model="editableUserData.name" required/>
+          </template>
+          <template v-else>
+            {{ userData.name }}
+          </template>
+        </div>
         <div class="username-email-container">
           <div class="profile-info">
             <span class="at-symbol">@</span>
@@ -27,17 +34,31 @@
         </div>
       </div>
       <div class="profile-editButton">
-        <Button v-show="userData.email" secondary>Edit profile</Button>
+        <template v-if="editMode">
+          <Button v-show="userData.email" @click="saveChanges">Save</Button>
+        </template>
+        <template v-else>
+          <Button secondary v-show="userData.email" @click="toggleEditMode">Edit profile</Button>
+        </template>
       </div>
     </div>
     <div class="profile-joinDate">Joined {{ userData.joinDate }}</div>
     <div class="profile-follow-container">
-      <a class="profile-following">
-        <span class="profile-follow-number">{{ userData.followers.length }}</span> Followers
-      </a>
-      <a class="profile-followers">
-        <span class="profile-follow-number">{{ userData.following.length }}</span> Following
-      </a>
+      <div class="profile-following">
+        {{ userData.followers.length }} Followers
+      </div>
+      <div class="profile-followers">
+        {{ userData.following.length }} Following
+      </div>
+    </div>
+    <div class="profile-aboutme" v-if="userData.about_me">
+      About me:
+      <template v-if="editMode">
+        <Input customClass="profile-edit-input" v-model="editableUserData.about_me" modelValue="editableUserData.about_me" placeholder="About me" />
+      </template>
+      <template v-else>
+        <div>{{ userData.about_me }}</div>
+      </template>
     </div>
   </div>
 </template>
@@ -49,6 +70,33 @@ export default {
     userData: {
       type: Object,
       required: true
+    }
+  },
+  data() {
+    return {
+      editMode: false,
+      editableUserData: {
+        name: this.userData.name,
+        about_me: this.userData.about_me
+      }
+    }
+  },
+  watch: {
+    userData: {
+      handler(newValue) {
+        this.editableUserData = { ...newValue }
+      },
+      deep: true
+    }
+  },
+  methods: {
+    toggleEditMode() {
+      this.editMode = !this.editMode
+    },
+    async saveChanges() {
+      this.toggleEditMode()
+
+      await this.$emit('updateUserData', this.editableUserData)
     }
   }
 }
@@ -126,12 +174,6 @@ export default {
   font-size: 1rem;
   color: #aaa;
 }
-.profile-followers:hover,
-.profile-following:hover {
-  color: #fff;
-  text-decoration: underline;
-  cursor: pointer;
-}
 .profile-follow-number {
   color: #fff;
   font-weight: 600;
@@ -142,5 +184,9 @@ export default {
 }
 .profile-editButton button{
   font-size: 1rem;
+}
+.profile-aboutme {
+  font-size: 1rem;
+  padding-top: 0.5rem;
 }
 </style>

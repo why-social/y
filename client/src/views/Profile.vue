@@ -1,6 +1,6 @@
 <template>
   <div id="container">
-    <ProfileHeader :userData="userData" />
+    <ProfileHeader :userData="userData" @updateUserData="updateUserData"/>
     <hr />
     <ProfilePosts :userData="userData" />
   </div>
@@ -28,6 +28,7 @@ export default {
         followers: [],
         following: [],
         avatarUrl: '',
+        about_me: '',
         email: ''
       },
       avatarUrl: 'https://via.placeholder.com/150'
@@ -96,10 +97,29 @@ export default {
       this.userData.followers = followersReq.data
       this.userData.following = followingsReq.data
       this.userData.avatarUrl = userReqData.profile_picture || this.avatarUrl
+      this.userData.about_me = userReqData.about_me || ''
       if (userReqData.email) {
         this.userData.email = userReqData.email
       } else {
         this.userData.email = ''
+      }
+    },
+    async updateUserData(updatedData) {
+      try {
+        const token = localStorage.getItem('token')
+        console.log(updatedData)
+        updatedData = {
+          name: updatedData.name,
+          about_me: updatedData.about_me
+        }
+        await Api.patch('/v1/users/' + this.userData._id, updatedData, {
+          headers: { Authorization: token }
+        })
+        this.userData.name = updatedData.name
+        this.userData.about_me = updatedData.about_me
+        console.log('Updated user data:', updatedData)
+      } catch (error) {
+        console.error('Error updating user data:', error)
       }
     }
   }
