@@ -116,14 +116,18 @@ export default {
         // updatedData.avatarUrl
 
         // image upload
-        const formData = new FormData()
-        formData.append('image', updatedData.avatar)
-        await Api.put(`/v1/users/${this.userData._id}/profile_picture`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: token
-          }
-        })
+        if (updatedData.avatar) {
+          const formData = new FormData()
+          formData.append('image', updatedData.avatar)
+          const response = await Api.put(`/v1/users/${this.userData._id}/profile_picture`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization: token
+            }
+          })
+
+          this.userData.avatarUrl = response.data.pfp
+        }
 
         await Api.patch('/v1/users/' + this.userData._id, updatedData, {
           headers: { Authorization: token }

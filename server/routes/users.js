@@ -232,7 +232,7 @@ router.put("/api/v1/users/:id/profile_picture", authMiddleware, uploadMiddleware
 		user.profile_picture = await imageHandler.changeImage(user.profile_picture, req.file);
 		await user.save();
 
-		return res.status(201).json({id: user._id, pfp: user.profile_picture});
+		return res.status(201).json({id: user._id, pfp: await getPublicPathFromHash(req, user.profile_picture)});
 	} catch (err) {
 		next(err);
 	}
