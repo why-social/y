@@ -118,7 +118,7 @@ export default {
         // image upload
         const formData = new FormData()
         formData.append('image', updatedData.avatarUrl)
-        await Api.post(`/v1/users/${this.userData._id}/images`, formData, {
+        await Api.put(`/v1/users/${this.userData._id}/profile_picture`, formData, {
           headers: { Authorization: token }
         })
 

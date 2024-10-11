@@ -857,7 +857,7 @@
 								}
 							]
 						},
-						"method": "POST",
+						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "formdata",
@@ -870,7 +870,7 @@
 							]
 						},
 						"url": {
-							"raw": "{{host}}/api/v1/users/{{user1}}/images",
+							"raw": "{{host}}/api/v1/users/{{user1}}/profile_picture",
 							"host": [
 								"{{host}}"
 							],
@@ -879,7 +879,7 @@
 								"v1",
 								"users",
 								"{{user1}}",
-								"images"
+								"profile_picture"
 							]
 						}
 					},
@@ -915,7 +915,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/{{user1}}/images",
+							"raw": "{{host}}/api/v1/users/{{user1}}/profile_picture",
 							"host": [
 								"{{host}}"
 							],
@@ -924,7 +924,7 @@
 								"v1",
 								"users",
 								"{{user1}}",
-								"images"
+								"profile_picture"
 							]
 						}
 					},
