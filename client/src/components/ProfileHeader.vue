@@ -1,13 +1,17 @@
 <template>
   <div class="profile-header">
     <div class="profile-avatar-container">
-      <div class="profile-avatar">
+      <div class="profile-avatar" @click="selectNewImage">
         <img :src="userData.avatarUrl" alt="avatar" />
+        <div v-if="editMode" class="edit-overlay">
+          <span class="edit-icon">✎</span>
+        </div>
+        <input type="file" ref="fileInput" accept="image/*"  @change="handleFileChange" style="display: none;" />
       </div>
       <div class="profile-name-container">
         <div class="profile-name">
           <template v-if="editMode">
-              <Input customClass="profile-edit-input" v-model="editableUserData.name" required/>
+            <Input customClass="profile-edit-input" v-model="editableUserData.name" required/>
           </template>
           <template v-else>
             {{ userData.name }}
@@ -35,7 +39,8 @@
       </div>
       <div class="profile-editButton">
         <template v-if="editMode">
-          <Button v-show="userData.email" @click="saveChanges">Save</Button>
+          <Button secondary v-show="userData.email" @click="toggleEditMode">Cancel</Button>
+          <Button secondary v-show="userData.email" @click="saveChanges">Save</Button>
         </template>
         <template v-else>
           <Button secondary v-show="userData.email" @click="toggleEditMode">Edit profile</Button>
@@ -45,10 +50,10 @@
     <div class="profile-joinDate">Joined {{ userData.joinDate }}</div>
     <div class="profile-follow-container">
       <div class="profile-following">
-        {{ userData.followers.length }} Followers
+        <span class="profile-follow-number">{{ userData.followers.length }}</span> Followers
       </div>
       <div class="profile-followers">
-        {{ userData.following.length }} Following
+        <span class="profile-follow-number">{{ userData.following.length }}</span> Following
       </div>
     </div>
     <div class="profile-aboutme" v-if="userData.about_me">
@@ -96,7 +101,27 @@ export default {
     async saveChanges() {
       this.toggleEditMode()
 
+      // Check if the data has changed
+      if (this.editableUserData.name === this.userData.name && this.editableUserData.about_me === this.userData.about_me && this.editableUserData.avatarUrl === this.userData.avatarUrl) {
+        return
+      }
+
       await this.$emit('updateUserData', this.editableUserData)
+    },
+    selectNewImage() {
+      if (this.editMode) { // Only allow image selection in edit mode
+        this.$refs.fileInput.click()
+      }
+    },
+    handleFileChange(event) {
+      const file = event.target.files[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          this.editableUserData.avatarUrl = e.target.result
+        }
+        reader.readAsDataURL(file)
+      }
     }
   }
 }
@@ -118,6 +143,7 @@ export default {
   margin-bottom: 1rem;
 }
 .profile-avatar {
+  position: relative;
   width: 150px;
   height: 150px;
   border-radius: 50%;
@@ -127,6 +153,27 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
+}
+.edit-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+}
+.edit-overlay:hover{
+  background-color: rgba(0, 0, 0, 0.7);
+}
+.edit-icon {
+  cursor: pointer;
+  color: white;
+  font-size: 2rem;
 }
 .profile-name-container {
   display: flex;
@@ -154,19 +201,19 @@ export default {
   color: #aaa;
 }
 .at-symbol {
-  color: #fff;
+  color: var(--color-on-background);
   margin-right: 0.5rem;
 }
 .email-icon {
   width: 16px;
   height: 16px;
-  fill: #fff;
-  color: #fff;
+  fill: var(--color-on-background);
+  color: var(--color-on-background);
   margin-right: 0.5rem;
 }
 .profile-follow-container {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 .profile-followers,
 .profile-following {
@@ -175,10 +222,13 @@ export default {
   color: #aaa;
 }
 .profile-follow-number {
-  color: #fff;
+  color: var(--color-on-background);
   font-weight: 600;
 }
 .profile-editButton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-left: auto;
   align-self: flex-start;
 }

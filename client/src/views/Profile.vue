@@ -110,8 +110,18 @@ export default {
         console.log(updatedData)
         updatedData = {
           name: updatedData.name,
-          about_me: updatedData.about_me
+          about_me: updatedData.about_me,
+          avatarUrl: updatedData.avatarUrl
         }
+        // updatedData.avatarUrl
+
+        // image upload
+        const formData = new FormData()
+        formData.append('image', updatedData.avatarUrl)
+        await Api.post(`/v1/users/${this.userData._id}/images`, formData, {
+          headers: { Authorization: token }
+        })
+
         await Api.patch('/v1/users/' + this.userData._id, updatedData, {
           headers: { Authorization: token }
         })
