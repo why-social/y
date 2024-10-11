@@ -111,15 +111,18 @@ export default {
         updatedData = {
           name: updatedData.name,
           about_me: updatedData.about_me,
-          avatarUrl: updatedData.avatarUrl
+          avatar: updatedData.avatar
         }
         // updatedData.avatarUrl
 
         // image upload
         const formData = new FormData()
-        formData.append('image', updatedData.avatarUrl)
+        formData.append('image', updatedData.avatar)
         await Api.put(`/v1/users/${this.userData._id}/profile_picture`, formData, {
-          headers: { Authorization: token }
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: token
+          }
         })
 
         await Api.patch('/v1/users/' + this.userData._id, updatedData, {

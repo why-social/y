@@ -102,7 +102,7 @@ export default {
       this.toggleEditMode()
 
       // Check if the data has changed
-      if (this.editableUserData.name === this.userData.name && this.editableUserData.about_me === this.userData.about_me && this.editableUserData.avatarUrl === this.userData.avatarUrl) {
+      if (this.editableUserData.name === this.userData.name && this.editableUserData.about_me === this.userData.about_me && !this.editableUserData.avatar) {
         return
       }
 
@@ -114,13 +114,8 @@ export default {
       }
     },
     handleFileChange(event) {
-      const file = event.target.files[0]
-      if (file) {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          this.editableUserData.avatarUrl = e.target.result
-        }
-        reader.readAsDataURL(file)
+      if (event.target.files[0]) {
+        this.editableUserData.avatar = event.target.files[0]
       }
     }
   }
