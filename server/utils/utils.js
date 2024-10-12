@@ -51,8 +51,12 @@ async function getPublicPathFromHash(req, hash) {
 	return toPublicPath(req, image.url);
 }
 
-function toPublicPath(req, localPath) {
-	return `${req.protocol}://${req.get('host')}${localPath?.replace(/\\/g, '/')}`
+function toPublicPath(req, path) {
+	if(path.startsWith("http")) {
+		return path; // already is public path
+	}
+
+	return `${req.protocol}://${req.get('host')}${path?.replace(/\\/g, '/')}`
 }
 
 module.exports = { except, removeFromArray, getCommentById, toPublicPath, getPublicPathFromHash, secrets };
