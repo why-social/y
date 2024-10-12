@@ -1,3 +1,7 @@
+<script setup>
+import Post from '../../components/items/Post.vue'
+</script>
+
 <template>
   <div>
     <Post v-for="post in posts" :post="post" :key="post._id" />
@@ -29,5 +33,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>

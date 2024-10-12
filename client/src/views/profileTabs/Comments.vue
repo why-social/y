@@ -1,3 +1,7 @@
+<script setup>
+import Post from '../../components/items/Post.vue'
+</script>
+
 <template>
   <div v-if="comments.length != 0">
     <!-- TEMPORARILY REUSING POST COMPONENT -->
@@ -20,7 +24,10 @@ export default {
   },
   async mounted() {
     try {
-      const userId = this.$route.params.userId === 'me' ? VueJwtDecode.decode(localStorage.getItem('token')).userId : this.$route.params.userId
+      const userId =
+        this.$route.params.userId === 'me'
+          ? VueJwtDecode.decode(localStorage.getItem('token')).userId
+          : this.$route.params.userId
       const response = await Api.get('/v1/users/' + userId + '/comments')
       this.comments = response.data
     } catch (error) {

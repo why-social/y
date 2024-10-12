@@ -10,17 +10,21 @@
       >
       <span style="padding-right: 0.7rem">Original {{ origin_type }}</span>
     </div>
+
     <div class="thread-container">
       <img class="thread-pfp" v-bind:src="pfp" @click.stop="goToUser" />
+
       <div class="thread-data">
         <div class="thread-name" @click.stop="goToUser">
           <span class="inter-tight-medium">{{ name }}</span>
           <span>@{{ username }}</span>
         </div>
+
         <div class="thread-content">
           <span class="content" :class="{ hidden: !this.content?.length }">{{
             content
           }}</span>
+
           <div
             class="picture-container"
             :class="{ hidden: !this.images?.length }"
@@ -51,12 +55,14 @@
             <span class="icon" ref="like_icon">favorite</span>
             <span>{{ likes?.length || 0 }}</span>
           </div>
+
           <div class="clickable comment" style="pointer-events: none">
             <span class="icon">forum</span>
             <span>{{ comments?.length || 0 }}</span>
           </div>
         </div>
       </div>
+
       <ImageCarousel
         v-if="isModalOpen"
         :images="images"
@@ -64,6 +70,12 @@
         @close="closeModal"
       />
     </div>
+
+    <hr />
+
+    <CommentPrompt  />
+
+    <hr />
   </div>
 </template>
 
@@ -71,9 +83,12 @@
 #container {
   width: 100%;
   height: 100%;
-  padding: 20px;
+  padding: 0;
+  overflow: hidden;
 }
+
 .thread-parent {
+  padding: 20px;
   margin-left: 1rem;
   display: flex;
   cursor: pointer;
@@ -88,11 +103,13 @@
 .thread-parent:hover {
   background: var(--color-background-highlight);
 }
+
 .thread-container {
   user-select: none;
   display: flex;
   width: 100%;
   font-size: 1.4rem;
+  margin: 20px;
   padding: 1rem;
   gap: 0.5rem;
 }
@@ -323,7 +340,9 @@ export default {
       this.content = data.content
       this.likes = data.likes
       this.images = data.images
-      this.pfp = data.author.profile_picture || 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg'
+      this.pfp =
+        data.author.profile_picture ||
+        'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg'
 
       if (this.type === 'post') {
         if (data.original_post_id) {

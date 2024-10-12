@@ -1,3 +1,7 @@
+<script setup>
+import Post from '../../components/items/Post.vue'
+</script>
+
 <template>
   <div v-if="posts.length != 0">
     <Post v-for="post in posts" :post="post" :key="post._id" />
@@ -19,7 +23,10 @@ export default {
   },
   async mounted() {
     try {
-      const userId = this.$route.params.userId === 'me' ? VueJwtDecode.decode(localStorage.getItem('token')).userId : this.$route.params.userId
+      const userId =
+        this.$route.params.userId === 'me'
+          ? VueJwtDecode.decode(localStorage.getItem('token')).userId
+          : this.$route.params.userId
       const response = await Api.get('/v1/users/' + userId + '/posts')
       this.posts = response.data
     } catch (error) {
