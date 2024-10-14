@@ -42,24 +42,33 @@ router.get("/api/v1/posts", async function (req, res, next) {
 router.get("/api/v1/posts/:id", async function (req, res, next) {
 	try {
 		const post = await models.Posts.findById(req.params.id)
-			.populate({
-				path: 'author', select: '_id name username profile_picture',
-			}).populate('comments').lean();
-		
+			.populate([
+				{
+					path: 'author', select: '_id name username profile_picture',
+				},
+				{
+					path: 'comments',
+					populate: {
+						path: 'author',
+						select: '_id name username profile_picture',
+					}
+				}
+			]).lean();
+
+		if (!post)
+			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
+
 		// populate profile_picture with the public url to the resource
 		if (post.author.profile_picture) {
 			post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
 		}
-		
+
 		// populate images with public urls to the resources
 		post.images = await Promise.all(
 			post.images.map(async image => {
 				return await getPublicPathFromHash(req, image);
 			})
 		);
-		
-		if (!post)
-			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
 
 		post._links = {
 			user: {
@@ -160,7 +169,7 @@ router.put("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, async
 			|| !newData.content || newData.likes === undefined || newData.comments === undefined) {
 			throw new ValidationError(errorMsg.MISSING_FIELDS);
 		}
-		
+
 		newData.likes = newData.likes || [];
 		newData.comments = newData.comments || [];
 		const files = req.files || [];
