@@ -212,6 +212,24 @@ router.patch("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, asy
 //#endregion
 
 //#region DELETE
+router.delete("/api/v1/posts", authMiddleware, async function (req, res, next) {
+	try {
+		if (!req.isAuth || !req.user || !req.user.isAdmin)
+			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+		
+		const posts = await models.Posts.find();
+		for (let post of posts) {
+			for (var hash of post.images) {
+				await removeUsage(hash);
+			}
+		}
+		await models.Posts.deleteMany();
+
+	} catch (err) {
+		next(err);
+	}
+})
+
 router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res, next) {
 	try {
 		if (!req.isAuth || !req.user)
