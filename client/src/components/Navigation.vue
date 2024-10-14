@@ -15,14 +15,18 @@
     <hr>
     <NavigationItem @click="this.logout()" icon="logout" text="Logout">
     </NavigationItem>
-    <Button @click="$router.push({ path: '/post' })" style="margin-top: auto"
-      ><span
-        class="nav-icon material-symbols-outlined"
-        style="font-variation-settings: 'wght' 400"
-        >history_edu</span
-      >
-      <span class="nav-label inter-tight-medium">Post</span>
-    </Button>
+    <div style="margin-top: auto">
+      <Button v-if="isAdmin" class="nuke" @click="nuke">
+        <span class="nav-icon material-symbols-outlined"
+          style="font-variation-settings: 'wght' 400">local_fire_department</span>
+        <span class="nav-label inter-tight-medium">LET IT BURN</span>
+      </Button>
+      <Button @click="$router.push({ path: '/post' })">
+        <span class="nav-icon material-symbols-outlined"
+          style="font-variation-settings: 'wght' 400">history_edu</span>
+        <span class="nav-label inter-tight-medium">Post</span>
+      </Button>
+    </div>
   </div>
 </template>
 
@@ -42,6 +46,10 @@
 
 hr {
   display: block;
+}
+
+button {
+  margin: 0.5rem 0;
 }
 
 .nav-logo {
@@ -75,6 +83,16 @@ hr {
 
 .nav-label {
   display: none;
+}
+
+.nuke {
+  background: var(--bs-red);
+  border: 2px solid var(--bs-red);
+}
+
+.nuke:hover, .nuke:active, .nuke:focus {
+  background: #df4654;
+  border: 2px solid #df4654;
 }
 
 /* god bless */
@@ -112,6 +130,10 @@ hr {
     bottom: 120%;
     filter: drop-shadow(0px 0px 10px #000000);
   }
+
+  .nuke {
+    display: none;
+  }
 }
 
 @media (min-width: 1400px) {
@@ -139,13 +161,29 @@ hr {
 </style>
 
 <script>
+import VueJwtDecode from 'vue-jwt-decode'
+import { Api } from '@/Api'
+
 export default {
   methods: {
     logout() {
       localStorage.removeItem('token')
-
       this.$router.push({ path: '/login' })
+    },
+    async nuke() {
+      await Api.delete('v1/posts', {
+        headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
+        })
     }
+  },
+  computed: {
+    isAdmin: () => {
+        const decoded = VueJwtDecode.decode(localStorage.getItem('token'))
+        console.log('isAdmin: ' + decoded)
+        return decoded.isAdmin
+    },
   }
 }
 </script>
