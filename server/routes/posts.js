@@ -73,6 +73,20 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 			})
 		);
 
+		for (let comment of post.comments) {
+			if (comment.author?.profile_picture) {
+				comment.author.profile_picture = await getPublicPathFromHash(req, comment.author.profile_picture);
+			} else {
+				comment.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${comment.author.name}`
+			}
+
+			comment.images = await Promise.all(
+				comment.images.map(async image => {
+					return await getPublicPathFromHash(req, image);
+				})
+			);
+		}
+
 		post._links = {
 			user: {
 				href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${post.author._id}`
