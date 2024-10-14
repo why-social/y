@@ -1,3 +1,4 @@
+<!-- #region Template -->
 <template>
   <div class="post-container" @click="goToThread">
     <img class="post-pfp" v-bind:src="pfp" @click.stop="goToUser" />
@@ -25,7 +26,7 @@
 
       <div class="interactions">
         <div
-          @click.stop=""
+          @click.stop="toggleLike"
           class="clickable"
           ref="like"
           :class="{ liked: liked, like: !liked }"
@@ -57,7 +58,9 @@
     />
   </div>
 </template>
+<!-- #endregion -->
 
+<!-- #region Style -->
 <style scoped>
 .post-container {
   cursor: pointer;
@@ -229,9 +232,13 @@ button {
   }
 }
 </style>
+<!-- #endregion -->
 
+<!-- #region Script -->
 <script>
 import moment from 'moment'
+import VueJwtDecode from 'vue-jwt-decode'
+import { Api } from '@/Api'
 
 export default {
   props: ['post'],
@@ -249,7 +256,6 @@ export default {
         images: this.post.images || [],
         likes: this.post.likes,
         comments: this.post.comments,
-        liked: true,
         modalImageIndex: null,
         isModalOpen: false
       }
@@ -268,9 +274,16 @@ export default {
           'https://www.kdnuggets.com/wp-content/uploads/tree-todd-quackenbush-unsplash.jpg'
         ],
         likes: [],
-        comments: [],
-        liked: true
+        comments: []
       }
+    }
+  },
+  computed: {
+    viewer() {
+      return VueJwtDecode.decode(localStorage.getItem('token'))
+    },
+    liked() {
+      return this.likes.includes(this.viewer.userId)
     }
   },
   methods: {
@@ -291,14 +304,26 @@ export default {
     closeModal() {
       this.isModalOpen = false
       this.modalImageIndex = null
+    },
+    toggleLike() {
+      console.log(localStorage.getItem('token'))
+      if (this.liked) {
+        this.likes.splice(this.likes.indexOf(this.viewer.userId), 1)
+        Api.delete(`/v1/posts/${this.post._id}/likes/${this.viewer.userId}`, {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
+        })
+      } else {
+        this.likes.push(this.viewer.userId)
+        Api.post(`/v1/posts/${this.post._id}/likes`, null, {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
+        })
+      }
     }
-  },
-  mounted() {
-    this.$refs.like.addEventListener('click', () => {
-      this.$refs.like.classList.toggle('liked')
-      this.$refs.like.classList.toggle('like')
-      // TODO: update db
-    })
   }
 }
 </script>
+<!-- #endregion -->
