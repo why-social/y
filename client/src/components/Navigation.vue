@@ -15,7 +15,7 @@
     <hr>
     <NavigationItem @click="this.logout()" icon="logout" text="Logout">
     </NavigationItem>
-    <div style="margin-top: auto">
+    <div class="buttons" style="margin-top: auto">
       <Button v-if="isAdmin" class="nuke" @click="nuke">
         <span class="nav-icon material-symbols-outlined"
           style="font-variation-settings: 'wght' 400">local_fire_department</span>
@@ -122,12 +122,15 @@ button {
     display: none;
   }
 
-  button {
+  .buttons {
     position: absolute;
     right: 8%;
+    bottom: 120%;
+  }
+
+  button {
     width: 4.2rem;
     height: 4.2rem;
-    bottom: 120%;
     filter: drop-shadow(0px 0px 10px #000000);
   }
 
