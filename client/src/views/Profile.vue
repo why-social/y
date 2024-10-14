@@ -28,7 +28,8 @@ export default {
         followers: [],
         following: [],
         avatarUrl: '',
-        email: ''
+        email: '',
+        isViewer: false
       },
       avatarUrl: 'https://via.placeholder.com/150'
     }
@@ -60,6 +61,8 @@ export default {
 
       if (paramId === 'me') {
         this.userData._id = decodedUserId
+        this.userData.isViewer = true
+
         const userReq = await Api.get('/v1/users/' + decodedUserId, {
           headers: { Authorization: token }
         })
@@ -67,6 +70,8 @@ export default {
         await this.fetchUserData(decodedUserId, userReq)
       } else {
         this.userData._id = paramId
+        this.userData.isViewer = false
+
         try {
           const userReq = await Api.get('/v1/users/' + paramId)
 
@@ -93,8 +98,8 @@ export default {
       this.userData.joinDate = moment(userReqData.joinDate).format(
         'DD MMMM YYYY'
       )
-      this.userData.followers = followersReq.data
-      this.userData.following = followingsReq.data
+      this.userData.followers = followersReq.data.map(entry => entry.follower)
+      this.userData.following = followingsReq.data.map(entry => entry.following)
       this.userData.avatarUrl = userReqData.profile_picture || this.avatarUrl
       if (userReqData.email) {
         this.userData.email = userReqData.email
