@@ -26,16 +26,20 @@
           </div>
         </div>
       </div>
-      <div class="profile-editButton">
-        <Button v-show="userData.email" secondary>Edit profile</Button>
+      <div class="profile-buttons">
+        <div v-if="!userData.isViewer">
+          <Button v-if="!isFollowedByViewer" @click="follow">Follow</Button>
+          <Button v-else secondary @click="unfollow">Unfollow</Button>
+        </div>
+        <Button v-if="userData.isViewer" secondary>Edit profile</Button>
       </div>
     </div>
     <div class="profile-joinDate">Joined {{ userData.joinDate }}</div>
     <div class="profile-follow-container">
-      <a class="profile-following">
+      <a class="profile-following" @click="$router.push({ name: 'followers' })">
         <span class="profile-follow-number">{{ userData.followers.length }}</span> Followers
       </a>
-      <a class="profile-followers">
+      <a class="profile-followers" @click="$router.push({ name: 'followings' })">
         <span class="profile-follow-number">{{ userData.following.length }}</span> Following
       </a>
     </div>
@@ -43,12 +47,43 @@
 </template>
 
 <script>
+import VueJwtDecode from 'vue-jwt-decode'
+import { Api } from '@/Api'
+
 export default {
   name: 'Profile',
   props: {
     userData: {
       type: Object,
       required: true
+    }
+  },
+  computed: {
+    viewer() {
+      return VueJwtDecode.decode(localStorage.getItem('token'))
+    },
+    isFollowedByViewer() {
+      return this.userData.followers.includes(this.viewer.userId)
+    }
+  },
+  methods: {
+    async follow() {
+      await Api.post(`/v1/users/followings/${this.userData._id}`, null, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+
+      this.$router.go()
+    },
+    async unfollow() {
+      await Api.delete(`/v1/users/followings/${this.userData._id}`, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+
+      this.$router.go()
     }
   }
 }
@@ -65,7 +100,7 @@ export default {
   display: flex;
   width: 100%;
   box-sizing: border-box;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: 1rem;
 }
@@ -84,7 +119,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-left: 2rem;
+  margin-left: 1rem;
 }
 .username-email-container {
   display: flex;
@@ -136,11 +171,11 @@ export default {
   color: #fff;
   font-weight: 600;
 }
-.profile-editButton {
+.profile-buttons {
   margin-left: auto;
-  align-self: flex-start;
 }
-.profile-editButton button{
-  font-size: 1rem;
+.profile-buttons button{
+  font-size: 1.2rem;
+  padding: 0.7rem 1rem;
 }
 </style>
