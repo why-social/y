@@ -20,9 +20,10 @@ router.get("/api/v1/posts", async function (req, res, next) {
 			.lean();
 
 		for (let post of posts) {
-			console.log(post)
-			if (post.author.profile_picture) {
+			if (post.author?.profile_picture) {
 				post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
+			} else {
+				post.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.author.name}`
 			}
 
 			post.images = await Promise.all(
@@ -61,6 +62,8 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 		// populate profile_picture with the public url to the resource
 		if (post.author.profile_picture) {
 			post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
+		} else {
+			post.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.author.name}`
 		}
 
 		// populate images with public urls to the resources

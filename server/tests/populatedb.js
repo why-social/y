@@ -4,7 +4,6 @@ const crypto = require('crypto');
 const models = database.mongoose.models;
 
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDB';
-const profilePictures = []
 
 database.connect(mongoURI)
     .then(async () => {

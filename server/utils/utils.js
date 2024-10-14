@@ -53,6 +53,10 @@ async function getCommentById(id, lean, next) {
 }
 
 async function getPublicPathFromHash(req, hash) {
+	if (hash.startsWith("http")) {
+		return hash; // already is public path
+	}
+
 	const image = await models.Images.findOne({ hash }).lean();
 	if (!image) return null;
 
