@@ -1,42 +1,85 @@
 <script setup>
-import Post from '../../components/items/Post.vue'
+import { Api } from '@/Api'
 </script>
 
 <template>
-  <div>
+  <div ref="container">
     <Post
       v-for="post in posts"
-      :dateFormat="'now'"
       :item="post"
+      :dateFormat="'now'"
       :key="post._id"
     />
+
+    <template v-if="!next">
+      <p class="feeds-end-message">All caught up!</p>
+    </template>
   </div>
 </template>
 
 <script>
-import { Api } from '@/Api'
-
 export default {
   data() {
     return {
-      posts: []
+      posts: [],
+      next: '/v1/feeds',
+      lastQuery: null,
+      querying: false
     }
   },
-  mounted() {
-    Api.get('/v1/feeds', {
-      headers: {
-        Authorization: 'Bearer ' + localStorage.getItem('token')
+
+  methods: {
+    loadData() {
+      if (
+        !this.querying &&
+        this.next &&
+        this.lastQuery !== this.next &&
+        document.body.scrollHeight - window.innerHeight < window.scrollY + 500
+      ) {
+        this.querying = true
+
+        Api.get(this.next, {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
+        })
+          .then((response) => {
+            if (response.data) {
+              this.posts.push(...response.data.posts)
+              this.lastQuery = this.next
+              this.next = response.data._links?.next?.href
+            }
+          })
+          .catch((error) => {
+            console.log(error)
+          })
+          .finally(() => {
+            this.querying = false
+          })
       }
-    })
-      .then((response) => {
-        this.posts = response.data.posts
-      })
-      .catch((error) => {
-        console.log(error)
-      })
+    }
+  },
+
+  created() {
+    window.addEventListener('scroll', this.loadData)
+  },
+
+  unmounted() {
+    window.removeEventListener('scroll', this.loadData)
+  },
+
+  mounted() {
+    this.loadData()
   }
 }
 </script>
 
 <style scoped>
+.feeds-end-message {
+  width: 100%;
+  text-align: center;
+  margin: 2rem;
+  font-size: 1.5rem;
+  font-weight: 300;
+}
 </style>
