@@ -25,7 +25,7 @@ router.get("/api/v1/feeds/", authMiddleware,
                 }
             }
 
-            let sorting = 1;
+            let sorting = -1;
 
             if (req.query?.sort) {
                 if (req.query.sort !== "asc" && req.query.sort !== "desc") {
@@ -59,7 +59,7 @@ router.get("/api/v1/feeds/", authMiddleware,
                         timestamp: sorting
                     }
                 },
-                 // Populate the 'author' field
+                // Populate the 'author' field
                 {
                     $lookup: {
                         from: 'users',
@@ -104,15 +104,17 @@ router.get("/api/v1/feeds/", authMiddleware,
                 }]).exec();
 
                 if (result && result.length && result[0] && result[0].data) {
-                    result = {
+                    const feed = {
                         posts: result[0].data
                     };
-                    
-                    for (let post of result.posts) {
-                        if (post.author && post.author.profile_picture) {
-                            post.author.profile_picture = toPublicPath(req, post.author.profile_picture.url);
-                        }
-                
+
+                    for (let post of feed.posts) {
+                        if (post.author?.profile_picture) {
+                            post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture.url);
+                        } else {
+                            post.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.author.name}`
+                        }        
+
                         post.images = await Promise.all(
                             post.images.map(async image => {
                                 return await getPublicPathFromHash(req, image);
@@ -120,15 +122,20 @@ router.get("/api/v1/feeds/", authMiddleware,
                         );
                     }
 
-                    if (result.posts.length == limit) {
-                        result._links = {
-                            next: {
-                                href: `${req.protocol}://${req.get('host')}/api/v1/feeds/?page=${pageNumber + 1}`
+                    if (result[0].metadata?.length) {
+                        const page = Number(result[0].metadata[0].page);
+                        const total = Number(result[0].metadata[0].total);
+
+                        if (page * limit < total) {
+                            feed._links = {
+                                next: {
+                                    href: `${req.protocol + '://' + req.get('host')}/api/v1/feeds?page=${(page + 1)}`
+                                }
                             }
-                        };
+                        }
                     }
 
-                    return res.json(result);
+                    return res.json(feed);
                 } else {
                     return res.json({
                         posts: []
