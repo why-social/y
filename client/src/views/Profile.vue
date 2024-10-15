@@ -1,6 +1,6 @@
 <template>
   <div id="container">
-    <ProfileHeader :userData="userData" />
+    <ProfileHeader :userData="userData" @updateUserData="updateUserData"/>
     <hr />
     <ProfilePosts :userData="userData" />
   </div>
@@ -28,7 +28,9 @@ export default {
         followers: [],
         following: [],
         avatarUrl: '',
-        email: ''
+        about_me: '',
+        email: '',
+        isViewer: false
       },
       avatarUrl: 'https://via.placeholder.com/150'
     }
@@ -60,6 +62,8 @@ export default {
 
       if (paramId === 'me') {
         this.userData._id = decodedUserId
+        this.userData.isViewer = true
+
         const userReq = await Api.get('/v1/users/' + decodedUserId, {
           headers: { Authorization: token }
         })
@@ -67,6 +71,8 @@ export default {
         await this.fetchUserData(decodedUserId, userReq)
       } else {
         this.userData._id = paramId
+        this.userData.isViewer = false
+
         try {
           const userReq = await Api.get('/v1/users/' + paramId)
 
@@ -93,13 +99,49 @@ export default {
       this.userData.joinDate = moment(userReqData.joinDate).format(
         'DD MMMM YYYY'
       )
-      this.userData.followers = followersReq.data
-      this.userData.following = followingsReq.data
+      this.userData.followers = followersReq.data.map(entry => entry.follower)
+      this.userData.following = followingsReq.data.map(entry => entry.following)
       this.userData.avatarUrl = userReqData.profile_picture || this.avatarUrl
+      this.userData.about_me = userReqData.about_me || ''
       if (userReqData.email) {
         this.userData.email = userReqData.email
       } else {
         this.userData.email = ''
+      }
+    },
+    async updateUserData(updatedData) {
+      try {
+        const token = localStorage.getItem('token')
+        console.log(updatedData)
+        updatedData = {
+          name: updatedData.name,
+          about_me: updatedData.about_me,
+          avatar: updatedData.avatar
+        }
+
+        // image upload
+        if (updatedData.avatar) {
+          const formData = new FormData()
+          formData.append('image', updatedData.avatar)
+          const response = await Api.put(`/v1/users/${this.userData._id}/profile_picture`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization: token
+            }
+          })
+
+          this.userData.avatarUrl = response.data.pfp
+        }
+
+        // update user data
+        await Api.patch('/v1/users/' + this.userData._id, updatedData, {
+          headers: { Authorization: token }
+        })
+        this.userData.name = updatedData.name
+        this.userData.about_me = updatedData.about_me
+        console.log('Updated user data:', updatedData)
+      } catch (error) {
+        console.error('Error updating user data:', error)
       }
     }
   }

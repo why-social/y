@@ -179,3 +179,6 @@ $RECYCLE.BIN/
 # Media uploaded to the server
 server/uploads/*
 server/testUploads/*
+
+# DB backup
+server/db/dump

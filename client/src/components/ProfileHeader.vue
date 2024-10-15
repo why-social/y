@@ -1,11 +1,22 @@
 <template>
   <div class="profile-header">
     <div class="profile-avatar-container">
-      <div class="profile-avatar">
-        <img :src="userData.avatarUrl" alt="avatar" />
+      <div class="profile-avatar" @click="selectNewImage">
+        <img :src="userData.avatarUrl" alt="avatar" id="avatarImg"/>
+        <div v-if="editMode" class="edit-overlay">
+          <span class="edit-icon">✎</span>
+        </div>
+        <input type="file" ref="fileInput" accept="image/*"  @change="handleFileChange" style="display: none;" />
       </div>
       <div class="profile-name-container">
-        <div class="profile-name">{{ userData.name }}</div>
+        <div class="profile-name">
+          <template v-if="editMode">
+            <Input customClass="profile-edit-input" v-model="editableUserData.name" required/>
+          </template>
+          <template v-else>
+            {{ userData.name }}
+          </template>
+        </div>
         <div class="username-email-container">
           <div class="profile-info">
             <span class="at-symbol">@</span>
@@ -26,29 +37,130 @@
           </div>
         </div>
       </div>
-      <div class="profile-editButton">
-        <Button v-show="userData.email" secondary>Edit profile</Button>
+      <div class="profile-buttons">
+        <template v-if="userData.isViewer">
+          <template v-if="editMode">
+            <Button secondary @click="toggleEditMode">Cancel</Button>
+            <Button secondary @click="saveChanges">Save</Button>
+          </template>
+          <template v-else>
+            <Button secondary @click="toggleEditMode">Edit profile</Button>
+          </template>
+        </template>
+        <template v-else>
+          <Button v-if="!isFollowedByViewer" @click="follow">Follow</Button>
+          <Button v-else secondary @click="unfollow">Unfollow</Button>
+        </template>
       </div>
     </div>
     <div class="profile-joinDate">Joined {{ userData.joinDate }}</div>
     <div class="profile-follow-container">
-      <a class="profile-following">
+      <a class="profile-following" @click="$router.push({ name: 'followers' })">
         <span class="profile-follow-number">{{ userData.followers.length }}</span> Followers
       </a>
-      <a class="profile-followers">
+      <a class="profile-followers" @click="$router.push({ name: 'followings' })">
         <span class="profile-follow-number">{{ userData.following.length }}</span> Following
       </a>
+    </div>
+    <div class="profile-aboutme" v-if="userData.about_me">
+      About me:
+      <template v-if="editMode">
+        <Input customClass="profile-edit-input" v-model="editableUserData.about_me" modelValue="editableUserData.about_me" placeholder="About me" />
+      </template>
+      <template v-else>
+        <div>{{ userData.about_me }}</div>
+      </template>
     </div>
   </div>
 </template>
 
 <script>
+import VueJwtDecode from 'vue-jwt-decode'
+import { Api } from '@/Api'
+
 export default {
   name: 'Profile',
   props: {
     userData: {
       type: Object,
       required: true
+    }
+  },
+  data() {
+    return {
+      editMode: false,
+      editableUserData: {
+        name: this.userData.name,
+        about_me: this.userData.about_me
+      }
+    }
+  },
+  computed: {
+    viewer() {
+      return VueJwtDecode.decode(localStorage.getItem('token'))
+    },
+    isFollowedByViewer() {
+      return this.userData.followers.includes(this.viewer.userId)
+    }
+  },
+  watch: {
+    userData: {
+      handler(newValue) {
+        this.editableUserData = { ...newValue }
+      },
+      deep: true
+    }
+  },
+  methods: {
+    async follow() {
+      await Api.post(`/v1/users/followings/${this.userData._id}`, null, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+
+      this.$router.go()
+    },
+    async unfollow() {
+      await Api.delete(`/v1/users/followings/${this.userData._id}`, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+
+      this.$router.go()
+    },
+    toggleEditMode() {
+      this.editMode = !this.editMode
+      if (!this.editMode) {
+        this.editableUserData = { ...this.userData }
+        document.querySelector('#avatarImg').src = this.userData.avatarUrl
+      }
+    },
+    async saveChanges() {
+      console.log(this.editableUserData)
+
+      // Check if the data has changed
+      if (this.editableUserData.name === this.userData.name && this.editableUserData.about_me === this.userData.about_me && !this.editableUserData.avatar) {
+        return
+      }
+
+      await this.$emit('updateUserData', this.editableUserData)
+      this.toggleEditMode()
+    },
+    selectNewImage() {
+      if (this.editMode) { // Only allow image selection in edit mode
+        this.$refs.fileInput.click()
+      }
+    },
+    handleFileChange(event) {
+      if (event.target.files[0]) {
+        if (event.target.files[0]) {
+          this.editableUserData.avatar = event.target.files[0]
+          document.querySelector('#avatarImg').src = URL.createObjectURL(event.target.files[0])
+        }
+        this.$refs.fileInput.value = ''
+      }
     }
   }
 }
@@ -65,11 +177,12 @@ export default {
   display: flex;
   width: 100%;
   box-sizing: border-box;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: 1rem;
 }
 .profile-avatar {
+  position: relative;
   width: 150px;
   height: 150px;
   border-radius: 50%;
@@ -79,12 +192,33 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
+}
+.edit-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+}
+.edit-overlay:hover{
+  background-color: rgba(0, 0, 0, 0.7);
+}
+.edit-icon {
+  cursor: pointer;
+  color: white;
+  font-size: 2rem;
 }
 .profile-name-container {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-left: 2rem;
+  margin-left: 1rem;
 }
 .username-email-container {
   display: flex;
@@ -106,19 +240,19 @@ export default {
   color: #aaa;
 }
 .at-symbol {
-  color: #fff;
+  color: var(--color-on-background);
   margin-right: 0.5rem;
 }
 .email-icon {
   width: 16px;
   height: 16px;
-  fill: #fff;
-  color: #fff;
+  fill: var(--color-on-background);
+  color: var(--color-on-background);
   margin-right: 0.5rem;
 }
 .profile-follow-container {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 .profile-followers,
 .profile-following {
@@ -127,20 +261,29 @@ export default {
   color: #aaa;
 }
 .profile-followers:hover,
-.profile-following:hover {
-  color: #fff;
+.profile-following:hover{
+  color: var(--color-on-background);
   text-decoration: underline;
   cursor: pointer;
 }
 .profile-follow-number {
-  color: #fff;
+  color: var(--color-on-background);
   font-weight: 600;
 }
-.profile-editButton {
+.profile-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-left: auto;
   align-self: flex-start;
+
 }
-.profile-editButton button{
+.profile-buttons button{
+  font-size: 1.2rem;
+  padding: 0.7rem 1rem;
+}
+.profile-aboutme {
   font-size: 1rem;
+  padding-top: 0.5rem;
 }
 </style>
