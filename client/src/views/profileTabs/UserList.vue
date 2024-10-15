@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="userList-container">
     <Follower v-for="user in users" :userId="user" :key="user._id"/>
   </div>
 </template>
@@ -34,5 +34,7 @@ export default {
 </script>
 
 <style scoped>
-
+.userList-container{
+  padding: 0 2rem;
+}
 </style>

@@ -9,7 +9,7 @@
       :placeholder="placeholder"
       :pattern="pattern"
       :required="required"
-      :class="icon ? 'input-icon-padding' : ''"
+      :class="[icon ? 'input-icon-padding' : '', customClass]"
       @input="onInput"
     />
   </div>
@@ -44,6 +44,10 @@ export default {
     },
     required: {
       type: Boolean,
+      required: false
+    },
+    customClass: {
+      type: String,
       required: false
     }
   },
@@ -112,5 +116,9 @@ input:focus {
 .input-icon:has(+input:focus) {
   opacity: 1;
   color: var(--color-accent);
+}
+
+.profile-edit-input {
+  padding: 0.3rem 1rem;
 }
 </style>
