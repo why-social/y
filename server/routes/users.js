@@ -176,7 +176,7 @@ router.get("/api/v1/users/:username/posts", async function (req, res, next) {
 });
 
 // Get all comments of a user
-router.get("/api/v1/users/:id/comments", async function (req, res, next) {
+router.get("/api/v1/users/:username/comments", async function (req, res, next) {
 	try {
     const user = await mongoose.models["Users"].findOne({ username: req.params.username }).exec();
     if (!user)
