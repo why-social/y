@@ -32,6 +32,7 @@ router.get("/api/v1/users/search", async (req, res, next) => {
 		let partialResponse = {
 			name: result.name,
 			username: result.username,
+      _id: result._id,
 			profile_picture: await getPublicPathFromHash(req, result.profile_picture),
 		}
 
