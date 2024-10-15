@@ -127,7 +127,7 @@ export default {
       this.$emit('like')
     },
     goToUser() {
-      this.$router.push(`/profile/${this.user._id}`)
+      this.$router.push(`/profile/${this.user.username}`)
     },
     goToThread() {
       this.$router.push(`/thread/${this.item._id}`)
