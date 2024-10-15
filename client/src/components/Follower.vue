@@ -33,7 +33,7 @@ export default {
       this.username = response.data.username
     },
     redirectToProfile() {
-      this.$router.push(`/profile/${this.userId}`)
+      this.$router.push(`/profile/${this.username}/posts`)
     }
   },
   watch: {

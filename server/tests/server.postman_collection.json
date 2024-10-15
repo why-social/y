@@ -1291,7 +1291,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{host}}/api/v1/users/{{user2}}/posts",
+									"raw": "{{host}}/api/v1/users/{{username2}}/posts",
 									"host": [
 										"{{host}}"
 									],
@@ -1299,7 +1299,7 @@
 										"api",
 										"v1",
 										"users",
-										"{{user2}}",
+										"{{username2}}",
 										"posts"
 									]
 								}
@@ -2116,7 +2116,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/{{user1}}/comments",
+							"raw": "{{host}}/api/v1/users/{{username1}}/comments",
 							"host": [
 								"{{host}}"
 							],
@@ -2124,7 +2124,7 @@
 								"api",
 								"v1",
 								"users",
-								"{{user1}}",
+								"{{username1}}",
 								"comments"
 							]
 						}

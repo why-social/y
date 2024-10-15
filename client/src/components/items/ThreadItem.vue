@@ -1,23 +1,23 @@
 <template>
   <div thread-item @click="goToThread">
-    <img v-if="isRepost" class="avatar" :src="originalAuthor?.profile_picture" @click.stop="goToUser(originalAuthor?._id)" />
-    <img v-else class="avatar" :src="avatar" @click.stop="goToUser(user._id)" />
+    <img v-if="isRepost" class="avatar" :src="originalAuthor?.profile_picture" @click.stop="goToUser(originalAuthor.username)" />
+    <img v-else class="avatar" :src="avatar" @click.stop="goToUser(user.username)" />
 
     <div class="data">
-      <div v-if="isRepost" class="reposter-data" @click.stop="goToUser(author._id)">
+      <div v-if="isRepost" class="reposter-data" @click.stop="goToUser(author.username)">
         <span class="icon">cached</span>
         <img :src="avatar" />
         <span class="handle-link">@{{ author.username }}</span>
         <span>reposted</span>
       </div>
       <template v-if="isRepost">
-        <div class="name" @click.stop="goToUser(originalAuthor?._id)">
+        <div class="name" @click.stop="goToUser(originalAuthor.username)">
           <span class="inter-tight-medium">{{ originalAuthor?.name }}</span>
           <span>@{{ originalAuthor?.username }}</span>
         </div>
       </template>
       <template v-else>
-        <div class="name" @click.stop="goToUser(author._id)">
+        <div class="name" @click.stop="goToUser(author.username)">
           <span class="inter-tight-medium">{{ author.name }}</span>
           <span>@{{ author.username }}</span>
         </div>
@@ -117,8 +117,8 @@ export default {
         this.likes.push(this.viewer.userId)
       }
     },
-    goToUser(userId) {
-      this.$router.push(`/profile/${userId}`)
+    goToUser(username) {
+      this.$router.push(`/profile/${username}`)
     },
     goToThread() {
       this.$router.push(`/thread/${this.item._id}`)
