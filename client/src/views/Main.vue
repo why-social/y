@@ -4,13 +4,23 @@
       <Navigation />
     </div>
     <div class="search-content-container">
-      <router-view />
+      <router-view :key="$route.fullPath" />
       <div class="search-container">
         <Search />
       </div>
     </div>
   </b-container>
 </template>
+
+<script>
+export default {
+  data() {
+    return {
+      isLoaded: false
+    }
+  }
+}
+</script>
 
 <style scoped>
 .container {

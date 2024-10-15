@@ -1,32 +1,36 @@
 <template>
-  <form ref="postForm" @submit.prevent="createPost">
+  <form thread-prompt ref="threadForm" @submit.prevent="submit()">
     <div class="form-container">
       <div class="form-row">
-        <img class="avatar" :src="pfp" />
+        <img class="avatar" :src="avatar" />
+
         <contenteditable
           ref="textInput"
           id="content"
           v-model="content"
           ondrop="return false"
           contenteditable="true"
-          placeholder="What are you thinking about?"
+          :placeholder="placeholder"
           @keyup="keyUp"
         ></contenteditable>
       </div>
+
       <div class="form-row">
         <label class="attach-label" for="images">
           <span class="material-symbols-outlined attach-icon">attach_file</span>
           <span class="file-counter">{{ images.length }}/4</span>
         </label>
+
         <input
           class="file-input"
           id="images"
           type="file"
           accept="image/*"
           multiple
-          @change="handleFileChange"
+          @change="uploadImage"
         />
-        <Button :disabled="isSubmitDisabled"> Post </Button>
+
+        <Button :disabled="isSubmitDisabled"> {{ buttonMesage }} </Button>
       </div>
     </div>
   </form>
@@ -39,47 +43,53 @@ import VueJwtDecode from 'vue-jwt-decode'
 export default {
   data() {
     return {
+      buttonMesage: this.getSubmitMessage(),
+      placeholder: this.getPlaceholder(),
       content: '',
-      images: [],
-      pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg'
+      avatar: '',
+      images: []
     }
   },
+
   computed: {
     isSubmitDisabled() {
       return this.content.trim().length === 0 && this.images.length === 0
     }
   },
+
   methods: {
-    async createPost() {
+    post() {
+      throw new Error('Not implemented!')
+    },
+    getPlaceholder() {
+      throw new Error('Not implemented!')
+    },
+    getSubmitMessage() {
+      throw new Error('Not implemented!')
+    },
+    submit() {
       const formData = new FormData()
       formData.append('content', this.content)
+
       for (const image of this.images) {
         formData.append('images', image)
       }
-      try {
-        const response = Api.post('v1/posts', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: 'Bearer ' + localStorage.getItem('token')
-          }
-        })
-        console.log('Post created successfully:', response.data)
 
-        this.$refs.postForm.reset()
-        this.$refs.textInput.innerText = ''
-        this.content = ''
-        this.images = []
-      } catch (error) {
-        console.error('Error creating post:', error)
-      }
+      this.post(formData)
+
+      this.$refs.threadForm.reset()
+      this.$refs.textInput.innerText = ''
+      this.content = ''
+      this.images = []
     },
-    handleFileChange() {
+    uploadImage() {
       this.images = event.target.files
     },
     keyUp(event) {
       this.content = event?.srcElement?.innerText
     }
   },
+
   mounted() {
     Api.get(
       `v1/users/${
@@ -87,67 +97,66 @@ export default {
       }/profile_picture`
     ).then((response) => {
       if (response.data) {
-        this.pfp = response.data
+        this.avatar = response.data
       }
     })
   }
 }
 </script>
 
-<style scoped>
-form {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+<style>
+form[thread-prompt] {
+  /* Actual fixed scope */
+  padding: 1rem;
   overflow: hidden;
   width: 100%;
 }
 
-.form-container {
-  padding: 1rem;
+form[thread-prompt] .form-container {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
-.form-row {
+form[thread-prompt] .form-row {
   display: flex;
   gap: 1rem;
 }
 
-.avatar {
-  width: 4rem;
-  height: 4rem;
+form[thread-prompt] .avatar {
+  width: 3.5rem;
+  height: 3.5rem;
   border-radius: 100%;
 }
 
-contenteditable {
+form[thread-prompt] contenteditable {
   flex-grow: 1;
   resize: none;
-  padding: 1rem;
+  padding: 0.8rem;
   overflow: hidden;
-  font-size: 1.4rem;
-  background: var(--color-background);
+  font-size: 1.3rem;
   color: var(--color-on-background);
   border: none;
 }
 
-contenteditable:focus {
+form[thread-prompt] contenteditable:focus {
   outline: none;
   border: none;
 }
 
-[contenteditable='true']:empty:before {
+form[thread-prompt] [contenteditable='true']:empty:before {
   content: attr(placeholder);
   cursor: text;
   opacity: 0.7;
   color: var(--color-on-background);
 }
 
-input[type='file'] {
+form[thread-prompt] input[type='file'] {
   display: none;
 }
 
-button {
+form[thread-prompt] button {
   margin-left: auto;
   padding-top: 0.7rem;
   padding-bottom: 0.7rem;
@@ -155,30 +164,24 @@ button {
   padding-right: 2rem;
 }
 
-.file-counter {
+form[thread-prompt] .file-counter {
   padding: 0.5rem;
   opacity: 0.7;
 }
 
-.attach-label {
+form[thread-prompt] .attach-label {
   display: flex;
   user-select: none;
+  margin-left: 5rem;
   font-size: 1.3rem;
   align-items: center;
   cursor: pointer;
 }
 
-.attach-icon {
+form[thread-prompt] .attach-icon {
   user-select: none;
   color: var(--color-accent);
   vertical-align: center;
   font-size: 2rem;
-}
-
-@media (max-width: 630px) {
-  .avatar {
-    width: 3.5rem;
-    height: 3.5rem;
-  }
 }
 </style>

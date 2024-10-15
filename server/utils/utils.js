@@ -11,33 +11,41 @@ const secrets = { JWT_SECRET_KEY, MJ_APIKEY_PUBLIC, MJ_APIKEY_PRIVATE };
 function except(array, excludes) { // Adapted from https://stackoverflow.com/a/68575761
 	if (array == null) return excludes;
 	if (excludes == null) return array;
-    return array.filter((item) => !excludes.includes(item));
+	return array.filter((item) => !excludes.includes(item));
 }
 
 function removeFromArray(array, item) {
 	const index = array.indexOf(item);
-    if (index == -1)
+	if (index == -1)
 		throw new NotFoundError('Item not in array');
 	array.splice(index, 1);
 }
 
 async function getCommentById(id, lean, next) {
-	try{
-		let result;
-		if (lean)
-			result = await models.Comments.findById(id)
-			.populate({
-				path: 'author', select: '_id name username profile_picture',
-			}).populate('comments').lean().exec();
-		else
-			result = await models.Comments.findById(id)
-			.populate({
-				path: 'author', select: '_id name username profile_picture',
-			}).populate('comments').exec();
-		
+	try {
+		let query = models.Comments.findById(id)
+			.populate([
+				{
+					path: 'author', select: '_id name username profile_picture',
+				},
+				{
+					path: 'comments',
+					populate: {
+						path: 'author',
+						select: '_id name username profile_picture',
+					}
+				}
+			]);
+
+		if (lean) {
+			query = query.lean();
+		}
+
+		const result = await query.exec();
+
 		if (!result)
 			throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
-		
+
 		return result;
 	} catch (err) {
 		next(err);
@@ -45,14 +53,30 @@ async function getCommentById(id, lean, next) {
 }
 
 async function getPublicPathFromHash(req, hash) {
-	const image = await models.Images.findOne({hash}).lean();
+	if (!hash) {
+		return null;
+	}
+
+	if (hash.startsWith("http")) {
+		return hash; // already is public path
+	}
+
+	const image = await models.Images.findOne({ hash }).lean();
 	if (!image) return null;
 
 	return toPublicPath(req, image.url);
 }
 
-function toPublicPath(req, localPath) {
-	return `${req.protocol}://${req.get('host')}${localPath?.replace(/\\/g, '/')}`
+function toPublicPath(req, path) {
+	if (!path) {
+		return null;
+	}
+
+	if (path.startsWith("http")) {
+		return path; // already is public path
+	}
+
+	return `${req.protocol}://${req.get('host')}${path?.replace(/\\/g, '/')}`
 }
 
 module.exports = { except, removeFromArray, getCommentById, toPublicPath, getPublicPathFromHash, secrets };

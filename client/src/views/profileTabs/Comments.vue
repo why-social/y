@@ -1,7 +1,15 @@
+<script setup>
+import Comment from '../../components/items/Comment.vue'
+</script>
+
 <template>
   <div v-if="comments.length != 0">
-    <!-- TEMPORARILY REUSING POST COMPONENT -->
-    <Post v-for="comment in comments" :post="comment" :key="comment._id" />
+    <Comment
+      v-for="comment in comments"
+      :item="comment"
+      :dateFormat="'now'"
+      :key="comment._id"
+    />
   </div>
   <div v-else class="posts-no-posts">
     <span>No comments yet</span>
@@ -20,7 +28,10 @@ export default {
   },
   async mounted() {
     try {
-      const userId = this.$route.params.userId === 'me' ? VueJwtDecode.decode(localStorage.getItem('token')).userId : this.$route.params.userId
+      const userId =
+        this.$route.params.userId === 'me'
+          ? VueJwtDecode.decode(localStorage.getItem('token')).userId
+          : this.$route.params.userId
       const response = await Api.get('/v1/users/' + userId + '/comments')
       this.comments = response.data
     } catch (error) {
