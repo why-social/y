@@ -1,11 +1,15 @@
 <script setup>
-import Post from '../../components/items/Post.vue'
+import Comment from '../../components/items/Comment.vue'
 </script>
 
 <template>
   <div v-if="comments.length != 0">
-    <!-- TEMPORARILY REUSING POST COMPONENT -->
-    <Post v-for="comment in comments" :post="comment" :key="comment._id" />
+    <Comment
+      v-for="comment in comments"
+      :item="comment"
+      :dateFormat="'now'"
+      :key="comment._id"
+    />
   </div>
   <div v-else class="posts-no-posts">
     <span>No comments yet</span>

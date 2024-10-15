@@ -5,9 +5,12 @@ import ThreadPrompt from './ThreadPrompt.vue'
 export default {
   mixins: [ThreadPrompt],
 
+  props: ['parent', 'parentIsPost'],
+
   methods: {
     post(formData) {
-      // TODO: append parent id and type
+      formData.append('parent_id', this.parent)
+      formData.append('parent_is_post', this.parentIsPost)
 
       Api.post('v1/comments', formData, {
         headers: {

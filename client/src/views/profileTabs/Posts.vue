@@ -4,7 +4,12 @@ import Post from '../../components/items/Post.vue'
 
 <template>
   <div v-if="posts.length != 0">
-    <Post v-for="post in posts" :post="post" :key="post._id" />
+    <Post
+      v-for="post in posts"
+      :item="post"
+      :dateFormat="'now'"
+      :key="post._id"
+    />
   </div>
   <div v-else class="posts-no-posts">
     <span>No posts yet</span>

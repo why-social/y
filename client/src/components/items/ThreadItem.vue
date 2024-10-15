@@ -1,12 +1,6 @@
 <template>
   <div thread-item @click="goToThread">
-    <img
-      class="avatar"
-      v-bind:src="
-        avatar || `https://ui-avatars.com/api/?bold=true&name=${user.name}`
-      "
-      @click.stop="goToUser"
-    />
+    <img class="avatar" v-bind:src="avatar" @click.stop="goToUser" />
 
     <div class="data">
       <div class="name" @click.stop="goToUser">
@@ -53,24 +47,16 @@
           <span>{{ likes?.length || 0 }}</span>
         </div>
 
-        <div class="clickable comment" @click.stop="">
+        <div class="clickable comment">
           <span class="icon">forum</span>
           <span>{{ comments?.length || 0 }}</span>
         </div>
 
-        <Button
-          class="inter-tight-medium"
-          @click.stop=""
-          style="margin-left: auto"
-        >
-          <span class="icon" style="font-variation-settings: 'wght' 400">
-            cached
-          </span>
-
-          <span style="padding-right: 0.3rem">Repost</span>
-        </Button>
+        <slot></slot>
       </div>
     </div>
+
+    <!--TODO deletion-->
 
     <ImageCarousel
       v-if="isModalOpen"
@@ -82,27 +68,69 @@
 </template>
 
 <script>
+import moment from 'moment'
+
 export default {
+  props: ['item', 'dateFormat'],
+
+  data() {
+    let obj
+
+    if (this.item) {
+      obj = {
+        user: this.item.author,
+        avatar: this.item.author?.profile_picture,
+        date: moment(this.item.timestamp),
+        content: this.item.content,
+        images: this.item.images || [],
+        likes: this.item.likes,
+        comments: this.item.comments,
+        liked: true,
+        modalImageIndex: null,
+        isModalOpen: false
+      }
+    } else {
+      // placeholder
+      obj = {
+        user: {
+          name: 'Shawn Dawgson',
+          username: 'colguylikesdawgs'
+        },
+        date: moment(new Date()),
+        content: 'Can I pet that dawg',
+        images: [
+          'https://st3.depositphotos.com/29384342/34115/i/450/depositphotos_341157888-stock-photo-recommendation-sports-student.jpg',
+          'https://randomwordgenerator.com/img/picture-generator/52e4d1424f5aa914f1dc8460962e33791c3ad6e04e5074417d2e72d2954ac5_640.jpg',
+          'https://www.kdnuggets.com/wp-content/uploads/tree-todd-quackenbush-unsplash.jpg'
+        ],
+        likes: [],
+        comments: [],
+        liked: true,
+        modalImageIndex: null,
+        isModalOpen: false
+      }
+    }
+
+    if (this.dateFormat === 'now') {
+      obj.date = obj.date.fromNow()
+    } else {
+      obj.date = obj.date.format('MMMM Do YYYY, hh:mm')
+    }
+
+    return obj
+  },
+
   methods: {
-    get() {
-      throw new Error('Not implemented!')
-    },
     like() {
-      throw new Error('Not implemented!')
+      this.liked = !this.liked
+
+      this.$emit('like')
     },
     goToUser() {
-      const item = this.get()
-
-      if (item) {
-        this.$router.push(`/profile/${item.author._id}`)
-      }
+      this.$router.push(`/profile/${this.user._id}`)
     },
     goToThread() {
-      const item = this.get()
-
-      if (item) {
-        this.$router.push(`/thread/${item._id}`)
-      }
+      this.$router.push(`/thread/${this.item._id}`)
     },
     showModal(index) {
       this.isModalOpen = true
@@ -115,9 +143,8 @@ export default {
   },
 
   computed: {
-    // eslint-disable-next-line vue/return-in-computed-property
     isLiked() {
-      throw new Error('Not implemented!')
+      return this.liked
     }
   }
 }
@@ -142,7 +169,8 @@ div[thread-item] .avatar {
 }
 
 div[thread-item] button {
-  padding: 0.7rem;
+  padding: 0.5rem;
+  font-size: 1.2rem;
 }
 
 div[thread-item] .data {
@@ -234,7 +262,7 @@ div[thread-item] .clickable {
 }
 
 div[thread-item] .icon {
-  font-size: 2rem;
+  font-size: 1.5rem;
   line-height: 80%;
 }
 
@@ -293,11 +321,6 @@ div[thread-item] .comment:hover .icon {
   div[thread-item] button {
     padding: 0.5rem;
     font-size: 1.2rem;
-  }
-
-  div[thread-item] .icon {
-    font-size: 1.5rem;
-    line-height: 80%;
   }
 }
 </style>

@@ -53,6 +53,10 @@ async function getCommentById(id, lean, next) {
 }
 
 async function getPublicPathFromHash(req, hash) {
+	if (!hash) {
+		return null;
+	}
+
 	if (hash.startsWith("http")) {
 		return hash; // already is public path
 	}
@@ -64,6 +68,10 @@ async function getPublicPathFromHash(req, hash) {
 }
 
 function toPublicPath(req, path) {
+	if (!path) {
+		return null;
+	}
+
 	if (path.startsWith("http")) {
 		return path; // already is public path
 	}

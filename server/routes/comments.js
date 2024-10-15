@@ -16,7 +16,7 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 		if (comment.author.profile_picture) {
 			comment.author.profile_picture = await getPublicPathFromHash(req, hash);
 		} else {
-			comment.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.author.name}`
+			comment.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${comment.author.name}`
 		}
 
 		// populate images with public urls to the resources
@@ -26,15 +26,15 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 			})
 		);
 
-		for (let comment of comment.comments) {
-			if (comment.author?.profile_picture) {
-				comment.author.profile_picture = await getPublicPathFromHash(req, comment.author.profile_picture);
+		for (let reply of comment.comments) {
+			if (reply.author?.profile_picture) {
+				reply.author.profile_picture = await getPublicPathFromHash(req, reply.author.profile_picture);
 			} else {
-				comment.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${comment.author.name}`
+				reply.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${reply.author.name}`
 			}
 
-			comment.images = await Promise.all(
-				comment.images.map(async image => {
+			reply.images = await Promise.all(
+				reply.images.map(async image => {
 					return await getPublicPathFromHash(req, image);
 				})
 			);

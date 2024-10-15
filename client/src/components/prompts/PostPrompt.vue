@@ -3,7 +3,7 @@ import { Api } from '@/Api'
 import ThreadPrompt from './ThreadPrompt.vue'
 
 export default {
-  extends: ThreadPrompt,
+  mixins: [ThreadPrompt],
 
   methods: {
     post(formData) {

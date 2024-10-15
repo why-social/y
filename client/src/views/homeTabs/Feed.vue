@@ -4,7 +4,12 @@ import Post from '../../components/items/Post.vue'
 
 <template>
   <div>
-    <Post v-for="post in posts" :post="post" :key="post._id" />
+    <Post
+      v-for="post in posts"
+      :dateFormat="'now'"
+      :item="post"
+      :key="post._id"
+    />
   </div>
 </template>
 

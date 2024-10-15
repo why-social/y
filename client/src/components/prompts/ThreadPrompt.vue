@@ -2,7 +2,7 @@
   <form thread-prompt ref="threadForm" @submit.prevent="submit()">
     <div class="form-container">
       <div class="form-row">
-        <img class="avatar" :src="pfp" />
+        <img class="avatar" :src="avatar" />
 
         <contenteditable
           ref="textInput"
@@ -46,7 +46,7 @@ export default {
       buttonMesage: this.getSubmitMessage(),
       placeholder: this.getPlaceholder(),
       content: '',
-      pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
+      avatar: '',
       images: []
     }
   },
@@ -97,7 +97,7 @@ export default {
       }/profile_picture`
     ).then((response) => {
       if (response.data) {
-        this.pfp = response.data
+        this.avatar = response.data
       }
     })
   }
@@ -107,15 +107,13 @@ export default {
 <style>
 form[thread-prompt] {
   /* Actual fixed scope */
-  padding: 0 1rem 0 1rem;
+  padding: 1rem;
   overflow: hidden;
   width: 100%;
 }
 
 form[thread-prompt] .form-container {
-  padding-left: 1rem;
   box-sizing: border-box;
-  padding-right: 1rem;
   display: flex;
   flex-direction: column;
   width: 100%;

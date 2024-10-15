@@ -1,6 +1,6 @@
 <template>
   <button class="inter-tight-medium">
-    <slot />
+    <slot></slot>
   </button>
 </template>
 
