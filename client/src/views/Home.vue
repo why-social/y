@@ -2,7 +2,7 @@
   <div id="content">
     <PostPrompt />
     <hr />
-    <TabSwitcher :tabs="tabs"/>
+    <TabSwitcher :tabs="tabs" />
     <hr />
     <router-view />
   </div>

@@ -1,26 +1,50 @@
-var { faker } = require('@faker-js/faker');
-var database = require('../db/database');
-var models = database.mongoose.models;
+const { faker } = require('@faker-js/faker');
+const database = require('../db/database');
+const crypto = require('crypto');
+const models = database.mongoose.models;
 
-// Variables
-var mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDB';
+const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDB';
 
 database.connect(mongoURI)
     .then(async () => {
         try {
-            // Generate mock images
+            //https://i.pravatar.cc/150?img=3
+            // Retrieve mock images
             const images = [];
-            for (let i = 0; i < 50; i++) {
+
+            const response = await fetch(`https://picsum.photos/v2/list?page=${faker.number.int({ min: 1, max: 20 })}&limit=50`)
+            if (response.status == 200) {
+                const data = await response.json();
+
+                for (const element of data) {
+                    const image = new models.Images({
+                        hash: generateHash(), // NOT REAL IMAGE HASH
+                        url: element.download_url
+                    });
+
+                    //NOTE: save images to db when used
+                    images.push(image);
+                }
+
+                console.log('Retrieved mock images.');
+            } else {
+                console.error('Could not retrieve mock images. Server replied with status ' + response.status)
+            }
+
+            // Retrieve mock profile pictures
+            const profilePictures = [];
+
+            for (let index = 1; index <= 70; index++) {
                 const image = new models.Images({
-                    hash: generateHash(),
-                    url: faker.internet.url()
+                    hash: generateHash(), // NOT REAL IMAGE HASH
+                    url: "https://i.pravatar.cc/300?img=" + index
                 });
 
                 //NOTE: save images to db when used
-                images.push(image);
+                profilePictures.push(image);
             }
 
-            console.log('Generated mock images.');
+            console.log('Retrieved mock profile pictures.');
 
             // Generate mock users
             const users = [];
@@ -40,7 +64,7 @@ database.connect(mongoURI)
                 }
 
                 if (faker.datatype.boolean()) {
-                    const targetImage = images[faker.number.int({ min: 0, max: images.length - 1 })];
+                    const targetImage = profilePictures[faker.number.int({ min: 0, max: profilePictures.length - 1 })];
                     targetImage.usageCount = targetImage.usageCount + 1;
 
                     user.profile_picture = targetImage.hash;
@@ -61,8 +85,8 @@ database.connect(mongoURI)
 
                 const post = new models.Posts({
                     author: users[userIndex]._id,
-                    is_edited: faker.datatype.boolean(),
-                    is_deleted: faker.datatype.boolean(),
+                    is_edited: faker.number.int({ min: 1, max: 3 }) == 1, // 1 in 3 is edited
+                    is_deleted: faker.number.int({ min: 1, max: 10 }) == 1, // 1 in 10 is deleted
                     likes: users.map(user => user._id).slice(0, faker.number.int({ min: 0, max: users.length - 1 })),
                 });
 
@@ -73,16 +97,19 @@ database.connect(mongoURI)
 
                 if (post.is_deleted) {
                     post.content = null;
-                } else if (faker.datatype.boolean()) {
-                    post.content = faker.lorem.paragraph()
+                } else if (faker.number.int({ min: 1, max: 4 }) <= 3) { // 3 of 4 posts have content
+                    post.content = faker.lorem.paragraph({
+                        min: 1,
+                        max: 5
+                    })
                 }
 
                 if (!faker.number.int({ min: 0, max: 5 }) && posts.length > 0) {
                     post.original_post_id = posts[faker.number.int({ min: 0, max: posts.length - 1 })]
                 }
 
-                while (post.content !== null && (faker.datatype.boolean() ||
-                    (post.content === undefined && !post.images?.length))) {
+                while (post.content !== null && post.images?.length < 4 &&
+                    (faker.datatype.boolean() || (post.content === undefined && !post.images?.length))) {
                     const targetImage = images[faker.number.int({ min: 0, max: images.length - 1 })];
                     targetImage.usageCount = targetImage.usageCount + 1;
 
@@ -125,8 +152,9 @@ database.connect(mongoURI)
                     }
                 }
 
-                while (comment.content !== null && (faker.datatype.boolean() ||
-                    (comment.content === undefined && !comment.images?.length))) {
+                while (comment.content !== null && comment.images?.length < 4 &&
+                    (faker.datatype.boolean() ||
+                        (comment.content === undefined && !comment.images?.length))) {
                     const targetImage = images[faker.number.int({ min: 0, max: images.length - 1 })];
                     targetImage.usageCount = targetImage.usageCount + 1;
 
