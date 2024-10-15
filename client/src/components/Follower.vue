@@ -23,15 +23,22 @@ export default {
     }
   },
   async mounted() {
-    const response = await Api.get('/v1/users/' + this.userId)
-
-    this.name = response.data.name
-    this.username = response.data.username
-    this.pfp = response.data.profile_picture || 'https://via.placeholder.com/150'
+    await this.fetchUserData()
   },
   methods: {
+    async fetchUserData() {
+      const response = await Api.get('/v1/users/' + this.userId)
+      this.pfp = response.data.avatarUrl
+      this.name = response.data.name
+      this.username = response.data.username
+    },
     redirectToProfile() {
       this.$router.push(`/profile/${this.userId}`)
+    }
+  },
+  watch: {
+    userId() {
+      this.fetchUserData()
     }
   }
 }
@@ -44,7 +51,7 @@ export default {
   align-items: center;
   width: 100%;
   font-size: 1rem;
-  padding: 0.8rem 2rem;
+  padding: 0.8rem 0rem;
   gap: 1rem;
 }
 .pfp {
