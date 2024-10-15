@@ -246,26 +246,6 @@ router.post("/api/v1/users", async (req, res, next) => {
 	}
 });
 
-router.post("/api/v1/users/:id/images", authMiddleware, uploadMiddleware.single, async (req, res, next) => {
-	try {
-		// Check if the user is authenticated
-		if(!req.isAuth || req.user?.userId != req.params.id) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
-
-		// Check if user exists by using their token
-		let user = await mongoose.models["Users"].findById(req.user?.userId).exec();
-		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
-
-		if(!req.file) throw new ValidationError("No image to upload");
-
-		user.profile_picture = await imageHandler.changeImage(user.profile_picture, req.file);
-		await user.save();
-
-		return res.status(201).json({id: user._id, pfp: user.profile_picture});
-	} catch (err) {
-		next(err);
-	}
-});
-
 router.post("/api/v1/users/followings/:following_id", authMiddleware, async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
@@ -291,6 +271,28 @@ router.post("/api/v1/users/followings/:following_id", authMiddleware, async (req
 		await newFollowing.save();
 
 		res.status(201).json({message: "Following created"});
+	} catch (err) {
+		next(err);
+	}
+});
+//#endregion
+
+//#region PUT
+router.put("/api/v1/users/:id/profile_picture", authMiddleware, uploadMiddleware.single, async (req, res, next) => {
+	try {
+		// Check if the user is authenticated
+		if(!req.isAuth || req.user?.userId != req.params.id) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+		// Check if user exists by using their token
+		let user = await mongoose.models["Users"].findById(req.user?.userId).exec();
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
+		if(!req.file) throw new ValidationError("No image to upload");
+
+		user.profile_picture = await imageHandler.changeImage(user.profile_picture, req.file);
+		await user.save();
+
+		return res.status(201).json({id: user._id, pfp: await getPublicPathFromHash(req, user.profile_picture)});
 	} catch (err) {
 		next(err);
 	}
@@ -362,7 +364,7 @@ router.delete("/api/v1/users", async (req, res, next) => { // WE DO NOT ENDORSE 
 	}
 });
 
-router.delete("/api/v1/users/:id/images", authMiddleware, async (req, res, next) => {
+router.delete("/api/v1/users/:id/profile_picture", authMiddleware, async (req, res, next) => {
 	try {
 		// Check if the user is authenticated
 		if(!req.isAuth || req.user?.userId != req.params.id) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);

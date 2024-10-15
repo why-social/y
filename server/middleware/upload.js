@@ -24,9 +24,9 @@ const upload = multer({
   }
 });
 
+const multipleUpload = upload.array('images', maxImages);
 const multiple = (req, res, next) => {
 	// Handles the file upload and writes it to memory for further processing
-    const multipleUpload = upload.array('images', maxImages);
 
     multipleUpload(req, res, function (err) {
         if (err instanceof multer.MulterError) {
@@ -38,9 +38,9 @@ const multiple = (req, res, next) => {
     })
 }
 
+const singleUpload = upload.single('image');
 const single = (req, res, next) => {
 	// Handles the file upload and writes it to memory for further processing
-    const singleUpload = upload.single('image');
 
     singleUpload(req, res, function (err) {
         if (err instanceof multer.MulterError) {
