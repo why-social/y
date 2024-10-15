@@ -1,27 +1,43 @@
 <template>
   <ThreadItem
     v-bind="$props"
-    @like="this.like()"
-    @delete="this.delete()"
-    :dateFormat="this.dateFormat"
+    @like="like"
+    @unlike="unlike"
+    @delete="deleteComment"
   >
   </ThreadItem>
 </template>
 
 <script>
+import { Api } from '@/Api'
+
 export default {
   props: {
     dateFormat: {
-      type: String,
+      type: String
+    },
+    item: {
+      type: Object,
       required: true
     }
   },
 
   methods: {
     like() {
-      // TODO update comment database
+      Api.post(`/v1/comments/${this.item._id}/likes`, null, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
     },
-    delete() {
+    unlike() {
+      Api.delete(`/v1/comments/${this.item._id}/likes/${this.viewer.userId}`, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+    },
+    deleteComment() {
       // TODO update comment database
     }
   }
