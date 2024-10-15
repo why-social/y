@@ -12,6 +12,8 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 	try{
 		let comment = await getCommentById(req.params.id, true, next);
 
+		if(!comment) throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
+
 		// populate profile_picture with the public url to the resource
 		if (comment.author.profile_picture) {
 			comment.author.profile_picture = await getPublicPathFromHash(req, hash);

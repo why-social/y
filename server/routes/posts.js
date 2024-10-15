@@ -16,13 +16,22 @@ router.get("/api/v1/posts", async function (req, res, next) {
 			.populate({
 				path: 'author', select: '_id name username profile_picture'
 			})
+			.populate({
+				path: 'original_post_id', select: 'author',
+				populate: {
+					path: 'author', select: '_id name username profile_picture'
+				}
+			})
 			.sort([['timestamp', -1]])
 			.lean();
 
 		for (let post of posts) {
-			console.log(post)
 			if (post.author.profile_picture) {
 				post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
+			}
+
+			if (post.original_post_id?.author.profile_picture) {
+				post.original_post_id.author.profile_picture = await getPublicPathFromHash(req, post.original_post_id.author.profile_picture);
 			}
 
 			post.images = await Promise.all(
@@ -44,17 +53,22 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 		const post = await models.Posts.findById(req.params.id)
 			.populate({
 				path: 'author', select: '_id name username profile_picture',
-			}).populate('comments');
-		
-		if (post.original_post_id) {
-			post.populate({
-				path: 'original_post_id.author', select: '_id name username profile_picture',
 			})
-		}
+			.populate({
+				path: 'original_post_id', select: 'author',
+				populate: {
+					path: 'author', select: '_id name username profile_picture'
+				}
+			})
+			.populate('comments');
 
 		// populate profile_picture with the public url to the resource
 		if (post.author.profile_picture) {
 			post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
+		}
+
+		if (post.original_post_id?.author.profile_picture) {
+			post.original_post_id.author.profile_picture = await getPublicPathFromHash(req, post.original_post_id.author.profile_picture);
 		}
 		
 		// populate images with public urls to the resources
@@ -140,7 +154,6 @@ router.post("/api/v1/posts/repost", authMiddleware, async function (req, res, ne
 		if (!req.body.postId)
 			throw new ValidationError(errorMsg.MISSING_FIELDS);
 		
-		console.log(req.body.postId)
 		const target = await models.Posts.findOne({_id: req.body.postId})
 		if (!target)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);

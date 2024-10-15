@@ -135,6 +135,12 @@ router.get("/api/v1/users/:id/posts", async function (req, res, next) {
 	try {
 		const posts = await mongoose.models["Posts"].find({ author: req.params.id }).populate({
 			path: 'author', select: '_id name username profile_picture',
+		})
+		.populate({
+			path: 'original_post_id', select: 'author',
+			populate: {
+				path: 'author', select: '_id name username profile_picture'
+			}
 		}).lean().exec();
 
 		if (!posts || posts.length == 0)
@@ -143,8 +149,13 @@ router.get("/api/v1/users/:id/posts", async function (req, res, next) {
 		if (posts[0].author.profile_picture) {
 			posts[0].author.profile_picture = await getPublicPathFromHash(req, posts[0].author.profile_picture);
 		} // changes the author pfp in all the posts, since they are reference-shared
+		
 
-		for (var post of posts) {
+		for (let post of posts) {
+			if (post.original_post_id?.author.profile_picture) {
+				post.original_post_id.author.profile_picture = await getPublicPathFromHash(req, post.original_post_id.author.profile_picture);
+			}
+
 			post.images = await Promise.all(
 				post.images.map(async image => {
 					return await getPublicPathFromHash(req, image);
