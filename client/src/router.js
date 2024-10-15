@@ -30,6 +30,7 @@ const routes = [
         name: 'home',
         component: Home,
         redirect: { name: 'feed' },
+        meta: { resetTab: true },
         children: [
           {
             name: 'feed',
@@ -57,6 +58,7 @@ const routes = [
         path: '/profile/:userId',
         name: 'profile',
         redirect: { name: 'posts' },
+        meta: { resetTab: true },
         component: Profile,
         children: [
           {

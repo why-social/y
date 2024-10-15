@@ -1291,16 +1291,16 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{host}}/api/v1/posts/users/{{user2}}",
+									"raw": "{{host}}/api/v1/users/{{user2}}/posts",
 									"host": [
 										"{{host}}"
 									],
 									"path": [
 										"api",
 										"v1",
-										"posts",
 										"users",
-										"{{user2}}"
+										"{{user2}}",
+										"posts"
 									]
 								}
 							},
@@ -2116,16 +2116,16 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/comments/users/{{user1}}",
+							"raw": "{{host}}/api/v1/users/{{user1}}/comments",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"comments",
 								"users",
-								"{{user1}}"
+								"{{user1}}",
+								"comments"
 							]
 						}
 					},

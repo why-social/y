@@ -79,34 +79,6 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 	};
 });
 
-// Returns all posts authored by the user with id :id
-router.get("/api/v1/posts/users/:id", async function (req, res, next) {
-	try {
-		const posts = await models.Posts.find({ author: req.params.id }).populate({
-			path: 'author', select: '_id name username profile_picture',
-		}).lean().exec();
-
-		if (!posts || posts.length == 0)
-			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
-
-		if (posts[0].author.profile_picture) {
-			posts[0].author.profile_picture = await getPublicPathFromHash(req, posts[0].author.profile_picture);
-		} // changes the author pfp in all the posts, since they are reference-shared
-
-		for (var post of posts) {
-			post.images = await Promise.all(
-				post.images.map(async image => {
-					return await getPublicPathFromHash(req, image);
-				})
-			);
-		}	
-
-		res.status(200).json(posts);
-	} catch (err) {
-		next(err);
-	}
-});
-
 // returns a boolean representing whether or not a user having :user_id liked a post having :post_id.   
 router.get("/api/v1/posts/:post_id/likes/:user_id", authMiddleware, async function (req, res, next) {
 	try {
@@ -240,6 +212,24 @@ router.patch("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, asy
 //#endregion
 
 //#region DELETE
+router.delete("/api/v1/posts", authMiddleware, async function (req, res, next) {
+	try {
+		if (!req.isAuth || !req.user || !req.user.isAdmin)
+			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+		
+		const posts = await models.Posts.find();
+		for (let post of posts) {
+			for (var hash of post.images) {
+				await removeUsage(hash);
+			}
+		}
+		await models.Posts.deleteMany();
+
+	} catch (err) {
+		next(err);
+	}
+})
+
 router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res, next) {
 	try {
 		if (!req.isAuth || !req.user)

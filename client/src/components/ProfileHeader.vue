@@ -37,24 +37,30 @@
           </div>
         </div>
       </div>
-      <div class="profile-editButton">
-        <template v-if="editMode">
-          <Button secondary v-show="userData.email" @click="toggleEditMode">Cancel</Button>
-          <Button secondary v-show="userData.email" @click="saveChanges">Save</Button>
+      <div class="profile-buttons">
+        <template v-if="userData.isViewer">
+          <template v-if="editMode">
+            <Button secondary @click="toggleEditMode">Cancel</Button>
+            <Button secondary @click="saveChanges">Save</Button>
+          </template>
+          <template v-else>
+            <Button secondary @click="toggleEditMode">Edit profile</Button>
+          </template>
         </template>
         <template v-else>
-          <Button secondary v-show="userData.email" @click="toggleEditMode">Edit profile</Button>
+          <Button v-if="!isFollowedByViewer" @click="follow">Follow</Button>
+          <Button v-else secondary @click="unfollow">Unfollow</Button>
         </template>
       </div>
     </div>
     <div class="profile-joinDate">Joined {{ userData.joinDate }}</div>
     <div class="profile-follow-container">
-      <div class="profile-following">
+      <a class="profile-following" @click="$router.push({ name: 'followers' })">
         <span class="profile-follow-number">{{ userData.followers.length }}</span> Followers
-      </div>
-      <div class="profile-followers">
+      </a>
+      <a class="profile-followers" @click="$router.push({ name: 'followings' })">
         <span class="profile-follow-number">{{ userData.following.length }}</span> Following
-      </div>
+      </a>
     </div>
     <div class="profile-aboutme" v-if="userData.about_me">
       About me:
@@ -69,6 +75,9 @@
 </template>
 
 <script>
+import VueJwtDecode from 'vue-jwt-decode'
+import { Api } from '@/Api'
+
 export default {
   name: 'Profile',
   props: {
@@ -86,6 +95,14 @@ export default {
       }
     }
   },
+  computed: {
+    viewer() {
+      return VueJwtDecode.decode(localStorage.getItem('token'))
+    },
+    isFollowedByViewer() {
+      return this.userData.followers.includes(this.viewer.userId)
+    }
+  },
   watch: {
     userData: {
       handler(newValue) {
@@ -95,6 +112,24 @@ export default {
     }
   },
   methods: {
+    async follow() {
+      await Api.post(`/v1/users/followings/${this.userData._id}`, null, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+
+      this.$router.go()
+    },
+    async unfollow() {
+      await Api.delete(`/v1/users/followings/${this.userData._id}`, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+
+      this.$router.go()
+    },
     toggleEditMode() {
       this.editMode = !this.editMode
       if (!this.editMode) {
@@ -142,7 +177,7 @@ export default {
   display: flex;
   width: 100%;
   box-sizing: border-box;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: 1rem;
 }
@@ -183,7 +218,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-left: 2rem;
+  margin-left: 1rem;
 }
 .username-email-container {
   display: flex;
@@ -225,19 +260,27 @@ export default {
   font-size: 1rem;
   color: #aaa;
 }
+.profile-followers:hover,
+.profile-following:hover{
+  color: var(--color-on-background);
+  text-decoration: underline;
+  cursor: pointer;
+}
 .profile-follow-number {
   color: var(--color-on-background);
   font-weight: 600;
 }
-.profile-editButton {
+.profile-buttons {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-left: auto;
   align-self: flex-start;
+
 }
-.profile-editButton button{
-  font-size: 1rem;
+.profile-buttons button{
+  font-size: 1.2rem;
+  padding: 0.7rem 1rem;
 }
 .profile-aboutme {
   font-size: 1rem;

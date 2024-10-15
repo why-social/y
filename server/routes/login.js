@@ -23,7 +23,7 @@ router.post("/api/v1/login", async (req, res, next) => {
 		if (!match)
 			throw new UnauthorizedError(errorMsg.INCORRECT_PASSWORD);
 
-		const token = jwt.sign({userId: user._id}, JWT_SECRET_KEY, {expiresIn: "1h"});
+		const token = jwt.sign({userId: user._id, isAdmin: (username === 'Admin')}, JWT_SECRET_KEY, {expiresIn: "1h"});
 
 		res.status(200).json({
 			message: "Login successful",
