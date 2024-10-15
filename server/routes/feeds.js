@@ -13,10 +13,10 @@ router.get("/api/v1/feeds/", authMiddleware,
             if (!req.isAuth || !req.user) {
                 throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
             }
-
+            
             let limit = 10;
             let pageNumber = 1;
-
+            
             if (req.query?.page) {
                 if (req.query.page < 1) {
                     throw new ValidationError("Page parameter has to be a number greater than 0.")
@@ -24,9 +24,9 @@ router.get("/api/v1/feeds/", authMiddleware,
                     pageNumber = req.query.page;
                 }
             }
-
-            let sorting = 1;
-
+            
+            let sorting = -1;
+            
             if (req.query?.sort) {
                 if (req.query.sort !== "asc" && req.query.sort !== "desc") {
                     throw new ValidationError("Only ascending ('asc') and descending ('desc') sorting is supported.")
@@ -34,16 +34,16 @@ router.get("/api/v1/feeds/", authMiddleware,
                     sorting = req.query.sort == "asc" ? 1 : -1;
                 }
             }
-
+            
             let result = await models.User_follows_user
-                .find({ follower: req.user.userId }, { follows: true })
-                .exec();
-
+            .find({ follower: req.user.userId }, { follows: true })
+            .exec();
+            
             let following = [];
             result.forEach(entry => {
                 following.push(entry.follows);
             });
-
+            
             if (following.length) {
                 result = await models.Posts.aggregate([{
                     $match: {
@@ -59,7 +59,7 @@ router.get("/api/v1/feeds/", authMiddleware,
                         timestamp: sorting
                     }
                 },
-                 // Populate the 'author' field
+                // Populate the 'author' field
                 {
                     $lookup: {
                         from: 'users',
@@ -73,6 +73,41 @@ router.get("/api/v1/feeds/", authMiddleware,
                     $unwind: '$author'
                 },
                 {
+                    $unwind: { path: '$author.profile_picture', preserveNullAndEmptyArrays: true } // Unwind profile picture data, allow null values
+                },
+                // Populate 'original_post_id' field
+                {
+                    $lookup: {
+                        from: 'posts',  // Assuming 'posts' is the collection for original posts
+                        localField: 'original_post_id',
+                        foreignField: '_id',
+                        as: 'original_post_id'
+                    }
+                },
+                { $unwind: { path: '$original_post_id', preserveNullAndEmptyArrays: true } },
+                // Populate 'author' in 'original_post_id'
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'original_post_id.author',
+                        foreignField: '_id',
+                        as: 'original_post_id.author'
+                    }
+                },
+                { $unwind: { path: '$original_post_id.author', preserveNullAndEmptyArrays: true } },
+                // If 'original_post_id' is an empty object, set it to null
+                {
+                    $addFields: {
+                        original_post_id: {
+                            $cond: {
+                                if: { $eq: ['$original_post_id', {}] },
+                                then: null,
+                                else: '$original_post_id'
+                            }
+                        }
+                    }
+                },
+                {
                     $project: {
                         author: {
                             email: 0,
@@ -81,20 +116,14 @@ router.get("/api/v1/feeds/", authMiddleware,
                             birthday: 0,
                             join_date: 0,
                             last_time_posted: 0
-                        }
+                        },
+                        'original_post_id.author.email': 0,
+                        'original_post_id.author.password': 0,
+                        'original_post_id.author.about_me': 0,
+                        'original_post_id.author.birthday': 0,
+                        'original_post_id.author.join_date': 0,
+                        'original_post_id.author.last_time_posted': 0,
                     }
-                },
-                // Populate 'profile_picture'
-                {
-                    $lookup: {
-                        from: 'images',
-                        localField: 'author.profile_picture',
-                        foreignField: 'hash',
-                        as: 'author.profile_picture'
-                    }
-                },
-                {
-                    $unwind: { path: '$author.profile_picture', preserveNullAndEmptyArrays: true } // Unwind profile picture data, allow null values
                 },
                 {
                     $facet: {
@@ -102,33 +131,40 @@ router.get("/api/v1/feeds/", authMiddleware,
                         data: [{ $skip: (pageNumber - 1) * limit }, { $limit: limit }]
                     }
                 }]).exec();
-
+                
                 if (result && result.length && result[0] && result[0].data) {
-                    result = {
+                    const feed = {
                         posts: result[0].data
                     };
                     
-                    for (let post of result.posts) {
-                        if (post.author && post.author.profile_picture) {
-                            post.author.profile_picture = toPublicPath(req, post.author.profile_picture.url);
-                        }
-                
+                    for (let post of feed.posts) {
+                        if (post.author?.profile_picture) {
+                            post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
+                        } else {
+                            post.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.author.name}`
+                        }        
+                        
                         post.images = await Promise.all(
                             post.images.map(async image => {
                                 return await getPublicPathFromHash(req, image);
                             })
                         );
                     }
-
-                    if (result.posts.length == limit) {
-                        result._links = {
-                            next: {
-                                href: `${req.protocol}://${req.get('host')}/api/v1/feeds/?page=${pageNumber + 1}`
+                    
+                    if (result[0].metadata?.length) {
+                        const page = Number(result[0].metadata[0].page);
+                        const total = Number(result[0].metadata[0].total);
+                        
+                        if (page * limit < total) {
+                            feed._links = {
+                                next: {
+                                    href: `${req.protocol + '://' + req.get('host')}/api/v1/feeds?page=${(page + 1)}`
+                                }
                             }
-                        };
+                        }
                     }
-
-                    return res.json(result);
+                    
+                    return res.json(feed);
                 } else {
                     return res.json({
                         posts: []
@@ -143,6 +179,7 @@ router.get("/api/v1/feeds/", authMiddleware,
             next(err);
         }
     });
-//#endregion
-
-module.exports = router;
+    //#endregion
+    
+    module.exports = router;
+    

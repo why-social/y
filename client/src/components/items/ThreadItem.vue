@@ -1,6 +1,6 @@
 <template>
   <div thread-item @click="goToThread">
-    <img v-if="isRepost" class="avatar" :src="originalAuthor.profile_picture" @click.stop="goToUser(originalAuthor._id)" />
+    <img v-if="isRepost" class="avatar" :src="originalAuthor?.profile_picture" @click.stop="goToUser(originalAuthor?._id)" />
     <img v-else class="avatar" :src="avatar" @click.stop="goToUser(user._id)" />
 
     <div class="data">
@@ -11,9 +11,9 @@
         <span>reposted</span>
       </div>
       <template v-if="isRepost">
-        <div class="name" @click.stop="goToUser(originalAuthor._id)">
-          <span class="inter-tight-medium">{{ originalAuthor.name }}</span>
-          <span>@{{ originalAuthor.username }}</span>
+        <div class="name" @click.stop="goToUser(originalAuthor?._id)">
+          <span class="inter-tight-medium">{{ originalAuthor?.name }}</span>
+          <span>@{{ originalAuthor?.username }}</span>
         </div>
       </template>
       <template v-else>
