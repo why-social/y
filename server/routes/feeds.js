@@ -142,7 +142,16 @@ router.get("/api/v1/feeds/", authMiddleware,
                             post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
                         } else {
                             post.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.author.name}`
-                        }        
+                        }     
+                        
+                        if (post.original_post_id) {
+                            if (post.original_post_id.author.profile_picture) {
+                                post.original_post_id.author.profile_picture = await getPublicPathFromHash(req, post.original_post_id.author.profile_picture);
+                            }
+                            else {
+                                post.original_post_id.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.original_post_id.author.name}`
+                            }
+                        }
                         
                         post.images = await Promise.all(
                             post.images.map(async image => {
