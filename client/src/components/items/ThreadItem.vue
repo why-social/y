@@ -1,26 +1,32 @@
 <template>
   <div thread-item @click="goToThread">
-    <img class="avatar" v-bind:src="avatar" @click.stop="goToUser" />
+    <img v-if="isRepost" class="avatar" :src="originalAuthor.profile_picture" @click.stop="goToUser(originalAuthor._id)" />
+    <img v-else class="avatar" :src="avatar" @click.stop="goToUser(user._id)" />
 
     <div class="data">
-      <div class="name" @click.stop="goToUser">
-        <span class="inter-tight-medium">{{ user.name }}</span>
-        <span>@{{ user.username }}</span>
+      <div v-if="isRepost" class="reposter-data" @click.stop="goToUser(author._id)">
+        <span class="icon">cached</span>
+        <img :src="avatar" />
+        <span class="handle-link">@{{ author.username }}</span>
+        <span>reposted</span>
       </div>
+      <template v-if="isRepost">
+        <div class="name" @click.stop="goToUser(originalAuthor._id)">
+          <span class="inter-tight-medium">{{ originalAuthor.name }}</span>
+          <span>@{{ originalAuthor.username }}</span>
+        </div>
+      </template>
+      <template v-else>
+        <div class="name" @click.stop="goToUser(author._id)">
+          <span class="inter-tight-medium">{{ author.name }}</span>
+          <span>@{{ author.username }}</span>
+        </div>
+      </template>
 
       <div class="content">
-        <span
-          :class="{
-            hidden: !this.content?.length
-          }"
-        >
-          {{ content }}
-        </span>
+        <span :class="{ hidden: !this.content?.length }">{{ content }}</span>
 
-        <div
-          class="picture-container"
-          :class="{ hidden: !this.images?.length }"
-        >
+        <div class="picture-container" :class="{ hidden: !this.images?.length }">
           <img
             class="picture"
             v-for="image in images"
@@ -39,8 +45,8 @@
           class="clickable"
           ref="like"
           :class="{
-            liked: isLiked,
-            like: !isLiked
+            liked: liked,
+            like: !liked
           }"
         >
           <span class="icon">favorite</span>
@@ -69,46 +75,23 @@
 
 <script>
 import moment from 'moment'
+import VueJwtDecode from 'vue-jwt-decode'
 
 export default {
   props: ['item', 'dateFormat'],
 
   data() {
-    let obj
-
-    if (this.item) {
-      obj = {
-        user: this.item.author,
-        avatar: this.item.author?.profile_picture,
-        date: moment(this.item.timestamp),
-        content: this.item.content,
-        images: this.item.images || [],
-        likes: this.item.likes,
-        comments: this.item.comments,
-        liked: true,
-        modalImageIndex: null,
-        isModalOpen: false
-      }
-    } else {
-      // placeholder
-      obj = {
-        user: {
-          name: 'Shawn Dawgson',
-          username: 'colguylikesdawgs'
-        },
-        date: moment(new Date()),
-        content: 'Can I pet that dawg',
-        images: [
-          'https://st3.depositphotos.com/29384342/34115/i/450/depositphotos_341157888-stock-photo-recommendation-sports-student.jpg',
-          'https://randomwordgenerator.com/img/picture-generator/52e4d1424f5aa914f1dc8460962e33791c3ad6e04e5074417d2e72d2954ac5_640.jpg',
-          'https://www.kdnuggets.com/wp-content/uploads/tree-todd-quackenbush-unsplash.jpg'
-        ],
-        likes: [],
-        comments: [],
-        liked: true,
-        modalImageIndex: null,
-        isModalOpen: false
-      }
+    const obj = {
+      author: this.item.author,
+      avatar: this.item.author?.profile_picture,
+      date: moment(this.item.timestamp),
+      content: this.item.content,
+      images: this.item.images || [],
+      likes: this.item.likes,
+      comments: this.item.comments,
+      modalImageIndex: null,
+      isModalOpen: false,
+      isRepost: !!this.item.original_post_id
     }
 
     if (this.dateFormat === 'now') {
@@ -117,17 +100,25 @@ export default {
       obj.date = obj.date.format('MMMM Do YYYY, hh:mm')
     }
 
+    if (obj.isRepost) {
+      obj.originalAuthor = this.item.original_post_id.author
+    }
+
     return obj
   },
 
   methods: {
     like() {
-      this.liked = !this.liked
-
-      this.$emit('like')
+      if (this.liked) {
+        this.$emit('unlike')
+        this.likes.splice(this.likes.indexOf(this.viewer.userId), 1)
+      } else {
+        this.$emit('like')
+        this.likes.push(this.viewer.userId)
+      }
     },
-    goToUser() {
-      this.$router.push(`/profile/${this.user._id}`)
+    goToUser(userId) {
+      this.$router.push(`/profile/${userId}`)
     },
     goToThread() {
       this.$router.push(`/thread/${this.item._id}`)
@@ -143,8 +134,11 @@ export default {
   },
 
   computed: {
-    isLiked() {
-      return this.liked
+    viewer() {
+      return VueJwtDecode.decode(localStorage.getItem('token'))
+    },
+    liked() {
+      return this.likes.includes(this.viewer.userId)
     }
   }
 }
@@ -153,7 +147,7 @@ export default {
 <style>
 div[thread-item] {
   cursor: pointer;
-  user-select: none;
+  author-select: none;
   display: flex;
   width: 100%;
   font-size: 1.4rem;
@@ -299,6 +293,32 @@ div[thread-item] .comment:hover {
 
 div[thread-item] .comment:hover .icon {
   font-variation-settings: 'FILL' 1, 'wght' 100, 'GRAD' 0, 'opsz' 20;
+}
+
+.reposter-data {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.reposter-data img {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 100%;
+  cursor: pointer;
+}
+
+.reposter-data span {
+  opacity: 0.75;
+  font-size: 1.1rem;
+}
+.reposter-data .icon {
+  font-size: 1.5rem;
+}
+
+.reposter-data:hover .handle-link {
+  text-decoration: underline;
 }
 
 @media (max-width: 630px) {
