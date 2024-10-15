@@ -14,7 +14,7 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 
 		// populate profile_picture with the public url to the resource
 		if (comment.author.profile_picture) {
-			comment.author.profile_picture = await getPublicPathFromHash(req, hash);
+			comment.author.profile_picture = await getPublicPathFromHash(req, comment.author.profile_picture);
 		} else {
 			comment.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${comment.author.name}`
 		}
