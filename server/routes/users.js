@@ -144,7 +144,13 @@ router.get("/api/v1/users/:username/posts", async function (req, res, next) {
     if (!user)
       throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
-		const posts = await mongoose.models["Posts"].find({ author: user._id }).populate({
+		const posts = await mongoose.models["Posts"].find({
+      author: user._id,
+      $or: [
+        { is_deleted: { $exists: false } },
+        { is_deleted: false }
+      ]
+    }).populate({
 			path: 'author', select: '_id name username profile_picture',
 		}).lean().exec();
 
@@ -177,7 +183,13 @@ router.get("/api/v1/users/:id/comments", async function (req, res, next) {
       throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
 		let result = await mongoose.models["Comments"]
-			.find({ author: user._id })
+			.find({
+        author: user._id,
+        $or: [
+          { is_deleted: { $exists: false } },
+          { is_deleted: false }
+        ]
+      })
 			.populate({
 				path: 'author', select: '_id name username profile_picture',
 			})
