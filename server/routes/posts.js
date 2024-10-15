@@ -12,7 +12,12 @@ const router = express.Router();
 //#region GET
 router.get("/api/v1/posts", async function (req, res, next) {
 	try {
-		const posts = await models.Posts.find()
+		const posts = await models.Posts.find({
+      $or: [
+        { is_deleted: { $exists: false } },
+        { is_deleted: false }
+      ]
+      })
 			.populate({
 				path: 'author', select: '_id name username profile_picture'
 			})
