@@ -43,24 +43,19 @@ export default {
   },
   methods: {
     async handleRouteChange() {
-      const paramId = this.$route.params.userId
+      const paramUsername = this.$route.params.username
       const token = localStorage.getItem('token')
       let decodedUserId
       if (token) {
         // Check if token has expired
-        const decoded = VueJwtDecode.decode(localStorage.getItem('token'))
+        const decoded = VueJwtDecode.decode(token)
         const expired = decoded.exp - Date.now() / 1000 < 0
         if (expired) return this.$router.push('/auth/login')
 
         decodedUserId = decoded.userId
-
-        // Redirect to /profile/me if user tries to access his own profile
-        if (paramId === decodedUserId) {
-          this.$router.push('/profile/me')
-        }
       }
 
-      if (paramId === 'me') {
+      if (paramUsername === 'me') {
         this.userData._id = decodedUserId
         this.userData.isViewer = true
 
@@ -70,13 +65,18 @@ export default {
 
         await this.fetchUserData(decodedUserId, userReq)
       } else {
-        this.userData._id = paramId
         this.userData.isViewer = false
 
         try {
-          const userReq = await Api.get('/v1/users/' + paramId)
+          const userReq = await Api.get('/v1/users/search?username=' + paramUsername)
+          this.userData._id = userReq.data._id
 
-          await this.fetchUserData(paramId, userReq)
+          // Redirect to /profile/me if user tries to access his own profile
+          if (decodedUserId && this.userData._id === decodedUserId) {
+            return this.$router.push('/profile/me')
+          }
+
+          await this.fetchUserData(this.userData._id, userReq)
         } catch (error) {
           // User not found by id
           if (error.response.status === 404) {
