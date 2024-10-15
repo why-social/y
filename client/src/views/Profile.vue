@@ -113,7 +113,6 @@ export default {
           about_me: updatedData.about_me,
           avatar: updatedData.avatar
         }
-        // updatedData.avatarUrl
 
         // image upload
         if (updatedData.avatar) {
@@ -129,6 +128,7 @@ export default {
           this.userData.avatarUrl = response.data.pfp
         }
 
+        // update user data
         await Api.patch('/v1/users/' + this.userData._id, updatedData, {
           headers: { Authorization: token }
         })

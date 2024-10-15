@@ -2,7 +2,7 @@
   <div class="profile-header">
     <div class="profile-avatar-container">
       <div class="profile-avatar" @click="selectNewImage">
-        <img :src="userData.avatarUrl" alt="avatar" />
+        <img :src="userData.avatarUrl" alt="avatar" id="avatarImg"/>
         <div v-if="editMode" class="edit-overlay">
           <span class="edit-icon">✎</span>
         </div>
@@ -97,9 +97,13 @@ export default {
   methods: {
     toggleEditMode() {
       this.editMode = !this.editMode
+      if (!this.editMode) {
+        this.editableUserData = { ...this.userData }
+        document.querySelector('#avatarImg').src = this.userData.avatarUrl
+      }
     },
     async saveChanges() {
-      this.toggleEditMode()
+      console.log(this.editableUserData)
 
       // Check if the data has changed
       if (this.editableUserData.name === this.userData.name && this.editableUserData.about_me === this.userData.about_me && !this.editableUserData.avatar) {
@@ -107,6 +111,7 @@ export default {
       }
 
       await this.$emit('updateUserData', this.editableUserData)
+      this.toggleEditMode()
     },
     selectNewImage() {
       if (this.editMode) { // Only allow image selection in edit mode
@@ -115,7 +120,11 @@ export default {
     },
     handleFileChange(event) {
       if (event.target.files[0]) {
-        this.editableUserData.avatar = event.target.files[0]
+        if (event.target.files[0]) {
+          this.editableUserData.avatar = event.target.files[0]
+          document.querySelector('#avatarImg').src = URL.createObjectURL(event.target.files[0])
+        }
+        this.$refs.fileInput.value = ''
       }
     }
   }
