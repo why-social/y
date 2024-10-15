@@ -1,24 +1,23 @@
 <!-- #region Template -->
 <template>
   <div class="post-container" @click="goToThread">
-    <img class="post-pfp" v-bind:src="pfp" @click.stop="goToUser" />
+    <img v-if="isRepost" class="post-pfp" :src="originalAuthor.profile_picture" @click.stop="goToUser(originalAuthor._id)" />
+    <img v-else class="post-pfp" :src="pfp" @click.stop="goToUser(user._id)" />
     <div class="post-data">
-      <div class="post-name" @click.stop="goToUser">
+      <div v-if="isRepost" class="reposter-data" @click.stop="goToUser(user._id)">
+        <span class="icon">cached</span>
+        <img v-bind:src="pfp" />
+        <span class="handle-link">@{{ post.author.username }}</span>
+        <span>reposted</span>
+      </div>
+      <div class="post-name" @click.stop="(originalAuthor) ? goToUser(originalAuthor._id) : goToUser(user._id)">
         <span class="inter-tight-medium">{{ name }}</span>
         <span>@{{ username }}</span>
       </div>
       <div class="post-content">
-        <span class="content" :class="{ hidden: !this.content?.length }">{{
-          content
-        }}</span>
+        <span class="content" :class="{ hidden: !this.content?.length }">{{content}}</span>
         <div class="picture-container" :class="{ hidden: !this.images?.length }">
-          <img
-            class="picture"
-            v-for="image in images"
-            v-bind:src="image"
-            :key="image._id"
-            @click.stop="showModal(images.indexOf(image))"
-          />
+          <img class="picture" v-for="image in images" v-bind:src="image" :key="image._id" @click.stop="showModal(images.indexOf(image))"/>
         </div>
       </div>
 
@@ -39,12 +38,7 @@
         </Button>
       </div>
     </div>
-    <ImageCarousel
-      v-if="isModalOpen"
-      :images="images"
-      :startIndex="modalImageIndex"
-      @close="closeModal"
-    />
+    <ImageCarousel v-if="isModalOpen" :images="images" :startIndex="modalImageIndex" @close="closeModal" />
   </div>
 </template>
 <!-- #endregion -->
@@ -135,6 +129,36 @@ button {
 .post-date {
   font-size: 1.2rem;
   opacity: 0.5;
+}
+
+.reposter-data {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.reposter-data img {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 100%;
+  cursor: pointer;
+}
+
+.reposter-data span {
+  opacity: 0.75;
+  font-size: 1.1rem;
+}
+.reposter-data .icon {
+  font-size: 1.5rem;
+}
+
+.handle-link {
+  text-decoration: none;
+}
+.handle-link:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .interactions {
@@ -232,39 +256,22 @@ import { Api } from '@/Api'
 export default {
   props: ['post'],
   data() {
-    if (this.post) {
-      return {
-        user: this.post.author,
-        name: this.post.author.name,
-        username: this.post.author.username,
-        pfp:
-          this.post.author.profile_picture ||
-          'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
-        date: moment(this.post.timestamp).fromNow(),
-        content: this.post.content,
-        images: this.post.images || [],
-        likes: this.post.likes,
-        comments: this.post.comments,
-        modalImageIndex: null,
-        isModalOpen: false
-      }
-    } else {
-      // placeholder post
-      return {
-        user: {},
-        name: 'Shawn Dawgson',
-        username: 'colguylikesdawgs',
-        pfp: 'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
-        date: moment(new Date()).fromNow(),
-        content: 'Can I pet that dawg',
-        images: [
-          'https://st3.depositphotos.com/29384342/34115/i/450/depositphotos_341157888-stock-photo-recommendation-sports-student.jpg',
-          'https://randomwordgenerator.com/img/picture-generator/52e4d1424f5aa914f1dc8460962e33791c3ad6e04e5074417d2e72d2954ac5_640.jpg',
-          'https://www.kdnuggets.com/wp-content/uploads/tree-todd-quackenbush-unsplash.jpg'
-        ],
-        likes: [],
-        comments: []
-      }
+    return {
+      user: this.post.author,
+      name: this.post.original_post_id?.author.name || this.post.author.name,
+      username: this.post.original_post_id?.author.username || this.post.author.username,
+      pfp:
+        this.post.author.profile_picture ||
+        'https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg',
+      date: moment(this.post.timestamp).fromNow(),
+      content: this.post.content,
+      images: this.post.images || [],
+      likes: this.post.likes,
+      comments: this.post.comments,
+      modalImageIndex: null,
+      isModalOpen: false,
+      isRepost: !!this.post.original_post_id,
+      originalAuthor: this.post.original_post_id?.author || null
     }
   },
   computed: {
@@ -276,9 +283,9 @@ export default {
     }
   },
   methods: {
-    goToUser() {
+    goToUser(userId) {
       if (this.post) {
-        this.$router.push(`/profile/${this.post.author._id}`)
+        this.$router.push(`/profile/${userId}`)
       }
     },
     goToThread() {
@@ -311,14 +318,16 @@ export default {
         })
       }
     },
-    async repost() {
-      const response = await Api.post('/v1/posts/repost', { postId: this.post._id }, {
+    repost() {
+      Api.post('/v1/posts/repost', { postId: this.post._id }, {
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token')
         }
       })
-      console.log(response.data)
     }
+  },
+  mounted() {
+    console.log(this.post)
   }
 }
 </script>
