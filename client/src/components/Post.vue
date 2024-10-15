@@ -38,14 +38,8 @@
           <span class="icon">forum</span>
           <span>{{ comments?.length || 0 }}</span>
         </div>
-        <Button
-          class="inter-tight-medium"
-          @click.stop=""
-          style="margin-left: auto"
-        >
-          <span class="icon" style="font-variation-settings: 'wght' 400"
-            >cached</span
-          >
+        <Button v-if="viewer.userId !== user._id" class="inter-tight-medium" @click.stop="repost" style="margin-left: auto">
+          <span class="icon" style="font-variation-settings: 'wght' 400">cached</span>
           <span style="padding-right: 0.3rem">Repost</span>
         </Button>
       </div>
@@ -306,7 +300,6 @@ export default {
       this.modalImageIndex = null
     },
     toggleLike() {
-      console.log(localStorage.getItem('token'))
       if (this.liked) {
         this.likes.splice(this.likes.indexOf(this.viewer.userId), 1)
         Api.delete(`/v1/posts/${this.post._id}/likes/${this.viewer.userId}`, {
@@ -322,7 +315,8 @@ export default {
           }
         })
       }
-    }
+    },
+    repost() {}
   }
 }
 </script>
