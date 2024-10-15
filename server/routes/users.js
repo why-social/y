@@ -135,7 +135,13 @@ router.get("/api/v1/users/:id/followings", async (req, res, next) => {
 // Returns all posts authored by the user with id :id
 router.get("/api/v1/users/:id/posts", async function (req, res, next) {
 	try {
-		const posts = await mongoose.models["Posts"].find({ author: req.params.id }).populate({
+		const posts = await mongoose.models["Posts"].find({
+      author: req.params.id,
+      $or: [
+        { is_deleted: { $exists: false } },
+        { is_deleted: false }
+      ]
+    }).populate({
 			path: 'author', select: '_id name username profile_picture',
 		}).lean().exec();
 
@@ -167,7 +173,13 @@ router.get("/api/v1/users/:id/comments", async function (req, res, next) {
 		if(!userExists) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
 		let result = await mongoose.models["Comments"]
-			.find({ author: req.params.id })
+			.find({
+        author: req.params.id,
+        $or: [
+          { is_deleted: { $exists: false } },
+          { is_deleted: false }
+        ]
+      })
 			.populate({
 				path: 'author', select: '_id name username profile_picture',
 			})
