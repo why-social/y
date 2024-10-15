@@ -15,7 +15,14 @@ export default {
     }
   },
   async mounted() {
-    const userId = this.$route.params.userId === 'me' ? VueJwtDecode.decode(localStorage.getItem('token')).userId : this.$route.params.userId
+    let userId
+    if (this.$route.params.username === 'me') {
+      userId = VueJwtDecode.decode(localStorage.getItem('token')).userId
+    } else {
+      const username = this.$route.params.username
+      const res = await Api.get('/v1/users/search?username=' + username)
+      userId = res.data._id
+    }
 
     let response
     if (this.$route.name === 'followers') {

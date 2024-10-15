@@ -28,11 +28,13 @@ export default {
   },
   async mounted() {
     try {
-      const userId =
-        this.$route.params.userId === 'me'
-          ? VueJwtDecode.decode(localStorage.getItem('token')).userId
-          : this.$route.params.userId
-      const response = await Api.get('/v1/users/' + userId + '/posts')
+      let username
+      if (this.$route.params.username === 'me') {
+        username = VueJwtDecode.decode(localStorage.getItem('token')).username
+      } else {
+        username = this.$route.params.username
+      }
+      const response = await Api.get('/v1/users/' + username + '/posts')
       this.posts = response.data
     } catch (error) {
       console.error(error)

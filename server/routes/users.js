@@ -30,8 +30,13 @@ router.get("/api/v1/users/search", async (req, res, next) => {
 		if(!result) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
 		const response = {
+      _id: result._id,
 			name: result.name,
 			username: result.username,
+      about_me: result.about_me,
+      join_date: result.join_date,
+      birthday: result.birthday,
+      last_time_posted: result.last,
 			profile_picture: await getPublicPathFromHash(req, result.profile_picture) || 
 				`https://ui-avatars.com/api/?bold=true&name=${result.name}`,
 		}
@@ -133,9 +138,13 @@ router.get("/api/v1/users/:id/followings", async (req, res, next) => {
 
 // Get all posts of a user
 // Returns all posts authored by the user with id :id
-router.get("/api/v1/users/:id/posts", async function (req, res, next) {
+router.get("/api/v1/users/:username/posts", async function (req, res, next) {
 	try {
-		const posts = await mongoose.models["Posts"].find({ author: req.params.id }).populate({
+    const user = await mongoose.models["Users"].findOne({ username: req.params.username }).exec();
+    if (!user)
+      throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
+		const posts = await mongoose.models["Posts"].find({ author: user._id }).populate({
 			path: 'author', select: '_id name username profile_picture',
 		}).lean().exec();
 
@@ -163,11 +172,12 @@ router.get("/api/v1/users/:id/posts", async function (req, res, next) {
 // Get all comments of a user
 router.get("/api/v1/users/:id/comments", async function (req, res, next) {
 	try {
-		let userExists = await mongoose.models["Users"].exists({ _id: req.params.id });
-		if(!userExists) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+    const user = await mongoose.models["Users"].findOne({ username: req.params.username }).exec();
+    if (!user)
+      throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
 		let result = await mongoose.models["Comments"]
-			.find({ author: req.params.id })
+			.find({ author: user._id })
 			.populate({
 				path: 'author', select: '_id name username profile_picture',
 			})

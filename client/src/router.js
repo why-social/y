@@ -55,7 +55,7 @@ const routes = [
         component: Discover
       },
       {
-        path: '/profile/:userId',
+        path: '/profile/:username',
         name: 'profile',
         redirect: { name: 'posts' },
         meta: { resetTab: true },
