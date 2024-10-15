@@ -44,8 +44,14 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 		const post = await models.Posts.findById(req.params.id)
 			.populate({
 				path: 'author', select: '_id name username profile_picture',
-			}).populate('comments').lean();
+			}).populate('comments');
 		
+		if (post.original_post_id) {
+			post.populate({
+				path: 'original_post_id.author', select: '_id name username profile_picture',
+			})
+		}
+
 		// populate profile_picture with the public url to the resource
 		if (post.author.profile_picture) {
 			post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
@@ -126,6 +132,35 @@ async function postRequest(req, res, next) {
 }
 
 router.post("/api/v1/posts/", authMiddleware, uploadMiddleware.multiple, postRequest);
+router.post("/api/v1/posts/repost", authMiddleware, async function (req, res, next) {
+	try {
+		if (!req.isAuth || !req.user)
+			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+		if (!req.body.postId)
+			throw new ValidationError(errorMsg.MISSING_FIELDS);
+		
+		console.log(req.body.postId)
+		const target = await models.Posts.findOne({_id: req.body.postId})
+		if (!target)
+			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
+		
+		const repost = new models.Posts({
+			author: req.user.userId,
+			is_edited: false,
+			content: target.content,
+			likes: [],
+			comments: [],
+			images: target.images || [],
+			original_post_id: target._id
+		});
+
+		await repost.save();
+		return res.status(200).json(repost);
+	} catch (err) {
+		next(err)
+	}
+});
 
 router.post("/api/v1/posts/:post_id/likes/", authMiddleware, async function (req, res, next) {
 	try {

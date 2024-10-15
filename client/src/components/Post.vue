@@ -25,12 +25,7 @@
       <span class="post-date">{{ date }}</span>
 
       <div class="interactions">
-        <div
-          @click.stop="toggleLike"
-          class="clickable"
-          ref="like"
-          :class="{ liked: liked, like: !liked }"
-        >
+        <div @click.stop="toggleLike" class="clickable" ref="like" :class="{ liked: liked, like: !liked }">
           <span class="icon" ref="like_icon">favorite</span>
           <span>{{ likes?.length || 0 }}</span>
         </div>
@@ -316,7 +311,14 @@ export default {
         })
       }
     },
-    repost() {}
+    async repost() {
+      const response = await Api.post('/v1/posts/repost', { postId: this.post._id }, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+      console.log(response.data)
+    }
   }
 }
 </script>
