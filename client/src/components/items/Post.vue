@@ -1,5 +1,5 @@
 <template>
-  <ThreadItem v-bind="$props" @like="like" @unlike="unlike" @delete="deletePost" :dateFormat="this.dateFormat">
+  <ThreadItem v-bind="$props" @like="like" @unlike="unlike" @delete="deletePost">
     <Button v-if="item.author._id !== viewer.userId" secondary class="inter-tight-medium" @click.stop="this.repost()" style="margin-left: auto">
       <span class="icon" style="font-variation-settings: 'wght' 400">cached</span>
       <span style="padding-right: 0.3rem">Repost</span>
@@ -14,8 +14,7 @@ import VueJwtDecode from 'vue-jwt-decode'
 export default {
   props: {
     dateFormat: {
-      type: String,
-      required: true
+      type: String
     },
     item: {
       type: Object,

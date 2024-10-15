@@ -147,7 +147,7 @@ export default {
 <style>
 div[thread-item] {
   cursor: pointer;
-  author-select: none;
+  user-select: none;
   display: flex;
   width: 100%;
   font-size: 1.4rem;
