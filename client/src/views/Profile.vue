@@ -1,6 +1,6 @@
 <template>
   <div id="container">
-    <ProfileHeader :userData="userData" @updateUserData="updateUserData"/>
+    <ProfileHeader :userData="userData" @updateUserData="updateUserData" />
     <hr />
     <ProfilePosts :userData="userData" />
   </div>
@@ -79,7 +79,7 @@ export default {
           await this.fetchUserData(this.userData._id, userReq)
         } catch (error) {
           // User not found by id
-          if (error.response.status === 404) {
+          if (error.response.status === 404 || error.response.status === 400) {
             return this.$router.push('/404')
           }
         }
@@ -99,8 +99,10 @@ export default {
       this.userData.joinDate = moment(userReqData.joinDate).format(
         'DD MMMM YYYY'
       )
-      this.userData.followers = followersReq.data.map(entry => entry.follower)
-      this.userData.following = followingsReq.data.map(entry => entry.following)
+      this.userData.followers = followersReq.data.map((entry) => entry.follower)
+      this.userData.following = followingsReq.data.map(
+        (entry) => entry.following
+      )
       this.userData.avatarUrl = userReqData.profile_picture || this.avatarUrl
       this.userData.about_me = userReqData.about_me || ''
       if (userReqData.email) {
@@ -123,12 +125,16 @@ export default {
         if (updatedData.avatar) {
           const formData = new FormData()
           formData.append('image', updatedData.avatar)
-          const response = await Api.put(`/v1/users/${this.userData._id}/profile_picture`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-              Authorization: token
+          const response = await Api.put(
+            `/v1/users/${this.userData._id}/profile_picture`,
+            formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+                Authorization: token
+              }
             }
-          })
+          )
 
           this.userData.avatarUrl = response.data.pfp
         }
