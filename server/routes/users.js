@@ -164,7 +164,8 @@ router.get("/api/v1/users/:username/posts", async function (req, res, next) {
 			})
 			.populate({
 				path: 'image_urls'
-			});
+			})
+			.sort({timestamp: -1});
 		
 		if (!posts || posts.length == 0)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);	
@@ -196,7 +197,8 @@ router.get("/api/v1/users/:username/comments", async function (req, res, next) {
 			})
 			.populate({
 				path: 'image_urls'
-			});
+			})
+			.sort({timestamp: -1});
 		
 		return res.status(200).json(result);
 	} catch (err) {
