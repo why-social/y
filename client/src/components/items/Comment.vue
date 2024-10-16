@@ -3,6 +3,7 @@
     v-bind="$props"
     @like="like"
     @unlike="unlike"
+    @edit="edit"
     @delete="deleteComment"
   >
   </ThreadItem>
@@ -10,6 +11,7 @@
 
 <script>
 import { Api } from '@/Api'
+import VueJwtDecode from 'vue-jwt-decode'
 
 export default {
   props: {
@@ -37,8 +39,25 @@ export default {
         }
       })
     },
-    deleteComment() {
-      // TODO update comment database
+    async deleteComment() {
+      const response = await Api.delete(`/v1/comments/${this.item._id}`, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+
+      if (response.status === 200) {
+        this.$router.go()
+      }
+    },
+    edit() {
+      // TODO
+    }
+  },
+
+  computed: {
+    viewer() {
+      return VueJwtDecode.decode(localStorage.getItem('token'))
     }
   }
 }

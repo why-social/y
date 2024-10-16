@@ -135,10 +135,12 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 - DELETE /api/v1/comments/:id
 - DELETE /api/v1/comments/:comment_id/likes/:user_id
 
-## Advanced Feature Proposal
-  Our advanced feature is feed generation. Each user will have a personalized feed generated for them when they enter the ‘Feed’ page of the site. The feed is generated based on the user's followings. On the backend, the feature will be implemented in a special endpoint (‘api/v1/feeds’) that returns the generated feed, sorted chronologically. The user can also select newest-first or oldest-first sorting.
+## Advanced Feature
+  Our advanced feature is feed generation. Each user will have a personalized feed generated based on their followings, accessible on the homepage under ‘Feed’ tab. The feed is composed on the server side. On the backend, the feature has its own endpoint (‘api/v1/feeds’) that returns the most recent posts from people you are following, sorted chronologically. Furthermore, the endpoint also supports descendent sorting and pagination.
 
-  On the frontend, the feed will be the central part of the website. To support best UX practices, the feed will be infinitely scrollable, without the need for the user to switch pages manually. This also has an added benefit of efficiency, as the client requests for only a part of the feed, not the whole. This functionality will be achieved by adding pagination to the feeds endpoint and using it on the frontend to dynamically load the pages.
+  On frontend, the feed is the central part of the website, infinitely scrollable, without the need for users to switch pages manually. More data provided through HATEOAS queries is loaded once the user reaches the end of the scrollable list. With this, loading is more efficient for larger lists, as the client requests only parts of the feed, not the whole. 
+
+  Additionally, alongside the ‘Feed’ tab, there is a ‘Recents’ tab providing fresh posts from all platform's users (followed or not) through the same infinite scrolling list functionality described above.
 
 ## Teaser (MS3)
 

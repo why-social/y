@@ -2,7 +2,7 @@
   <div class="profile-feed">
     <TabSwitcher :tabs="tabs" />
 
-    <router-view :key="$route.path"/>
+    <router-view :key="$route.path" />
   </div>
 </template>
 
@@ -23,16 +23,6 @@ export default {
         { title: 'Followers', route: 'followers' },
         { title: 'Followings', route: 'followings' }
       ]
-    }
-  },
-  async mounted() {
-    if (this.isMe) {
-      this.tabs.push({ title: 'Liked', route: 'liked' })
-    }
-  },
-  computed: {
-    isMe() {
-      return this.$route.path.match('/profile/me/.*')
     }
   }
 }
