@@ -89,7 +89,7 @@ router.get("/api/v1/feeds/", authMiddleware,
             if (pageNumber * limit < total) {
                 feed._links = {
                     next: {
-                        href: `${req.protocol + '://' + req.get('host')}/api/v1/posts?page=${(Number(pageNumber) + 1)}`
+                        href: `${req.protocol + '://' + req.get('host')}/api/v1/feeds?page=${(Number(pageNumber) + 1)}`
                     }
                 }
             }
