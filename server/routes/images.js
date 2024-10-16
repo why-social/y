@@ -5,7 +5,6 @@ var fs = require('fs')
 const mongoose = require("../db/database").mongoose;
 const authMiddleware = require('../middleware/auth');
 const { NotFoundError, UnauthorizedError, ConflictError, errorMsg } = require("../utils/errors");
-const { toPublicPath } = require('../utils/utils')
 const uploadDir = process.env.UPLOAD_DIR || '/uploads/';
 
 //#region GET
@@ -27,17 +26,7 @@ router.get("/api/v1/images/:hash", async function(req, res, next) {
 		const imageObject = await mongoose.models["Images"].findOne({hash : req.params.hash}, 'url').lean().exec();
 		if (!imageObject) throw new NotFoundError(errorMsg.IMAGE_NOT_FOUND);
 
-		res.status(200).json(toPublicPath(req, imageObject.url));
-		// res.status(200).sendFile(url, function(err) {
-		// 	if (err) {
-		// 		// hash directory exists, but is empty
-		// 		// TODO: check if files present in directory, delete if empty or try fixing DB/file
-		// 		console.error('Error sending file:', err);
-		// 		throw new NotFoundError(err); // TODO: Change err to what fits best
-		// 	} else {
-		// 		console.log('Sent:', url);
-		// 	}
-		// });
+		res.status(200).json(imageObject.url);
 	} catch(err) {
 		next(err);
 	}

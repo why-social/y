@@ -1,17 +1,7 @@
 <template>
-  <div thread-item>
-    <img
-      v-if="isRepost"
-      class="avatar"
-      :src="originalAuthor?.profile_picture"
-      @click.stop="goToUser(originalAuthor.username)"
-    />
-    <img
-      v-else
-      class="avatar"
-      :src="avatar"
-      @click.stop="goToUser(user.username)"
-    />
+  <div thread-item @click="goToThread">
+    <img v-if="isRepost" class="avatar" :src="originalAuthor?.profile_picture_url" @click.stop="goToUser(originalAuthor.username)" />
+    <img v-else class="avatar" :src="avatar" @click.stop="goToUser(user.username)" />
 
     <div class="data">
       <div class="d-flex">
@@ -41,12 +31,12 @@
           </template>
         </div>
 
-        <template v-if="this.viewer?.userId === this.author?._id">
+        <div v-if="this.viewer?.userId === this.author?._id" @click.stop style="margin-left: auto;">
           <DropDown @edit="this.$emit('edit')" @delete="this.$emit('delete')" :options="['Edit', 'Delete']" />
-        </template>
+        </div>
       </div>
 
-      <div class="content" @click="goToThread">
+      <div class="content">
         <span :class="{ hidden: !this.content?.length }">{{ content }}</span>
 
         <div
@@ -107,10 +97,10 @@ export default {
   data() {
     const obj = {
       author: this.item.author,
-      avatar: this.item.author?.profile_picture,
+      avatar: this.item.author?.profile_picture_url,
       date: moment(this.item.timestamp),
       content: this.item.content,
-      images: this.item.images || [],
+      images: this.item.image_urls || [],
       likes: this.item.likes,
       comments: this.item.comments,
       modalImageIndex: null,

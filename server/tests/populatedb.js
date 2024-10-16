@@ -49,11 +49,13 @@ database.connect(mongoURI)
             // Generate mock users
             const users = [];
             for (let i = 0; i < 25; i++) {
+                const firstName = faker.person.firstName()
+                const lastName = faker.person.lastName()
                 const user = new models.Users({
-                    name: faker.person.firstName() + " " + faker.person.lastName(),
+                    name: firstName + " " + lastName,
                     email: faker.internet.email(),
                     password: faker.internet.password(),
-                    username: faker.internet.userName(),
+                    username: faker.internet.userName({ firstName, lastName }).replaceAll('.', '_').replaceAll('-','_'),
                     join_date: faker.date.past(),
                     birthday: faker.date.past(30, new Date('1950-01-01')),
                     last_time_posted: faker.date.recent(),
