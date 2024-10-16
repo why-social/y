@@ -309,6 +309,7 @@ router.put("/api/v1/users/:id/profile_picture", authMiddleware, uploadMiddleware
 		user.profile_picture = await imageHandler.changeImage(user.profile_picture, req);
 		await user.save();
 		
+        user = await mongoose.models["Users"].findById(req.user?.userId).populate('profile_picture_url'); // re-fetch for updated pfp
 		return res.status(201).json({id: user._id, pfp: user.profile_picture_url});
 	} catch (err) {
 		next(err);
