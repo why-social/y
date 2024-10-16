@@ -3,45 +3,100 @@
     <div class="nav-logo cool-font" @click="$router.push({ path: '/' })">
       <p>𝕐</p>
     </div>
-    <hr>
-    <NavigationItem to="/" icon="home" text="Home"> </NavigationItem>
-    <NavigationItem to="/discover" icon="search" text="Discover">
-    </NavigationItem>
-    <NavigationItem
-      to="/profile/me"
-      icon="person"
-      text="Profile"
-    ></NavigationItem>
-    <hr>
-    <NavigationItem @click="this.logout()" icon="logout" text="Logout">
-    </NavigationItem>
+
+    <hr />
+
+    <NavigationItem to="/" icon="home" text="Home" />
+    <NavigationItem to="/discover" icon="search" text="Discover" />
+    <NavigationItem to="/profile/me" icon="person" text="Profile" />
+
+    <hr />
+
+    <NavigationItem @click="this.logout()" icon="logout" text="Logout" />
+
     <div class="buttons" style="margin-top: auto">
       <Button v-if="isAdmin" class="nuke" v-b-modal.confirm-nuke>
-        <span class="nav-icon material-symbols-outlined"
-          style="font-variation-settings: 'wght' 400">local_fire_department</span>
+        <span
+          class="nav-icon material-symbols-outlined"
+          style="font-variation-settings: 'wght' 400"
+        >
+          local_fire_department
+        </span>
+
         <span class="nav-label inter-tight-medium">LET IT BURN</span>
       </Button>
-      <Button @click="$router.push({ path: '/post' })">
-        <span class="nav-icon material-symbols-outlined"
-          style="font-variation-settings: 'wght' 400">history_edu</span>
+
+      <Button @click="redirectToPost">
+        <span
+          class="nav-icon material-symbols-outlined"
+          style="font-variation-settings: 'wght' 400"
+          >history_edu</span
+        >
+
         <span class="nav-label inter-tight-medium">Post</span>
       </Button>
     </div>
-    <b-modal ref="confirmNuke" id="confirm-nuke" centered
+
+    <b-modal
+      ref="confirmNuke"
+      id="confirm-nuke"
+      centered
       title="Are you sure?"
       header-class="musk-header"
       dialog-class="musk-dialog"
       ok-title="Nuke it!"
       ok-variant="danger"
       cancel-title="No, I want my mommy"
-      @ok="nuke">
-
-      <img src="@/img/elon-musk-dance.gif" class="img-fluid"/>
+      @ok="nuke"
+    >
+      <img src="@/img/elon-musk-dance.gif" class="img-fluid" />
     </b-modal>
   </div>
 </template>
 
 <script>
+import VueJwtDecode from 'vue-jwt-decode'
+import { Api } from '@/Api'
+
+export default {
+  methods: {
+    logout() {
+      localStorage.removeItem('token')
+      this.$router.push({ path: '/login' })
+    },
+    closeModal() {
+      this.$refs.confirmNuke.hide('confirm-nuke')
+    },
+    async nuke() {
+      this.closeModal()
+      await Api.delete('v1/posts', {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+      location.reload()
+    },
+    redirectToPost() {
+      const route = {
+        query: {
+          focus: true
+        }
+      }
+
+      if (!this.$route.path.startsWith('/home')) {
+        route.path = '/home/feed'
+      }
+
+      this.$router.replace(route)
+    }
+  },
+  computed: {
+    isAdmin: () => {
+      const decoded = VueJwtDecode.decode(localStorage.getItem('token'))
+      return decoded.isAdmin
+    }
+  }
+}
 </script>
 
 <style>
@@ -67,7 +122,6 @@
   background-color: #282828;
   border-radius: 1rem;
 }
-
 </style>
 
 <style scoped>
@@ -127,7 +181,9 @@ button {
   border: 2px solid var(--bs-red);
 }
 
-.nuke:hover, .nuke:active, .nuke:focus {
+.nuke:hover,
+.nuke:active,
+.nuke:focus {
   background: #df4654;
   border: 2px solid #df4654;
 }
@@ -199,36 +255,3 @@ button {
   }
 }
 </style>
-
-<script>
-import VueJwtDecode from 'vue-jwt-decode'
-import { Api } from '@/Api'
-
-export default {
-  methods: {
-    logout() {
-      localStorage.removeItem('token')
-      this.$router.push({ path: '/login' })
-    },
-    closeModal() {
-      this.$refs.confirmNuke.hide('confirm-nuke')
-    },
-    async nuke() {
-      this.closeModal()
-      await Api.delete('v1/posts', {
-        headers: {
-            Authorization: 'Bearer ' + localStorage.getItem('token')
-          }
-        }
-      )
-      location.reload()
-    }
-  },
-  computed: {
-    isAdmin: () => {
-        const decoded = VueJwtDecode.decode(localStorage.getItem('token'))
-        return decoded.isAdmin
-    },
-  }
-}
-</script>

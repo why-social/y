@@ -19,7 +19,7 @@ export default {
         }
       })
         .then((response) => {
-          console.log('Comment created successfully:', response.data)
+          this.$router.push('/thread/' + response.data._id)
         })
         .catch((error) => {
           console.error('Error creating post:', error)

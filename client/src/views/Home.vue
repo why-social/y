@@ -1,6 +1,6 @@
 <template>
   <div id="content">
-    <PostPrompt />
+    <PostPrompt id="homePostPrompt" />
     <hr />
     <TabSwitcher :tabs="tabs" />
     <hr />
@@ -30,12 +30,19 @@
 <script>
 export default {
   name: 'home',
+
   data() {
     return {
       tabs: [
         { title: 'For you', route: 'feed' },
         { title: 'Recent', route: 'recent' }
       ]
+    }
+  },
+
+  mounted() {
+    if (this.$route.query?.focus) {
+      document.getElementById('homePostPrompt').setAttribute('focused', '')
     }
   }
 }
