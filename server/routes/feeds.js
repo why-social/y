@@ -56,7 +56,7 @@ router.get("/api/v1/feeds/", authMiddleware,
                 .skip((pageNumber - 1) * limit)
                 .limit(limit)
                 .populate({
-                    path: 'original_post_id',
+                    path: 'original_post',
                     select: 'author',
                     populate: {
                         path: 'author',

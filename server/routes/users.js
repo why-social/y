@@ -154,7 +154,7 @@ router.get("/api/v1/users/:username/posts", async function (req, res, next) {
 				}
 			})
 			.populate({
-				path: 'original_post_id', select: 'author',
+				path: 'original_post', select: 'author',
 				populate: {
 					path: 'author', select: '_id name username profile_picture',
 					populate: {
