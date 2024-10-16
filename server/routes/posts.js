@@ -90,7 +90,7 @@ router.get("/api/v1/posts", async function (req, res, next) {
 // Returns a post with id :id
 router.get("/api/v1/posts/:id", async function (req, res, next) {
 	try {
-		const post = await models.Posts.findById(req.params.id)
+		let post = await models.Posts.findById(req.params.id)
 			.populate({
 				path: 'original_post_id', select: 'author',
 				populate: {
@@ -131,6 +131,7 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 		if (!post)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
 
+		post = post.toJSON();
 		post._links = {
 			user: {
 				href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${post.author._id}`
@@ -139,7 +140,7 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 
 		if (post.original_post_id) {
 			post._links.parent = {
-				href: `${req.protocol + '://' + req.get('host')}/api/v1/posts/${post.original_post_id}`
+				href: `${req.protocol + '://' + req.get('host')}/api/v1/posts/${post.original_post_id._id}`
 			};
 		}
 

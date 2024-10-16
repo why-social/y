@@ -14,6 +14,7 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 
 		if(!comment) throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
 
+		comment = comment.toJSON();
 		comment._links = {
 			user: {
 				href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${comment.author._id}`
