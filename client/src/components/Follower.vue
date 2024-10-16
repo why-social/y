@@ -28,7 +28,7 @@ export default {
   methods: {
     async fetchUserData() {
       const response = await Api.get('/v1/users/' + this.userId)
-      this.pfp = response.data.avatarUrl
+      this.pfp = response.data.profile_picture_url
       this.name = response.data.name
       this.username = response.data.username
     },

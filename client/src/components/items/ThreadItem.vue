@@ -1,6 +1,6 @@
 <template>
   <div thread-item @click="goToThread">
-    <img v-if="isRepost" class="avatar" :src="originalAuthor?.profile_picture" @click.stop="goToUser(originalAuthor.username)" />
+    <img v-if="isRepost" class="avatar" :src="originalAuthor?.profile_picture_url" @click.stop="goToUser(originalAuthor.username)" />
     <img v-else class="avatar" :src="avatar" @click.stop="goToUser(user.username)" />
 
     <div class="data">
@@ -83,10 +83,10 @@ export default {
   data() {
     const obj = {
       author: this.item.author,
-      avatar: this.item.author?.profile_picture,
+      avatar: this.item.author?.profile_picture_url,
       date: moment(this.item.timestamp),
       content: this.item.content,
-      images: this.item.images || [],
+      images: this.item.image_urls || [],
       likes: this.item.likes,
       comments: this.item.comments,
       modalImageIndex: null,
