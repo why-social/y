@@ -11,33 +11,35 @@ const uploadDir = process.env.UPLOAD_DIR || '/uploads/';
  * @param images Images list to update.
  * @param files List of new files
  */
-async function updateImages(images, files) {
+async function updateImages(images, req) {
+    const files = req.files || [];
+
     const prevHashes = images || [];
     var newHashes = [];
 
     for (const file of files) {        
-        const hash = await saveFile(file); // save the file to disk and create DB entry if needed
+        const hash = await saveFile(req, file); // save the file to disk and create DB entry if needed
         newHashes.push(hash);
     }
 
     const toAdd = except(newHashes, prevHashes);
     const toRemove = except(prevHashes, newHashes);
 
-    toAdd.forEach(hash => {
-        addUsage(hash);
+    for (const hash of toAdd) {
+        await addUsage(hash);
         images.push(hash);
-    });
+    }
 
-    toRemove.forEach(hash => {
-        removeUsage(hash);
+    for (const hash of toRemove) {
+        await removeUsage(hash);
         removeFromArray(images, hash);
-    });
+    }
 }
 
-async function changeImage(image, newFile) {
+async function changeImage(image, req) {
     if (image) 
         removeUsage(image);
-    const hash = await saveFile(newFile);
+    const hash = await saveFile(req, req.file);
     if (hash == image) 
         return hash;
 
@@ -57,13 +59,14 @@ async function removeUsage(hash) {
     }
 }
 
-async function saveFile(file) {
+async function saveFile(req, file) {
     // Saves the file from multer buffer (memory) to disk and updates images DB
     const fileBuffer = file.buffer; // read file from multer buffer
     const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex'); // generate hash from the file content
     const dir = path.join(appRoot, uploadDir, hash)
     const relPath = path.join(uploadDir, hash, file.originalname);
     const filePath = path.join(dir, file.originalname);
+    const url = `${req.protocol}://${req.get('host')}${relPath.replace(/\\/g, '/')}`;
     
     // check if the directory (image) already exists
     if (fs.existsSync(dir)) {
@@ -72,10 +75,10 @@ async function saveFile(file) {
     }
     
     // save the file with its original name inside the /hash directory
-    fs.mkdirSync(dir, { recursive: true });         
+    fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(filePath, fileBuffer);
 
-    var imageEntry = await new models.Images({hash: hash, url: relPath, usageCount: 0});
+    var imageEntry = await new models.Images({hash: hash, url: url, usageCount: 0});
     await imageEntry.save();
     return imageEntry.hash; // insert new entry into Images collection
 }

@@ -5,7 +5,6 @@ const uploadMiddleware = require('../middleware/upload');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
 const { updateImages, removeUsage } = require("../utils/imageHandler");
-const { getPublicPathFromHash } = require('../utils/utils')
 
 const router = express.Router();
 
@@ -23,139 +22,66 @@ router.get("/api/v1/posts", async function (req, res, next) {
 			}
 		}
 
-		const result = await models.Posts.aggregate([{
-			$match: {
-				$or: [
-					{ is_deleted: { $exists: false } },
-					{ is_deleted: false }
-				]
-			},
-		},
-		{
-			$sort: {
-				timestamp: -1
-			}
-		},
-		// Populate the 'author' field
-		{
-			$lookup: {
-				from: 'users',
-				localField: 'author',
-				foreignField: '_id',
-				as: 'author'
-			}
-		},
-		// Unwind the 'author' array (since lookup returns an array)
-		{
-			$unwind: '$author'
-		},
-		{
-			$unwind: { path: '$author.profile_picture', preserveNullAndEmptyArrays: true } // Unwind profile picture data, allow null values
-		},
-		// Populate 'original_post_id' field
-		{
-			$lookup: {
-				from: 'posts',  // Assuming 'posts' is the collection for original posts
-				localField: 'original_post_id',
-				foreignField: '_id',
-				as: 'original_post_id'
-			}
-		},
-		{ $unwind: { path: '$original_post_id', preserveNullAndEmptyArrays: true } },
-		// Populate 'author' in 'original_post_id'
-		{
-			$lookup: {
-				from: 'users',
-				localField: 'original_post_id.author',
-				foreignField: '_id',
-				as: 'original_post_id.author'
-			}
-		},
-		{ $unwind: { path: '$original_post_id.author', preserveNullAndEmptyArrays: true } },
-		// If 'original_post_id' is an empty object, set it to null
-		{
-			$addFields: {
-				original_post_id: {
-				$cond: {
-					if: { $eq: ['$original_post_id', {}] },
-					then: null,
-					else: '$original_post_id'
+		const query = {
+			$or: [
+				{ is_deleted: { $exists: false } },
+				{ is_deleted: false }
+			]
+		};
+
+		const result = await models.Posts.find(query)
+			.sort({ timestamp: -1 })
+			.skip((pageNumber - 1) * limit)
+			.limit(limit)
+			.populate({
+				path: 'original_post_id',
+				select: 'author',
+				populate: {
+					path: 'author',
+					select: '_id name username profile_picture',
+					populate: {
+						path: 'profile_picture_url'
+					}
 				}
-				}
-			}
-		},
-		{
-			$project: {
-				author: {
-					email: 0,
-					password: 0,
-					about_me: 0,
-					birthday: 0,
-					join_date: 0,
-					last_time_posted: 0
+			})
+			.populate([
+				{
+					path: 'author',
+					select: '_id name username profile_picture',
+					populate: {
+						path: 'profile_picture_url'
+					}
 				},
-				'original_post_id.author.email': 0,
-				'original_post_id.author.password': 0,
-				'original_post_id.author.about_me': 0,
-				'original_post_id.author.birthday': 0,
-				'original_post_id.author.join_date': 0,
-				'original_post_id.author.last_time_posted': 0,
-			}
-		},
-		{
-			$facet: {
-				metadata: [{ $count: "total" }, { $addFields: { page: pageNumber } }],
-				data: [{ $skip: (pageNumber - 1) * limit }, { $limit: limit }]
-			}
-		}]);
-
-		if (result && result.length && result[0]) {
-			const posts = {
-				posts: result[0].data,
-			};
-
-			for (let post of posts.posts) {
-				if (post.author?.profile_picture) {
-					post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
-				} else {
-					post.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.author.name}`
-				}
-				
-				if (post.original_post_id) {
-					if (post.original_post_id.author.profile_picture) {
-						post.original_post_id.author.profile_picture = await getPublicPathFromHash(req, post.original_post_id.author.profile_picture);
-					}
-					else {
-						post.original_post_id.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.original_post_id.author.name}`
-					}
-				}
-
-				post.images = await Promise.all(
-					post.images.map(async image => {
-						return await getPublicPathFromHash(req, image);
-					})
-				);
-			}
-
-			if (result[0].metadata?.length) {
-				const page = Number(result[0].metadata[0].page);
-				const total = Number(result[0].metadata[0].total);
-
-				if (page * limit < total) {
-					posts._links = {
-						next: {
-							href: `${req.protocol + '://' + req.get('host')}/api/v1/posts?page=${(page + 1)}`
+				{
+					path: 'comments',
+					populate: {
+						path: 'author',
+						select: '_id name username profile_picture',
+						populate: {
+							path: 'profile_picture_url'
 						}
 					}
 				}
-			}
-
-			return res.json(posts);
-		} else {
-			return res.json({
-				posts: []
+			])
+			.populate({
+				path: 'image_urls'
 			});
+		
+		if (!result || result.length === 0) return res.json({ posts: [] }); 
+		
+		const total = await models.Posts.countDocuments(query);
+		const posts = {
+			posts: result,
+		};
+
+		if (pageNumber * limit < total) {
+			posts._links = {
+				next: {
+					href: `${req.protocol + '://' + req.get('host')}/api/v1/posts?page=${(Number(pageNumber) + 1)}`
+				}
+			}
 		}
+		return res.json(posts);
 	} catch (err) {
 		next(err);
 	};
@@ -164,66 +90,48 @@ router.get("/api/v1/posts", async function (req, res, next) {
 // Returns a post with id :id
 router.get("/api/v1/posts/:id", async function (req, res, next) {
 	try {
-		const post = await models.Posts.findById(req.params.id)
+		let post = await models.Posts.findById(req.params.id)
 			.populate({
 				path: 'original_post_id', select: 'author',
 				populate: {
-					path: 'author', select: '_id name username profile_picture'
-				}
+					path: 'author', select: '_id name username profile_picture',
+					populate: {
+						path: 'profile_picture_url'
+					}
+				},
 			})
 			.populate([
 				{
 					path: 'author', select: '_id name username profile_picture',
+					populate: {
+						path: 'profile_picture_url'
+					}
 				},
 				{
 					path: 'comments',
-					populate: {
-						path: 'author',
-						select: '_id name username profile_picture',
-					}
+					populate: [
+						{
+							path: 'author',
+							select: '_id name username profile_picture',
+							populate: 
+							{
+								path: 'profile_picture_url'
+							}	
+						},
+						{
+							path: 'image_urls'
+						}
+					]
+				},
+				{
+					path: 'image_urls'
 				}
-			]).lean();
+			]);
 
 		if (!post)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
 
-		// populate profile_picture with the public url to the resource
-		if (post.author.profile_picture) {
-			post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
-		} else {
-			post.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.author.name}`
-		}
-
-		if (post.original_post_id) {
-			if (post.original_post_id.author.profile_picture) {
-				post.original_post_id.author.profile_picture = await getPublicPathFromHash(req, post.original_post_id.author.profile_picture);
-			}
-			else {
-				post.original_post_id.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.original_post_id.author.name}`
-			}
-		}
-		
-		// populate images with public urls to the resources
-		post.images = await Promise.all(
-			post.images.map(async image => {
-				return await getPublicPathFromHash(req, image);
-			})
-		);
-
-		for (let comment of post.comments) {
-			if (comment.author?.profile_picture) {
-				comment.author.profile_picture = await getPublicPathFromHash(req, comment.author.profile_picture);
-			} else {
-				comment.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${comment.author.name}`
-			}
-
-			comment.images = await Promise.all(
-				comment.images.map(async image => {
-					return await getPublicPathFromHash(req, image);
-				})
-			);
-		}
-
+		post = post.toJSON();
 		post._links = {
 			user: {
 				href: `${req.protocol + '://' + req.get('host')}/api/v1/users/${post.author._id}`
@@ -232,7 +140,7 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 
 		if (post.original_post_id) {
 			post._links.parent = {
-				href: `${req.protocol + '://' + req.get('host')}/api/v1/posts/${post.original_post_id}`
+				href: `${req.protocol + '://' + req.get('host')}/api/v1/posts/${post.original_post_id._id}`
 			};
 		}
 
@@ -276,7 +184,7 @@ async function postRequest(req, res, next) {
 		});
 
 		if (req.files?.length > 0) {
-			await updateImages(newPost.images, req.files);
+			await updateImages(newPost.images, req);
 		}
 
 		await newPost.save();
@@ -354,10 +262,9 @@ router.put("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, async
 
 		newData.likes = newData.likes || [];
 		newData.comments = newData.comments || [];
-		const files = req.files || [];
 
 		Object.assign(post, newData);
-		await updateImages(post.images, files);
+		await updateImages(post.images, req);
 		await post.save();
 
 		return res.status(200).json(post);
@@ -389,7 +296,7 @@ router.patch("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, asy
 			post.is_edited = true;
 		}
 		if (req.files?.length > 0) {
-			await updateImages(post.images, req.files);
+			await updateImages(post.images, req);
 			post.is_edited = true;
 		}
 

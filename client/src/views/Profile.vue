@@ -103,7 +103,7 @@ export default {
       this.userData.following = followingsReq.data.map(
         (entry) => entry.following
       )
-      this.userData.avatarUrl = userReqData.profile_picture || this.avatarUrl
+      this.userData.avatarUrl = userReqData.profile_picture_url || this.avatarUrl
       this.userData.about_me = userReqData.about_me || ''
       if (userReqData.email) {
         this.userData.email = userReqData.email
