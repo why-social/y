@@ -95,6 +95,8 @@ async function postRequest(req, res, next) {
 			_id: req.params.id, // if called from PUT, it will be specified
 			author: req.user.userId,
 			content: req.body.content,
+			likes: [],
+			comments: [],
 			images: [],
 			parent_id: req.body.parent_id,
 			parent_is_post: req.body.parent_is_post

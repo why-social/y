@@ -33,13 +33,18 @@ async function getCommentById(id, next) {
 				},
 				{
 					path: 'comments',
-					populate: {
-						path: 'author',
-						select: '_id name username profile_picture',
-						populate: {
-							path: 'profile_picture_url'
-						}	
-					}
+					populate: [
+						{
+							path: 'author',
+							select: '_id name username profile_picture',
+							populate: {
+								path: 'profile_picture_url'
+							}	
+						},
+						{
+							path: 'image_urls'
+						}
+					]
 				},
 				{
 					path: 'image_urls'

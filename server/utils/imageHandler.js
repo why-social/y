@@ -25,15 +25,15 @@ async function updateImages(images, req) {
     const toAdd = except(newHashes, prevHashes);
     const toRemove = except(prevHashes, newHashes);
 
-    toAdd.forEach(hash => {
-        addUsage(hash);
+    for (const hash of toAdd) {
+        await addUsage(hash);
         images.push(hash);
-    });
+    }
 
-    toRemove.forEach(hash => {
-        removeUsage(hash);
+    for (const hash of toRemove) {
+        await removeUsage(hash);
         removeFromArray(images, hash);
-    });
+    }
 }
 
 async function changeImage(image, req) {

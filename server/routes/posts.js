@@ -109,19 +109,24 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 				},
 				{
 					path: 'comments',
-					populate: {
-						path: 'author',
-						select: '_id name username profile_picture',
-						populate: 
+					populate: [
 						{
-							path: 'profile_picture_url'
-						}	
-					}
+							path: 'author',
+							select: '_id name username profile_picture',
+							populate: 
+							{
+								path: 'profile_picture_url'
+							}	
+						},
+						{
+							path: 'image_urls'
+						}
+					]
+				},
+				{
+					path: 'image_urls'
 				}
-			])
-			.populate({
-				path: 'image_urls'
-			});
+			]);
 
 		if (!post)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
