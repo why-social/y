@@ -1,5 +1,5 @@
 <template>
-  <div thread-item>
+  <div thread-item @click="goToThread">
     <img v-if="isRepost" class="avatar" :src="originalAuthor?.profile_picture_url" @click.stop="goToUser(originalAuthor.username)" />
     <img v-else class="avatar" :src="avatar" @click.stop="goToUser(user.username)" />
 
@@ -31,12 +31,12 @@
           </template>
         </div>
 
-        <template v-if="this.viewer?.userId === this.author?._id">
+        <div v-if="this.viewer?.userId === this.author?._id" @click.stop style="margin-left: auto;">
           <DropDown @edit="this.$emit('edit')" @delete="this.$emit('delete')" :options="['Edit', 'Delete']" />
-        </template>
+        </div>
       </div>
 
-      <div class="content" @click="goToThread">
+      <div class="content">
         <span :class="{ hidden: !this.content?.length }">{{ content }}</span>
 
         <div
