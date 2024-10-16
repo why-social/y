@@ -76,7 +76,7 @@ schemas.Users.virtual('profile_picture_url', {
 })
 
 schemas.Users.virtual('profile_picture_url').get(function (value) {
-    if (!value || value.length === 0) return null;
+    if (!value) return `https://ui-avatars.com/api/?bold=true&name=${this.name}`;
     return value.url; 
 });
 
