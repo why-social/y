@@ -1,3 +1,5 @@
+const jwt = require("jsonwebtoken");
+
 const models = require("../db/database").mongoose.models;
 const { NotFoundError, errorMsg } = require("../utils/errors");
 
@@ -19,6 +21,16 @@ function removeFromArray(array, item) {
 	if (index == -1)
 		throw new NotFoundError('Item not in array');
 	array.splice(index, 1);
+}
+
+function createUserToken(user) {
+	return jwt.sign({
+		userId: user._id,
+		username: user.username,
+		isAdmin: (user.username === 'Admin')
+	},
+		secrets.JWT_SECRET_KEY, { expiresIn: "1h" }
+	);
 }
 
 async function getCommentById(id, next) {
@@ -62,4 +74,4 @@ async function getCommentById(id, next) {
 	}
 }
 
-module.exports = { except, removeFromArray, getCommentById, secrets };
+module.exports = { except, removeFromArray, createUserToken, getCommentById, secrets };
