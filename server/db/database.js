@@ -17,7 +17,7 @@ schemas = {
 		join_date: { type: "date", default: Date.now },
 		birthday: Date,
 		last_time_posted: Date,
-		profile_picture: { type: String, ref: "Images" },
+		profile_picture: { type: String },
 	}, { collection: 'users' }),
 	User_follows_user: new mongoose.Schema({
 		follower: { type: mongoose.Types.ObjectId, ref: "Users" },
@@ -44,7 +44,7 @@ schemas = {
 		original_post_id: { type: mongoose.Types.ObjectId, ref: "Posts", default: null },
 		likes: [{ type: mongoose.Types.ObjectId, ref: "Users" }],
 		comments: [{ type: mongoose.Types.ObjectId, ref: "Comments" }],
-		images: [{ type: String, ref: "Images" }],
+		images: [{ type: String }],
 	},
 		{ collection: 'posts' }),
 	Comments: new mongoose.Schema({
@@ -61,10 +61,58 @@ schemas = {
 		parent_is_post: Boolean,
 		likes: [{ type: mongoose.Types.ObjectId, ref: "Users" }],
 		comments: [{ type: mongoose.Types.ObjectId, ref: "Comments" }],
-		images: [{ type: String, ref: "Images" }],
+		images: [{ type: String }],
 	}, { collection: 'comments' }),
 };
 //#endregion
+
+//#region Populate
+// Add virtual populate for images in Users, Posts and Comments schemas
+schemas.Users.virtual('profile_picture_url', {
+	ref: 'Images',
+    localField: 'profile_picture',
+    foreignField: 'hash',
+    justOne: true 
+})
+
+schemas.Users.virtual('profile_picture_url').get(function (value) {
+    if (!value || value.length === 0) return null;
+    return value.url; 
+});
+
+schemas.Users.set('toObject', { virtuals: true });
+schemas.Users.set('toJSON', { virtuals: true });
+
+schemas.Posts.virtual('image_urls', {
+    ref: 'Images',
+    localField: 'images',
+    foreignField: 'hash',
+    justOne: false
+});
+
+schemas.Posts.virtual('image_urls').get(function (value) {
+    if (!value || value.length === 0) return [];
+    return value.map(image => image.url);  // Map image documents to their URLs
+});
+
+schemas.Posts.set('toObject', { virtuals: true });
+schemas.Posts.set('toJSON', { virtuals: true });
+
+schemas.Comments.virtual('image_urls', {
+    ref: 'Images',
+    localField: 'images',
+    foreignField: 'hash',
+    justOne: false
+});
+
+schemas.Comments.virtual('image_urls').get(function (value) {
+    if (!value || value.length === 0) return [];
+    return value.map(image => image.url);  // Map image documents to their URLs
+});
+
+schemas.Comments.set('toObject', { virtuals: true });
+schemas.Comments.set('toJSON', { virtuals: true });
+// #endregion
 
 //#region Validation
 // Attach custom validation middleware

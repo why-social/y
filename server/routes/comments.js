@@ -3,44 +3,16 @@ const router = express.Router();
 const models = require("../db/database").mongoose.models;
 const authMiddleware = require("../middleware/auth");
 const { NotFoundError, UnauthorizedError, ValidationError, errorMsg } = require("../utils/errors");
-const { getPublicPathFromHash, getCommentById } = require("../utils/utils");
+const { getCommentById } = require("../utils/utils");
 const { updateImages, removeUsage } = require("../utils/imageHandler");
 const uploadMiddleware = require("../middleware/upload");
 
 //#region GET
 router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, next) {
 	try {
-		let comment = await getCommentById(req.params.id, true, next);
+		let comment = await getCommentById(req.params.id, next);
 
 		if(!comment) throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
-
-		// populate profile_picture with the public url to the resource
-		if (comment.author.profile_picture) {
-			comment.author.profile_picture = await getPublicPathFromHash(req, comment.author.profile_picture);
-		} else {
-			comment.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${comment.author.name}`
-		}
-
-		// populate images with public urls to the resources
-		comment.images = await Promise.all(
-			comment.images.map(async image => {
-				return await getPublicPathFromHash(req, image);
-			})
-		);
-
-		for (let reply of comment.comments) {
-			if (reply.author?.profile_picture) {
-				reply.author.profile_picture = await getPublicPathFromHash(req, reply.author.profile_picture);
-			} else {
-				reply.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${reply.author.name}`
-			}
-
-			reply.images = await Promise.all(
-				reply.images.map(async image => {
-					return await getPublicPathFromHash(req, image);
-				})
-			);
-		}
 
 		comment._links = {
 			user: {
@@ -67,7 +39,7 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 
 router.get("/api/v1/comments/:comment_id/likes/:user_id", async function (req, res, next) {
 	try {
-		let comment = await getCommentById(req.params.comment_id, false, next);
+		let comment = await getCommentById(req.params.comment_id, next);
 		if (!comment) throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
 
 		return res.status(200).json({
@@ -129,7 +101,7 @@ async function postRequest(req, res, next) {
 		});
 
 		if (req.files?.length > 0) {
-			await updateImages(comment.images, req.files);
+			await updateImages(comment.images, req);
 		}
 
 		await comment.save();
@@ -178,7 +150,7 @@ async function putForId(req, res, next) {
 		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
-		let comment = await getCommentById(req.params.id, false, next);
+		let comment = await getCommentById(req.params.id, next);
 		if (!comment)
 			return postRequest(req, res, next);
 
@@ -191,10 +163,9 @@ async function putForId(req, res, next) {
 
 		newData.likes = newData.likes || [];
 		newData.comments = newData.comments || [];
-		const files = req.files || [];
 
 		Object.assign(comment, newData);
-		await updateImages(comment.images, files);
+		await updateImages(comment.images, req);
 		await comment.save();
 
 		return res.status(200).json(comment);
@@ -210,7 +181,7 @@ router.put("/api/v1/comments/:id", authMiddleware, uploadMiddleware.multiple, pu
 //#region PATCH
 async function patchForId(req, res, next) {
 	try {
-		let comment = await getCommentById(req.params.id, false, next);
+		let comment = await getCommentById(req.params.id, next);
 
 		if (!comment)
 			throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
@@ -240,7 +211,7 @@ async function patchForId(req, res, next) {
 		}
 
 		if (req.files?.length) {
-			await updateImages(comment.images, req.files);
+			await updateImages(comment.images, req);
 			comment.is_edited = true;
 		}
 
@@ -257,7 +228,7 @@ router.patch("/api/v1/comments/:id", authMiddleware, uploadMiddleware.multiple, 
 //#region DELETE
 async function deleteForId(req, res, next) {
 	try {
-		let comment = await getCommentById(req.params.id, false, next);
+		let comment = await getCommentById(req.params.id, next);
 
 		if (!(req.isAuth && comment && comment.author._id == req.user.userId))
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);

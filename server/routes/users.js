@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middleware/auth");
 const { ValidationError, UnauthorizedError, NotFoundError, ConflictError, errorMsg } = require("../utils/errors");
 const { nameRegex, usernameRegex, emailRegex, passwordRegex } = require("../utils/customRegex");
-const { secrets, getPublicPathFromHash } = require("../utils/utils");
+const { secrets } = require("../utils/utils");
 const uploadMiddleware = require("../middleware/upload");
 const imageHandler = require("../utils/imageHandler");
 
@@ -26,7 +26,7 @@ router.get("/api/v1/users/search", async (req, res, next) => {
 		if(!usernameRegex.test(req.query.username)) throw new ValidationError(errorMsg.INVALID_USERNAME);
 		
 		// Search for users by name or username
-		let result = await mongoose.models["Users"].findOne({username: req.query.username}).exec();
+		let result = await mongoose.models["Users"].findOne({username: req.query.username}).populate('profile_picture_url');
 		if(!result) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
 		const response = {
@@ -37,8 +37,7 @@ router.get("/api/v1/users/search", async (req, res, next) => {
 			join_date: result.join_date,
 			birthday: result.birthday,
 			last_time_posted: result.last,
-			profile_picture: await getPublicPathFromHash(req, result.profile_picture) || 
-				`https://ui-avatars.com/api/?bold=true&name=${result.name}`,
+			profile_picture_url: result.profile_picture_url
 		}
 		
 		res.status(200).json(response);
@@ -63,7 +62,7 @@ router.get("/api/v1/users", authMiddleware, async (req, res, next) => {
 router.get("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 	try {
 		// Get user by id from db
-		let user = await mongoose.models["Users"].findById(req.params.id).exec();
+		let user = await mongoose.models["Users"].findById(req.params.id).populate('profile_picture_url');
 		
 		// If user not found return 404
 		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
@@ -76,8 +75,7 @@ router.get("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 			join_date: user.join_date,
 			birthday: user.birthday,
 			last_time_posted: user.last_time_posted,
-			profile_picture: await getPublicPathFromHash(req, user.profile_picture) || 
-				`https://ui-avatars.com/api/?bold=true&name=${user.name}`
+			profile_picture_url: user.profile_picture_url
 		}
 		
 		// If user is not authenticated, do not return email
@@ -93,14 +91,12 @@ router.get("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 router.get("/api/v1/users/:id/profile_picture", async (req, res, next) => {
 	try {
 		// Get user by id from db
-		let user = await mongoose.models["Users"].findById(req.params.id).lean().exec();
+		let user = await mongoose.models["Users"].findById(req.params.id).populate('profile_picture_url').exec();
 		
 		// If user not found return 404
 		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
-		let result = user.profile_picture ? await getPublicPathFromHash(req, user.profile_picture) : `https://ui-avatars.com/api/?bold=true&name=${user.name}`;
-		
-		res.status(200).json(result);
+		res.status(200).json(user.profile_picture_url);
 	} catch (err) {
 		next(err);
 	}
@@ -153,33 +149,25 @@ router.get("/api/v1/users/:username/posts", async function (req, res, next) {
 			})
 			.populate({
 				path: 'author', select: '_id name username profile_picture',
+				populate: {
+					path: 'profile_picture_url'
+				}
 			})
 			.populate({
 				path: 'original_post_id', select: 'author',
 				populate: {
-					path: 'author', select: '_id name username profile_picture'
+					path: 'author', select: '_id name username profile_picture',
+					populate: {
+						path: 'profile_picture_url'
+					}
 				}
-			}).lean().exec();
+			})
+			.populate({
+				path: 'image_urls'
+			});
 		
 		if (!posts || posts.length == 0)
-			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
-		
-		if (posts[0].author.profile_picture) {
-			posts[0].author.profile_picture = await getPublicPathFromHash(req, posts[0].author.profile_picture);
-		} // changes the author pfp in all the posts, since they are reference-shared
-		
-		
-		for (let post of posts) {
-			if (post.original_post_id?.author.profile_picture) {
-				post.original_post_id.author.profile_picture = await getPublicPathFromHash(req, post.original_post_id.author.profile_picture);
-			}
-			
-			post.images = await Promise.all(
-				post.images.map(async image => {
-					return await getPublicPathFromHash(req, image);
-				})
-			);
-		}	
+			throw new NotFoundError(errorMsg.POST_NOT_FOUND);	
 		
 		res.status(200).json(posts);
 	} catch (err) {
@@ -202,20 +190,13 @@ router.get("/api/v1/users/:username/comments", async function (req, res, next) {
 			]})
 			.populate({
 				path: 'author', select: '_id name username profile_picture',
+				populate: {
+					path: 'profile_picture_url'
+				}
 			})
-			.lean().exec();
-		
-		if (result[0]?.author.profile_picture) {
-			result[0].author.profile_picture = await getPublicPathFromHash(req, result[0].author.profile_picture);
-		} // changes the author pfp in all the comments, since they are reference-shared
-		
-		for (var comment of result) {
-			comment.images = await Promise.all(
-				comment.images.map(async image => {
-					return await getPublicPathFromHash(req, image);
-				})
-			);
-		}
+			.populate({
+				path: 'image_urls'
+			});
 		
 		return res.status(200).json(result);
 	} catch (err) {
@@ -323,10 +304,10 @@ router.put("/api/v1/users/:id/profile_picture", authMiddleware, uploadMiddleware
 		
 		if(!req.file) throw new ValidationError("No image to upload");
 		
-		user.profile_picture = await imageHandler.changeImage(user.profile_picture, req.file);
+		user.profile_picture = await imageHandler.changeImage(user.profile_picture, req);
 		await user.save();
 		
-		return res.status(201).json({id: user._id, pfp: await getPublicPathFromHash(req, user.profile_picture)});
+		return res.status(201).json({id: user._id, pfp: user.profile_picture_url});
 	} catch (err) {
 		next(err);
 	}

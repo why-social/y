@@ -21,25 +21,30 @@ function removeFromArray(array, item) {
 	array.splice(index, 1);
 }
 
-async function getCommentById(id, lean, next) {
+async function getCommentById(id, next) {
 	try {
 		let query = models.Comments.findById(id)
 			.populate([
 				{
 					path: 'author', select: '_id name username profile_picture',
+					populate: {
+						path: 'profile_picture_url'
+					}
 				},
 				{
 					path: 'comments',
 					populate: {
 						path: 'author',
 						select: '_id name username profile_picture',
+						populate: {
+							path: 'profile_picture_url'
+						}	
 					}
+				},
+				{
+					path: 'image_urls'
 				}
 			]);
-
-		if (lean) {
-			query = query.lean();
-		}
 
 		const result = await query.exec();
 
@@ -52,31 +57,4 @@ async function getCommentById(id, lean, next) {
 	}
 }
 
-async function getPublicPathFromHash(req, hash) {
-	if (!hash) {
-		return null;
-	}
-
-	if (hash.startsWith("http")) {
-		return hash; // already is public path
-	}
-
-	const image = await models.Images.findOne({ hash }).lean();
-	if (!image) return null;
-
-	return toPublicPath(req, image.url);
-}
-
-function toPublicPath(req, path) {
-	if (!path) {
-		return null;
-	}
-
-	if (path.startsWith("http")) {
-		return path; // already is public path
-	}
-
-	return `${req.protocol}://${req.get('host')}${path?.replace(/\\/g, '/')}`
-}
-
-module.exports = { except, removeFromArray, getCommentById, toPublicPath, getPublicPathFromHash, secrets };
+module.exports = { except, removeFromArray, getCommentById, secrets };
