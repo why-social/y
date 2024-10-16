@@ -1,43 +1,57 @@
 <template>
-  <ThreadItem
-    v-bind="$props"
-    @like="this.like()"
-    @delete="this.delete()"
-    :dateFormat="this.dateFormat"
-  >
-    <Button
-      secondary
-      class="inter-tight-medium"
-      @click.stop="this.repost()"
-      style="margin-left: auto"
-    >
-      <span class="icon" style="font-variation-settings: 'wght' 400">
-        cached
-      </span>
-
+  <ThreadItem v-bind="$props" @like="like" @unlike="unlike" @delete="deletePost">
+    <Button v-if="item.author._id !== viewer.userId" secondary class="inter-tight-medium" @click.stop="this.repost()" style="margin-left: auto">
+      <span class="icon" style="font-variation-settings: 'wght' 400">cached</span>
       <span style="padding-right: 0.3rem">Repost</span>
     </Button>
   </ThreadItem>
 </template>
 
 <script>
+import { Api } from '@/Api'
+import VueJwtDecode from 'vue-jwt-decode'
+
 export default {
   props: {
     dateFormat: {
-      type: String,
+      type: String
+    },
+    item: {
+      type: Object,
       required: true
     }
   },
 
   methods: {
     like() {
-      // TODO update post database
+      Api.post(`/v1/posts/${this.item._id}/likes`, null, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
     },
-    delete() {
+    unlike() {
+      Api.delete(`/v1/posts/${this.item._id}/likes/${this.viewer.userId}`, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+    },
+    deletePost() {
       // TODO update post database
     },
     repost() {
-      // TODO add repost logic
+      Api.post('/v1/posts/repost', { postId: this.item._id }, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
+    }
+  },
+
+  computed: {
+    viewer() {
+      return VueJwtDecode.decode(localStorage.getItem('token'))
     }
   }
 }

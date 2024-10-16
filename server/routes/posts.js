@@ -50,6 +50,41 @@ router.get("/api/v1/posts", async function (req, res, next) {
 			$unwind: '$author'
 		},
 		{
+			$unwind: { path: '$author.profile_picture', preserveNullAndEmptyArrays: true } // Unwind profile picture data, allow null values
+		},
+		// Populate 'original_post_id' field
+		{
+			$lookup: {
+				from: 'posts',  // Assuming 'posts' is the collection for original posts
+				localField: 'original_post_id',
+				foreignField: '_id',
+				as: 'original_post_id'
+			}
+		},
+		{ $unwind: { path: '$original_post_id', preserveNullAndEmptyArrays: true } },
+		// Populate 'author' in 'original_post_id'
+		{
+			$lookup: {
+				from: 'users',
+				localField: 'original_post_id.author',
+				foreignField: '_id',
+				as: 'original_post_id.author'
+			}
+		},
+		{ $unwind: { path: '$original_post_id.author', preserveNullAndEmptyArrays: true } },
+		// If 'original_post_id' is an empty object, set it to null
+		{
+			$addFields: {
+				original_post_id: {
+				$cond: {
+					if: { $eq: ['$original_post_id', {}] },
+					then: null,
+					else: '$original_post_id'
+				}
+				}
+			}
+		},
+		{
 			$project: {
 				author: {
 					email: 0,
@@ -58,11 +93,14 @@ router.get("/api/v1/posts", async function (req, res, next) {
 					birthday: 0,
 					join_date: 0,
 					last_time_posted: 0
-				}
+				},
+				'original_post_id.author.email': 0,
+				'original_post_id.author.password': 0,
+				'original_post_id.author.about_me': 0,
+				'original_post_id.author.birthday': 0,
+				'original_post_id.author.join_date': 0,
+				'original_post_id.author.last_time_posted': 0,
 			}
-		},
-		{
-			$unwind: { path: '$author.profile_picture', preserveNullAndEmptyArrays: true } // Unwind profile picture data, allow null values
 		},
 		{
 			$facet: {
@@ -81,6 +119,15 @@ router.get("/api/v1/posts", async function (req, res, next) {
 					post.author.profile_picture = await getPublicPathFromHash(req, post.author.profile_picture);
 				} else {
 					post.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.author.name}`
+				}
+				
+				if (post.original_post_id) {
+					if (post.original_post_id.author.profile_picture) {
+						post.original_post_id.author.profile_picture = await getPublicPathFromHash(req, post.original_post_id.author.profile_picture);
+					}
+					else {
+						post.original_post_id.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.original_post_id.author.name}`
+					}
 				}
 
 				post.images = await Promise.all(
@@ -118,6 +165,12 @@ router.get("/api/v1/posts", async function (req, res, next) {
 router.get("/api/v1/posts/:id", async function (req, res, next) {
 	try {
 		const post = await models.Posts.findById(req.params.id)
+			.populate({
+				path: 'original_post_id', select: 'author',
+				populate: {
+					path: 'author', select: '_id name username profile_picture'
+				}
+			})
 			.populate([
 				{
 					path: 'author', select: '_id name username profile_picture',
@@ -141,6 +194,15 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 			post.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.author.name}`
 		}
 
+		if (post.original_post_id) {
+			if (post.original_post_id.author.profile_picture) {
+				post.original_post_id.author.profile_picture = await getPublicPathFromHash(req, post.original_post_id.author.profile_picture);
+			}
+			else {
+				post.original_post_id.author.profile_picture = `https://ui-avatars.com/api/?bold=true&name=${post.original_post_id.author.name}`
+			}
+		}
+		
 		// populate images with public urls to the resources
 		post.images = await Promise.all(
 			post.images.map(async image => {
@@ -227,6 +289,34 @@ async function postRequest(req, res, next) {
 }
 
 router.post("/api/v1/posts/", authMiddleware, uploadMiddleware.multiple, postRequest);
+router.post("/api/v1/posts/repost", authMiddleware, async function (req, res, next) {
+	try {
+		if (!req.isAuth || !req.user)
+			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+		if (!req.body.postId)
+			throw new ValidationError(errorMsg.MISSING_FIELDS);
+		
+		const target = await models.Posts.findOne({_id: req.body.postId})
+		if (!target)
+			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
+		
+		const repost = new models.Posts({
+			author: req.user.userId,
+			is_edited: false,
+			content: target.content,
+			likes: [],
+			comments: [],
+			images: target.images || [],
+			original_post_id: target._id
+		});
+
+		await repost.save();
+		return res.status(200).json(repost);
+	} catch (err) {
+		next(err)
+	}
+});
 
 router.post("/api/v1/posts/:post_id/likes/", authMiddleware, async function (req, res, next) {
 	try {
