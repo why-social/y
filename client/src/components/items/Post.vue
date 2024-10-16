@@ -1,7 +1,21 @@
 <template>
-  <ThreadItem v-bind="$props" @like="like" @unlike="unlike" @delete="deletePost">
-    <Button v-if="item.author._id !== viewer.userId" secondary class="inter-tight-medium" @click.stop="this.repost()" style="margin-left: auto">
-      <span class="icon" style="font-variation-settings: 'wght' 400">cached</span>
+  <ThreadItem
+    v-bind="$props"
+    @like="like"
+    @unlike="unlike"
+    @edit="edit"
+    @delete="deletePost"
+  >
+    <Button
+      v-if="item.author._id !== viewer.userId"
+      secondary
+      class="inter-tight-medium"
+      @click.stop="this.repost()"
+      style="margin-left: auto"
+    >
+      <span class="icon" style="font-variation-settings: 'wght' 400"
+        >cached</span
+      >
       <span style="padding-right: 0.3rem">Repost</span>
     </Button>
   </ThreadItem>
@@ -37,15 +51,30 @@ export default {
         }
       })
     },
-    deletePost() {
-      // TODO update post database
-    },
-    repost() {
-      Api.post('/v1/posts/repost', { postId: this.item._id }, {
+    async deletePost() {
+      const response = await Api.delete(`/v1/posts/${this.item._id}`, {
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token')
         }
       })
+
+      if (response.status === 200) {
+        this.$router.go()
+      }
+    },
+    edit() {
+      // TODO
+    },
+    repost() {
+      Api.post(
+        '/v1/posts/repost',
+        { postId: this.item._id },
+        {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
+        }
+      )
     }
   },
 

@@ -1,32 +1,58 @@
 <template>
-  <div thread-item @click="goToThread">
-    <img v-if="isRepost" class="avatar" :src="originalAuthor?.profile_picture" @click.stop="goToUser(originalAuthor.username)" />
-    <img v-else class="avatar" :src="avatar" @click.stop="goToUser(user.username)" />
+  <div thread-item>
+    <img
+      v-if="isRepost"
+      class="avatar"
+      :src="originalAuthor?.profile_picture"
+      @click.stop="goToUser(originalAuthor.username)"
+    />
+    <img
+      v-else
+      class="avatar"
+      :src="avatar"
+      @click.stop="goToUser(user.username)"
+    />
 
     <div class="data">
-      <div v-if="isRepost" class="reposter-data" @click.stop="goToUser(author.username)">
-        <span class="icon">cached</span>
-        <img :src="avatar" />
-        <span class="handle-link">@{{ author.username }}</span>
-        <span>reposted</span>
-      </div>
-      <template v-if="isRepost">
-        <div class="name" @click.stop="goToUser(originalAuthor.username)">
-          <span class="inter-tight-medium">{{ originalAuthor?.name }}</span>
-          <span>@{{ originalAuthor?.username }}</span>
-        </div>
-      </template>
-      <template v-else>
-        <div class="name" @click.stop="goToUser(author.username)">
-          <span class="inter-tight-medium">{{ author.name }}</span>
-          <span>@{{ author.username }}</span>
-        </div>
-      </template>
+      <div class="d-flex">
+        <div class="d-block">
+          <div
+            v-if="isRepost"
+            class="reposter-data"
+            @click.stop="goToUser(author.username)"
+          >
+            <span class="icon">cached</span>
+            <img :src="avatar" />
+            <span class="handle-link">@{{ author.username }}</span>
+            <span>reposted</span>
+          </div>
 
-      <div class="content">
+          <template v-if="isRepost">
+            <div class="name" @click.stop="goToUser(originalAuthor.username)">
+              <span class="inter-tight-medium">{{ originalAuthor?.name }}</span>
+              <span>@{{ originalAuthor?.username }}</span>
+            </div>
+          </template>
+          <template v-else>
+            <div class="name" @click.stop="goToUser(author.username)">
+              <span class="inter-tight-medium">{{ author.name }}</span>
+              <span>@{{ author.username }}</span>
+            </div>
+          </template>
+        </div>
+
+        <template v-if="this.viewer?.userId === this.author?._id">
+          <DropDown @edit="this.$emit('edit')" @delete="this.$emit('delete')" :options="['Edit', 'Delete']" />
+        </template>
+      </div>
+
+      <div class="content" @click="goToThread">
         <span :class="{ hidden: !this.content?.length }">{{ content }}</span>
 
-        <div class="picture-container" :class="{ hidden: !this.images?.length }">
+        <div
+          class="picture-container"
+          :class="{ hidden: !this.images?.length }"
+        >
           <img
             class="picture"
             v-for="image in images"
@@ -53,7 +79,7 @@
           <span>{{ likes?.length || 0 }}</span>
         </div>
 
-        <div class="clickable comment">
+        <div class="clickable comment" @click="goToThread">
           <span class="icon">forum</span>
           <span>{{ comments?.length || 0 }}</span>
         </div>
@@ -61,8 +87,6 @@
         <slot></slot>
       </div>
     </div>
-
-    <!--TODO deletion-->
 
     <ImageCarousel
       v-if="isModalOpen"
@@ -146,7 +170,7 @@ export default {
 
 <style>
 div[thread-item] {
-  cursor: pointer;
+  position: relative;
   user-select: none;
   display: flex;
   width: 100%;
@@ -295,29 +319,35 @@ div[thread-item] .comment:hover .icon {
   font-variation-settings: 'FILL' 1, 'wght' 100, 'GRAD' 0, 'opsz' 20;
 }
 
-.reposter-data {
+div[thread-item] .btn-group {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+div[thread-item] .reposter-data {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 0.25rem;
 }
 
-.reposter-data img {
+div[thread-item] .reposter-data img {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 100%;
   cursor: pointer;
 }
 
-.reposter-data span {
+div[thread-item] .reposter-data span {
   opacity: 0.75;
   font-size: 1.1rem;
 }
-.reposter-data .icon {
+div[thread-item] .reposter-data .icon {
   font-size: 1.5rem;
 }
 
-.reposter-data:hover .handle-link {
+div[thread-item] .reposter-data:hover .handle-link {
   text-decoration: underline;
 }
 

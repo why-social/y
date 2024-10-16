@@ -6,13 +6,13 @@
 
         <contenteditable
           ref="textInput"
-          id="content"
+          id="thread-prompt-input"
           v-model="content"
           ondrop="return false"
           contenteditable="true"
           :placeholder="placeholder"
           @keyup="keyUp"
-        ></contenteditable>
+        />
       </div>
 
       <div class="form-row">
@@ -33,6 +33,8 @@
         <Button :disabled="isSubmitDisabled"> {{ buttonMesage }} </Button>
       </div>
     </div>
+
+    <div class="overlay" ref="overlay" @click.stop="resetQuery"></div>
   </form>
 </template>
 
@@ -85,6 +87,14 @@ export default {
     uploadImage() {
       this.images = event.target.files
     },
+    resetQuery() {
+      if (this.$route.query?.focus) {
+        this.$router.replace({
+          path: this.$route.path,
+          query: undefined
+        })
+      }
+    },
     keyUp(event) {
       this.content = event?.srcElement?.innerText
     }
@@ -100,6 +110,10 @@ export default {
         this.avatar = response.data
       }
     })
+
+    if (this.$route.query?.focus) {
+      window.scrollTo(0, 0)
+    }
   }
 }
 </script>
@@ -142,6 +156,7 @@ form[thread-prompt] contenteditable {
 
 form[thread-prompt] contenteditable:focus {
   outline: none;
+  z-index: 1000;
   border: none;
 }
 
@@ -183,5 +198,27 @@ form[thread-prompt] .attach-icon {
   color: var(--color-accent);
   vertical-align: center;
   font-size: 2rem;
+}
+
+form[thread-prompt] .overlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.6);
+  opacity: 1;
+  display: none;
+}
+
+form[thread-prompt][focused] .overlay {
+  z-index: 999;
+  display: unset;
+}
+
+form[thread-prompt][focused] .form-container {
+  position: relative;
+  z-index: 1000;
 }
 </style>

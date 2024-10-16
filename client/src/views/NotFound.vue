@@ -2,7 +2,7 @@
   <div>
     <h1>Nothing to <br />see here</h1>
 
-    <Button @click="$router.push({ path: '/' })"> Go back </Button>
+    <Button @click="$router.push({ path: '/' })"> Go home </Button>
   </div>
 </template>
 
