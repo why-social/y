@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import VueJwtDecode from 'vue-jwt-decode'
 
+import NotFound from './views/NotFound.vue'
 import Main from './views/Main.vue'
 import Home from './views/Home.vue'
 import Thread from './views/Thread.vue'
@@ -113,6 +114,11 @@ const routes = [
         component: Recover
       }
     ]
+  },
+  {
+    path: '/404',
+    component: NotFound,
+    meta: { requiresAuth: false }
   }
 ]
 
@@ -133,7 +139,7 @@ router.beforeEach((to, from) => {
     }
   } else {
     return {
-      path: '/'
+      path: '/404'
     }
   }
 })

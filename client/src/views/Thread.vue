@@ -123,7 +123,7 @@ export default {
           if (result) {
             this.type = 'comment'
           } else {
-            // TODO: 404
+            this.$router.push('/404')
 
             return false
           }
