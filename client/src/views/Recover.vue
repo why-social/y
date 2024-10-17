@@ -28,11 +28,22 @@ export default {
   },
   methods: {
     onSubmit() {
-      alert(
-        JSON.stringify({
-          email: this.email
+      const payload = {
+        email: this.email
+      }
+      Api.post('/v1/restorePassword', payload)
+        .then(res => {
+          if (res.status === 200) {
+            alert('Email sent successfully')
+            this.$router.push('/login')
+          }
         })
-      )
+        .catch((error) => {
+          if (error.response.status === 500) {
+            alert('Server error, please try again later')
+          }
+          console.error(error)
+        })
     }
   }
 }

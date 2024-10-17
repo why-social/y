@@ -33,7 +33,7 @@ async function sendEmail(email, name, token){
 				Name: name
 			}],
 			Subject: "Password reset",
-			TextPart: `Hello, click on the following link to restore your password: http://localhost:3000/restorePassword?token=${token}`,
+			TextPart: `Hello, click on the following link to restore your password: http://localhost:5173/restorePassword?token=${token}`,
 		}]
 	});
 	
@@ -73,7 +73,7 @@ router.post("/api/v1/restorePassword", async (req, res, next) => {
 			throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 
 		// Generate a temporary token
-		const token = jwt.sign({userId: user._id}, JWT_SECRET_KEY, {expiresIn: "1h"}); // TODO: shorter expiry
+		const token = jwt.sign({userId: user._id, username: user.username}, JWT_SECRET_KEY, {expiresIn: "1h"}); // TODO: shorter expiry
 
 		// Send an email with the token
 		await sendEmail(user.email, user.username, token);

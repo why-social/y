@@ -310,6 +310,53 @@ router.put("/api/v1/users/:id/profile_picture", authMiddleware, uploadMiddleware
 		next(err);
 	}
 });
+
+router.put('/api/v1/users/:id', authMiddleware, async (req, res, next) => {
+  try{
+    if(!req.isAuth || !req.user)
+      throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+    // Check if the user exists
+		let user = await mongoose.models["Users"].findById(req.user.userId).exec();
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
+    // Check if the user is the same as the authenticated user
+    if(req.user.userId !== req.params.id)
+      throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+    // Check if the fields are present
+    if(!req.body || !req.body.name || !req.body.email || !req.body.birthday || !req.body.password || !('about_me' in req.body) || !req.body.profile_picture_url)
+      throw new ValidationError(errorMsg.REQUIRED_FIELDS);
+
+    const newFields = req.body;
+
+    // Check if the fields are valid
+    if(!nameRegex.test(newFields.name))
+      throw new ValidationError(errorMsg.INVALID_NAME);
+
+    if(!emailRegex.test(newFields.email))
+      throw new ValidationError(errorMsg.INVALID_EMAIL);
+
+    if(isNaN(new Date(newFields.birthday).getTime()) || new Date(newFields.birthday) > new Date())
+      throw new ValidationError(errorMsg.INVALID_BIRTHDAY);
+
+    if(!passwordRegex.test(newFields.password))
+      throw new ValidationError(errorMsg.INVALID_PASSWORD);
+
+    user.name = newFields.name;
+    user.email = newFields.email;
+    user.birthday = newFields.birthday;
+    user.password = newFields.password;
+    user.about_me = newFields.about_me;
+    user.profile_picture = newFields.profile_picture;
+
+    await user.save();
+
+    res.status(200).json({message: "User updated"});
+  }catch(err){
+    next(err);
+  }
+});
 //#endregion
 
 //#region PATCH
