@@ -43,5 +43,7 @@ export default {
 <style scoped>
 .userList-container{
   padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
 }
 </style>
