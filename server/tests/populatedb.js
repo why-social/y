@@ -107,7 +107,7 @@ database.connect(mongoURI)
                 }
 
                 if (!faker.number.int({ min: 0, max: 5 }) && posts.length > 0) {
-                    post.original_post_id = posts[faker.number.int({ min: 0, max: posts.length - 1 })]
+                    post.original_post = posts[faker.number.int({ min: 0, max: posts.length - 1 })]
                 }
 
                 while (post.content !== null && post.images?.length < 4 &&

@@ -34,7 +34,7 @@ router.get("/api/v1/posts", async function (req, res, next) {
 			.skip((pageNumber - 1) * limit)
 			.limit(limit)
 			.populate({
-				path: 'original_post_id',
+				path: 'original_post',
 				select: 'author',
 				populate: {
 					path: 'author',
@@ -92,7 +92,7 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 	try {
 		let post = await models.Posts.findById(req.params.id)
 			.populate({
-				path: 'original_post_id', select: 'author',
+				path: 'original_post', select: 'author',
 				populate: {
 					path: 'author', select: '_id name username profile_picture',
 					populate: {
@@ -138,9 +138,9 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 			}
 		};
 
-		if (post.original_post_id) {
+		if (post.original_post) {
 			post._links.parent = {
-				href: `${req.protocol + '://' + req.get('host')}/api/v1/posts/${post.original_post_id._id}`
+				href: `${req.protocol + '://' + req.get('host')}/api/v1/posts/${post.original_post._id}`
 			};
 		}
 
@@ -216,7 +216,7 @@ router.post("/api/v1/posts/repost", authMiddleware, async function (req, res, ne
 			likes: [],
 			comments: [],
 			images: target.images || [],
-			original_post_id: target._id
+			original_post: target._id
 		});
 
 		await repost.save();

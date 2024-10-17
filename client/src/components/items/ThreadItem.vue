@@ -105,7 +105,7 @@ export default {
       comments: this.item.comments,
       modalImageIndex: null,
       isModalOpen: false,
-      isRepost: !!this.item.original_post_id
+      isRepost: !!this.item.original_post
     }
 
     if (this.dateFormat === 'now') {
@@ -115,7 +115,7 @@ export default {
     }
 
     if (obj.isRepost) {
-      obj.originalAuthor = this.item.original_post_id.author
+      obj.originalAuthor = this.item.original_post.author
     }
 
     return obj

@@ -66,7 +66,7 @@ export default {
     parent_id() {
       if (this.type) {
         if (this.type === 'post') {
-          return this.head.original_post_id?._id
+          return this.head.original_post?._id
         } else {
           return this.head.parent_id
         }
