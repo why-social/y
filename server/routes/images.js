@@ -55,11 +55,11 @@ router.delete("/api/v1/images/:hash", authMiddleware, async function(req, res, n
 	}
 });
 
-router.delete("/api/v1/images", async function(req, res, next) {
+router.delete("/api/v1/images", authMiddleware, async function(req, res, next) {
 	try{
 		// Check if the user has admin privileges
-		if(!req.headers["authorization"] || req.headers["authorization"] !== process.env.ADMIN_KEY)
-			throw new UnauthorizedError(errorMsg.UNAUTHORIZED); // TODO: secret admin key?
+		if (!req.isAuth || !req.user || !req.isAdmin)
+			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		// Delete all images
 		await mongoose.models["Images"].deleteMany({}).exec();
