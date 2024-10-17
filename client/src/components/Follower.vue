@@ -49,14 +49,17 @@ export default {
   user-select: none;
   display: flex;
   align-items: center;
-  width: 100%;
   font-size: 1rem;
   padding: 0.8rem 0rem;
-  gap: 1rem;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .pfp {
-  width: 4rem;
-  height: 4rem;
+  width: 3rem;
+  height: 3rem;
   border-radius: 100%;
 }
 .pfp:hover{
@@ -67,11 +70,11 @@ export default {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
   display: flex;
-  gap: 0.2rem;
   flex-direction: column;
   white-space: nowrap;
   overflow: hidden;
   box-sizing: border-box;
+  text-overflow: ellipsis;
 }
 .info-name {
   font-size: 1rem;
