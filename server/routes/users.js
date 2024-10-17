@@ -409,10 +409,10 @@ router.patch("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 //#endregion
 
 //#region DELETE
-router.delete("/api/v1/users", async (req, res, next) => { // WE DO NOT ENDORSE THIS
+router.delete("/api/v1/users", authMiddleware, async (req, res, next) => { // WE DO NOT ENDORSE THIS
 	try{
 		// Check if the user has admin privileges
-		if(!req.headers["authorization"] || req.headers["authorization"] !== process.env.ADMIN_KEY)
+		if (!req.isAuth || !req.user || !req.isAdmin)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 		
 		// Delete all users
