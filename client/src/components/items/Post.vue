@@ -62,8 +62,12 @@ export default {
         this.$router.go()
       }
     },
-    edit() {
-      // TODO
+    async edit(payload) {
+      await Api.patch(`/v1/posts/${this.item._id}`, payload, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token')
+        }
+      })
     },
     repost() {
       Api.post(

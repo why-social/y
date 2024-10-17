@@ -1,7 +1,17 @@
 <template>
-  <div thread-item @click="goToThread">
-    <img v-if="isRepost" class="avatar" :src="originalAuthor?.profile_picture_url" @click.stop="goToUser(originalAuthor.username)" />
-    <img v-else class="avatar" :src="avatar" @click.stop="goToUser(user.username)" />
+  <div thread-item ref="threadItem" @click="goToThread">
+    <img
+      v-if="isRepost"
+      class="avatar"
+      :src="originalAuthor?.profile_picture_url"
+      @click.stop="goToUser(originalAuthor.username)"
+    />
+    <img
+      v-else
+      class="avatar"
+      :src="avatar"
+      @click.stop="goToUser(user.username)"
+    />
 
     <div class="data">
       <div class="d-flex">
@@ -31,26 +41,74 @@
           </template>
         </div>
 
-        <div v-if="this.viewer?.userId === this.author?._id" @click.stop style="margin-left: auto;">
-          <DropDown @edit="this.$emit('edit')" @delete="this.$emit('delete')" :options="['Edit', 'Delete']" />
+        <div
+          v-if="this.viewer?.userId === this.author?._id"
+          @click.stop
+          style="margin-left: auto"
+        >
+          <DropDown
+            @edit="enableEditing"
+            @delete="this.$emit('delete')"
+            :options="['Edit', 'Delete']"
+          />
         </div>
       </div>
 
       <div class="content">
-        <span :class="{ hidden: !this.content?.length }">{{ content }}</span>
+        <contenteditable
+          ref="contentText"
+          id="thread-prompt-input"
+          v-model="content"
+          ondrop="return false"
+          contenteditable="false"
+          placeholder="Text content"
+          :class="{ hidden: !this.content?.length }"
+          >{{ content }}</contenteditable
+        >
 
         <div
-          class="picture-container"
+          class="pictures-container"
           :class="{ hidden: !this.images?.length }"
         >
-          <img
-            class="picture"
+          <div
+            class="picture-container"
             v-for="image in images"
-            v-bind:src="image"
             :key="image._id"
-            @click.stop="showModal(images.indexOf(image))"
-          />
+          >
+            <span class="remove icon" @click.stop="removeImage(image)"
+              >delete</span
+            >
+            <img
+              class="picture"
+              v-bind:src="image"
+              @click.stop="showModal(images.indexOf(image))"
+            />
+          </div>
         </div>
+      </div>
+
+      <div class="edit-interactions">
+        <label class="attach-label" for="images">
+          <span class="material-symbols-outlined attach-icon">attach_file</span>
+          <span class="file-counter" :class="{ error: images.length >= 4 }">
+            {{ images.length }}/4
+          </span>
+        </label>
+
+        <input
+          class="file-input"
+          id="images"
+          type="file"
+          accept="image/*"
+          multiple
+          :disabled="images.length >= 4"
+          @change="uploadImages"
+        />
+
+        <Button secondary style="margin-left: auto" @click.stop="cancelEditing">
+          Cancel
+        </Button>
+        <Button @click.stop="submitEdit"> Submit </Button>
       </div>
 
       <span class="date">{{ date }}</span>
@@ -105,7 +163,10 @@ export default {
       comments: this.item.comments,
       modalImageIndex: null,
       isModalOpen: false,
-      isRepost: !!this.item.original_post
+      isRepost: !!this.item.original_post,
+
+      uploadedImages: [],
+      deletedImages: []
     }
 
     if (this.dateFormat === 'now') {
@@ -135,7 +196,62 @@ export default {
       this.$router.push(`/profile/${username}`)
     },
     goToThread() {
-      this.$router.push(`/thread/${this.item._id}`)
+      if (!this.editing) {
+        this.$router.push(`/thread/${this.item._id}`)
+      }
+    },
+    enableEditing() {
+      this.$refs.threadItem.setAttribute('editable', '')
+      this.$refs.contentText.setAttribute('contenteditable', 'true')
+    },
+    cancelEditing() {
+      this.$router.go()
+    },
+    submitEdit() {
+      this.$emit('edit', {
+        content: this.$refs.contentText.innerText,
+        uploadedImages: this.uploadedImages,
+        deletedImages: this.deletedImages
+      })
+
+      this.uploadedImages = []
+      this.deletedImages = []
+
+      this.$refs.threadItem.removeAttribute('editable')
+      this.$refs.contentText.setAttribute('contenteditable', 'false')
+    },
+    removeImage(image) {
+      this.uploadedImages = this.uploadedImages.filter((item) => {
+        if (URL.createObjectURL(item) === image) {
+          this.images = this.images.filter((imageURL) => imageURL !== item)
+
+          return false
+        }
+
+        return true
+      })
+
+      this.images = this.images.filter((item) => {
+        if (item === image) {
+          this.deletedImages.push(image)
+
+          return false
+        }
+
+        return true
+      })
+    },
+    uploadImages() {
+      let images = Object.values(event.target.files)
+
+      if (images?.length) {
+        images = images.slice(0, 4 - this.images?.length)
+
+        images.forEach((image) => {
+          this.uploadedImages.push(image)
+          this.images.push(URL.createObjectURL(image))
+        })
+      }
     },
     showModal(index) {
       this.isModalOpen = true
@@ -150,6 +266,9 @@ export default {
   computed: {
     viewer() {
       return VueJwtDecode.decode(localStorage.getItem('token'))
+    },
+    editing() {
+      return this.$refs.threadItem.hasAttribute('editable')
     },
     liked() {
       return this.likes.includes(this.viewer.userId)
@@ -221,29 +340,45 @@ div[thread-item] .name > span:nth-child(2) {
   font-size: 1.2rem;
 }
 
-div[thread-item] .picture-container {
+div[thread-item] .pictures-container {
+  width: 100%;
   display: flex;
+  overflow: hidden;
   height: fit-content;
   gap: 1vmin;
   flex-direction: row;
   flex-wrap: wrap;
 }
 
-div[thread-item] .picture {
+div[thread-item] .picture-container {
+  position: relative;
   box-sizing: border-box;
   min-width: calc(50% - 1vmin);
+  overflow: hidden;
   flex: 1;
   border-radius: 1vmax;
   object-fit: cover;
+  aspect-ratio: 1/1;
 }
 
-div[thread-item] .picture:hover {
+div[thread-item] .picture-container:hover {
   cursor: pointer;
 }
 
-div[thread-item] .picture:nth-child(2n) {
+div[thread-item] .picture-container:nth-child(2n) {
   flex-basis: calc(50% - 1vmin);
-  aspect-ratio: 1/1;
+}
+
+div[thread-item]
+  .picture-container:last-child:not(.picture-container:nth-child(2n)) {
+  aspect-ratio: unset;
+}
+
+div[thread-item] .picture {
+  width: 100%;
+  height: 100%;
+  max-height: 70vh;
+  object-fit: cover;
 }
 
 div[thread-item] .date {
@@ -333,6 +468,7 @@ div[thread-item] .reposter-data span {
   opacity: 0.75;
   font-size: 1.1rem;
 }
+
 div[thread-item] .reposter-data .icon {
   font-size: 1.5rem;
 }
@@ -362,5 +498,83 @@ div[thread-item] .reposter-data:hover .handle-link {
     padding: 0.5rem;
     font-size: 1.2rem;
   }
+}
+
+div[thread-item] input[type='file'] {
+  display: none;
+}
+
+div[thread-item] .edit-interactions {
+  display: flex;
+  gap: 1rem;
+  display: none;
+}
+
+div[thread-item] .file-counter {
+  padding: 0.5rem;
+  opacity: 0.7;
+}
+
+div[thread-item] .attach-label {
+  display: flex;
+  user-select: none;
+  font-size: 1.3rem;
+  align-items: center;
+  cursor: pointer;
+}
+
+div[thread-item] .attach-icon {
+  user-select: none;
+  color: var(--color-accent);
+  vertical-align: center;
+  font-size: 2rem;
+}
+
+div[thread-item] .remove {
+  width: 3rem;
+  cursor: pointer;
+  height: 3rem;
+  right: 1rem;
+  top: 1rem;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  backdrop-filter: blur(4px);
+  border-radius: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  transition: 0.3s;
+  position: absolute;
+  display: none;
+}
+
+div[thread-item] .remove:hover {
+  background: var(--color-background-highlight);
+}
+
+div[thread-item][editable] [contenteditable='true'] {
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  outline: 2px solid var(--color-outline);
+}
+
+div[thread-item][editable] [contenteditable='true']:empty:before {
+  display: unset !important;
+  content: attr(placeholder);
+  cursor: text;
+  opacity: 0.7;
+  color: var(--color-on-background);
+}
+
+div[thread-item][editable] .remove {
+  display: flex;
+}
+
+div[thread-item][editable] .interactions {
+  display: none;
+}
+
+div[thread-item][editable] .edit-interactions {
+  display: inherit;
 }
 </style>
