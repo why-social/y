@@ -1,5 +1,5 @@
 <template>
-  <div class="suggestions-container" v-if="suggestions.length > 0">
+  <div class="suggestions-container" v-if="suggestions?.length > 0">
     <div class="title">
       <span>Who to follow</span>
     </div>
