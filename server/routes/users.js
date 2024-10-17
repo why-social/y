@@ -85,6 +85,23 @@ router.get("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 	}
 });
 
+router.get("/api/v1/users/:id/suggestions", authMiddleware, async (req, res, next) => {
+	try {
+		if(!req.isAuth || req.user?.userId != req.params.id) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+		
+		const userFollows = (await mongoose.models.User_follows_user.find({ follower: req.params.id}, 'follows -_id').lean())
+			.map(entry => {return entry.follows.toString()});
+
+		const secondHand = (await mongoose.models.User_follows_user.find({ follower: {$in : userFollows}}, 'follows -_id').limit(3).lean())
+			.map(entry => {return entry.follows.toString()})
+			.filter(user => !userFollows.includes(user) && user != req.params.id);
+
+		return res.json(secondHand);
+	} catch (err) {
+		next(err);
+	}
+});
+
 router.get("/api/v1/users/:id/profile_picture", async (req, res, next) => {
 	try {
 		// Get user by id from db
@@ -310,6 +327,53 @@ router.put("/api/v1/users/:id/profile_picture", authMiddleware, uploadMiddleware
 		next(err);
 	}
 });
+
+router.put('/api/v1/users/:id', authMiddleware, async (req, res, next) => {
+  try{
+    if(!req.isAuth || !req.user)
+      throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+    // Check if the user exists
+		let user = await mongoose.models["Users"].findById(req.user.userId).exec();
+		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
+    // Check if the user is the same as the authenticated user
+    if(req.user.userId !== req.params.id)
+      throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+
+    // Check if the fields are present
+    if(!req.body || !req.body.name || !req.body.email || !req.body.birthday || !req.body.password || !('about_me' in req.body) || !req.body.profile_picture_url)
+      throw new ValidationError(errorMsg.REQUIRED_FIELDS);
+
+    const newFields = req.body;
+
+    // Check if the fields are valid
+    if(!nameRegex.test(newFields.name))
+      throw new ValidationError(errorMsg.INVALID_NAME);
+
+    if(!emailRegex.test(newFields.email))
+      throw new ValidationError(errorMsg.INVALID_EMAIL);
+
+    if(isNaN(new Date(newFields.birthday).getTime()) || new Date(newFields.birthday) > new Date())
+      throw new ValidationError(errorMsg.INVALID_BIRTHDAY);
+
+    if(!passwordRegex.test(newFields.password))
+      throw new ValidationError(errorMsg.INVALID_PASSWORD);
+
+    user.name = newFields.name;
+    user.email = newFields.email;
+    user.birthday = newFields.birthday;
+    user.password = newFields.password;
+    user.about_me = newFields.about_me;
+    user.profile_picture = newFields.profile_picture;
+
+    await user.save();
+
+    res.status(200).json({message: "User updated"});
+  }catch(err){
+    next(err);
+  }
+});
 //#endregion
 
 //#region PATCH
@@ -362,10 +426,10 @@ router.patch("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 //#endregion
 
 //#region DELETE
-router.delete("/api/v1/users", async (req, res, next) => { // WE DO NOT ENDORSE THIS
+router.delete("/api/v1/users", authMiddleware, async (req, res, next) => { // WE DO NOT ENDORSE THIS
 	try{
 		// Check if the user has admin privileges
-		if(!req.headers["authorization"] || req.headers["authorization"] !== process.env.ADMIN_KEY)
+		if (!req.isAuth || !req.user || !req.isAdmin)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 		
 		// Delete all users

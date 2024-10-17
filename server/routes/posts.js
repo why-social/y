@@ -315,7 +315,7 @@ router.patch("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, asy
 //#region DELETE
 router.delete("/api/v1/posts", authMiddleware, async function (req, res, next) {
 	try {
-		if (!req.isAuth || !req.user || !req.user.isAdmin)
+		if (!req.isAuth || !req.user || !req.isAdmin)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
 		const posts = await models.Posts.find();
