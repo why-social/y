@@ -69,12 +69,12 @@ export default {
     },
     async nuke() {
       this.closeModal()
-      await Api.delete('v1/posts', {
-        headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
-        }
-      })
-      location.reload()
+      const authHeader = { Authorization: 'Bearer ' + localStorage.getItem('token') }
+      await Api.delete('v1/posts', { headers: authHeader })
+      await Api.delete('v1/users', { headers: authHeader })
+
+      await this.$nextTick()
+      this.$router.go()
     },
     redirectToPost() {
       const route = {

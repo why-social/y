@@ -323,7 +323,7 @@ router.delete("/api/v1/posts", authMiddleware, async function (req, res, next) {
 			}
 		}
 		await models.Posts.deleteMany();
-
+		return res.status(200).json({message: "All posts deleted"});
 	} catch (err) {
 		next(err);
 	}
