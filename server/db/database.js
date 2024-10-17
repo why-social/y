@@ -183,6 +183,7 @@ async function onSuccess(dbUri) {
 	const existingCollections = await db.listCollections().toArray();
 
 	// create collections for each model if they don't exist
+	const started = Date.now();
 	for (let key in models) {
 		if (existingCollections.some(col => col.name.toLowerCase() === key.toLowerCase())) {
 			console.log(`DB: ${key} collection already exists`);
@@ -194,7 +195,22 @@ async function onSuccess(dbUri) {
 			process.exit(1);
 		});
 		console.log(`DB: ${key} collection created`);
+		if (key === 'Users') {
+			new models[key]({
+				username: 'Admin',
+				password: process.env.ADMIN_PASSWORD,
+				name: 'Admin',
+				email: process.env.ADMIN_EMAIL, 
+				birthday: Date.now(),
+				last_time_posted: null,
+				about_me: "",
+				profile_picture: null,
+			}).save()
+			  .then(() => console.log('DB: Admin account created'))
+			  .catch(() => console.error('DB: Failed to create admin account'));
+		}
 	}
+	console.log(`DB created in ${Date.now() - started}ms`);
 }
 
 module.exports = { mongoose, connect };
