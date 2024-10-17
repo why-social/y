@@ -66,9 +66,9 @@ router.get("/api/v1/posts", async function (req, res, next) {
 			.populate({
 				path: 'image_urls'
 			});
-		
-		if (!result || result.length === 0) return res.json({ posts: [] }); 
-		
+
+		if (!result || result.length === 0) return res.json({ posts: [] });
+
 		const total = await models.Posts.countDocuments(query);
 		const posts = {
 			posts: result,
@@ -113,10 +113,10 @@ router.get("/api/v1/posts/:id", async function (req, res, next) {
 						{
 							path: 'author',
 							select: '_id name username profile_picture',
-							populate: 
+							populate:
 							{
 								path: 'profile_picture_url'
-							}	
+							}
 						},
 						{
 							path: 'image_urls'
@@ -204,11 +204,11 @@ router.post("/api/v1/posts/repost", authMiddleware, async function (req, res, ne
 
 		if (!req.body.postId)
 			throw new ValidationError(errorMsg.MISSING_FIELDS);
-		
-		const target = await models.Posts.findOne({_id: req.body.postId})
+
+		const target = await models.Posts.findOne({ _id: req.body.postId })
 		if (!target)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
-		
+
 		const repost = new models.Posts({
 			author: req.user.userId,
 			is_edited: false,
@@ -262,9 +262,10 @@ router.put("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, async
 
 		newData.likes = newData.likes || [];
 		newData.comments = newData.comments || [];
+		newData.images = newData.images || [];
 
+		await updateImages(post.images, req, post.images);
 		Object.assign(post, newData);
-		await updateImages(post.images, req);
 		await post.save();
 
 		return res.status(200).json(post);
@@ -280,25 +281,28 @@ router.patch("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, asy
 		if (!req.isAuth || !req.user)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
-		if (req.body.content === undefined && req.files?.length === 0) // if not trying to edit only the content and/or images
-			throw new ValidationError(errorMsg.NO_CONTENT_FOR_EDITABLE_FIELDS);
-
-
 		let post = await models.Posts.findById(req.params.id);
 		if (!post || post.is_deleted)
 			throw new NotFoundError(errorMsg.POST_NOT_FOUND);
 		if (post.author.toString() !== req.user?.userId)
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+		if (req.body.content === undefined &&
+			req.files?.length === 0 &&
+			req.body.deletedImages?.length === post.images?.length) // if not trying to edit only the content and/or images
+			throw new ValidationError(errorMsg.NO_CONTENT_FOR_EDITABLE_FIELDS);
 
 		// apply the incoming request to only the editable fields
 		if (req.body.content !== undefined) {
 			post.content = req.body.content;
 			post.is_edited = true;
 		}
-		if (req.files?.length > 0) {
-			await updateImages(post.images, req);
+		
+		if (req.files?.length > 0 || req.body.deletedImages?.length) {
+			await updateImages(post.images, req, req.body.deletedImages);
 			post.is_edited = true;
 		}
+
+		console.log('3')
 
 		await post.save();
 

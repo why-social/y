@@ -50,8 +50,13 @@ export default {
         this.$router.go()
       }
     },
-    edit() {
-      // TODO
+    async edit(payload) {
+      await Api.patch(`/v1/comments/${this.item._id}`, payload, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: localStorage.getItem('token')
+        }
+      })
     }
   },
 
