@@ -38,6 +38,9 @@ export default {
   async created() {
     await this.handleRouteChange()
   },
+  mounted() {
+    window.scrollTo(0, 0)
+  },
   watch: {
     '$route.params.userId': 'handleRouteChange'
   },
