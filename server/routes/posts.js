@@ -317,6 +317,7 @@ router.delete("/api/v1/posts", authMiddleware, async function (req, res, next) {
 
 		const posts = await models.Posts.find();
 		for (let post of posts) {
+			if (!post.images) continue;
 			for (var hash of post.images) {
 				await removeUsage(hash);
 			}
@@ -344,9 +345,10 @@ router.delete("/api/v1/posts/:id", authMiddleware, async function (req, res, nex
 		post.is_deleted = true;
 		post.content = null;
 
-		for (var hash of post.images) {
-			await removeUsage(hash);
-		}
+		if (post.images) 
+			for (var hash of post.images) {
+				await removeUsage(hash);
+			}
 		post.images = null;
 
 		await post.save({ validateBeforeSave: false });

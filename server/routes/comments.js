@@ -241,9 +241,10 @@ async function deleteForId(req, res, next) {
 		if (target) {
 			target.is_deleted = true;
 			target.content = null;
-			for (var hash of target.images) {
-				await removeUsage(hash);
-			}
+			if (target.images) 
+				for (var hash of target.images) {
+					await removeUsage(hash);
+				}
 			target.images = null;
 
 			await target.save({ validateBeforeSave: false });
