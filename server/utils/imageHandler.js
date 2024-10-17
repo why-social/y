@@ -71,7 +71,10 @@ async function saveFile(req, file) {
     // check if the directory (image) already exists
     if (fs.existsSync(dir)) {
         const image = await models.Images.findOne({hash});
-        return image.hash; // only update the existing document in the DB
+        if (!image) { // db and fs desync happened (directory exists but no db entry), force re-write file
+            fs.rmSync(dir, { recursive: true, force: true }); // delete the directory
+        } 
+        else return image.hash; // only update the existing document in the DB
     }
     
     // save the file with its original name inside the /hash directory

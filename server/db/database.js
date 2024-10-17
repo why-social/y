@@ -41,7 +41,7 @@ schemas = {
 		is_deleted: Boolean,
 		content: String,
 		timestamp: { type: "date", default: Date.now },
-		original_post_id: { type: mongoose.Types.ObjectId, ref: "Posts", default: null },
+		original_post: { type: mongoose.Types.ObjectId, ref: "Posts", default: null },
 		likes: [{ type: mongoose.Types.ObjectId, ref: "Users" }],
 		comments: [{ type: mongoose.Types.ObjectId, ref: "Comments" }],
 		images: [{ type: String }],
