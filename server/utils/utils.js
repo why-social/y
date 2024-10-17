@@ -27,7 +27,7 @@ function createUserToken(user) {
 	return jwt.sign({
 		userId: user._id,
 		username: user.username,
-		isAdmin: (user.username === 'Admin')
+		adminKey: (user.username === 'Admin') ? process.env.ADMIN_KEY : undefined
 	},
 		secrets.JWT_SECRET_KEY, { expiresIn: "1h" }
 	);
