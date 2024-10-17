@@ -17,6 +17,7 @@ import Comments from './views/profileTabs/Comments.vue'
 import UserList from './views/profileTabs/UserList.vue'
 import Feed from './views/homeTabs/Feed.vue'
 import Recent from './views/homeTabs/Recent.vue'
+import restorePassword from './views/restorePassword.vue'
 
 const routes = [
   {
@@ -112,6 +113,11 @@ const routes = [
         path: 'recover',
         name: 'recover',
         component: Recover
+      },
+      {
+        path: 'restorePassword',
+        name: 'restorePassword',
+        component: restorePassword
       }
     ]
   },
