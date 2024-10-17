@@ -1,12 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("../db/database").mongoose;
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { ValidationError, UnauthorizedError, NotFoundError, errorMsg } = require("../utils/errors");
-const { secrets } = require("../utils/utils"); 
-
-const JWT_SECRET_KEY = secrets.JWT_SECRET_KEY;
+const { createUserToken } = require("../utils/utils"); 
 
 router.post("/api/v1/login", async (req, res, next) => {
 	try {
@@ -23,18 +20,12 @@ router.post("/api/v1/login", async (req, res, next) => {
 		if (!match)
 			throw new UnauthorizedError(errorMsg.INCORRECT_PASSWORD);
 
-		const token = jwt.sign({
-      userId: user._id,
-      username: user.username,
-      isAdmin: (username === 'Admin')},
-      JWT_SECRET_KEY,
-      {expiresIn: "1h"}
-    );
+		const token = createUserToken(user);
 
 		res.status(200).json({
 			message: "Login successful",
 			user_id: user._id,
-      username: user.username,
+     		username: user.username,
 			token: token
 		});
 	} catch (err){

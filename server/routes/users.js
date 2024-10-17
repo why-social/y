@@ -1,15 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("../db/database").mongoose;
-const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middleware/auth");
 const { ValidationError, UnauthorizedError, NotFoundError, ConflictError, errorMsg } = require("../utils/errors");
 const { nameRegex, usernameRegex, emailRegex, passwordRegex } = require("../utils/customRegex");
-const { secrets } = require("../utils/utils");
+const { createUserToken } = require("../utils/utils");
 const uploadMiddleware = require("../middleware/upload");
 const imageHandler = require("../utils/imageHandler");
-
-const JWT_SECRET_KEY = secrets.JWT_SECRET_KEY;
 
 /**
 * Fields that can be updated
@@ -239,8 +236,6 @@ router.post("/api/v1/users", async (req, res, next) => {
 		let emailExists = await mongoose.models["Users"].findOne({email}).exec();
 		if(emailExists) throw new ConflictError(errorMsg.EMAIL_EXISTS);
 		
-		// TODO: hash the password
-		
 		// Remove all other fields from the request and add necessary
 		req.body = {
 			name, email, password, username, birthday,
@@ -254,7 +249,7 @@ router.post("/api/v1/users", async (req, res, next) => {
 		await newUser.save();
 		
 		// Create JWT token
-		const token = jwt.sign({userId: newUser._id}, JWT_SECRET_KEY, {expiresIn: "1h"});
+		const token = createUserToken(newUser);
 		
 		// Return message, user id and token
 		res.status(201).json({message: "User created", user_id: newUser._id, token: token});
