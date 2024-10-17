@@ -3,6 +3,7 @@
     <Input icon="search" type="text" v-model="searchQuery" @input="handleInputChange"/>
     <Follower :userId="searchUserId" v-if="searchUserId.length!=0"/>
     <span class="search-not-found" v-if="searchQuery.length>=3&&searchUserId.length==0">No user found</span>
+    <Suggestions/>
   </div>
 </template>
 
