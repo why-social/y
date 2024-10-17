@@ -433,7 +433,8 @@ router.delete("/api/v1/users", authMiddleware, async (req, res, next) => { // WE
 			throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 		
 		// Delete all users
-		await mongoose.models["Users"].deleteMany({}).exec();
+		await mongoose.models["Users"].deleteMany({username: {$ne: 'Admin'}});
+		await mongoose.models["User_follows_user"].deleteMany({});
 		
 		res.status(200).json({message: "All users deleted"});
 	} catch (err) {
