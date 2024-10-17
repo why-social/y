@@ -85,6 +85,23 @@ router.get("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 	}
 });
 
+router.get("/api/v1/users/:id/suggestions", authMiddleware, async (req, res, next) => {
+	try {
+		if(!req.isAuth || req.user?.userId != req.params.id) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+		
+		const userFollows = (await mongoose.models.User_follows_user.find({ follower: req.params.id}, 'follows -_id').lean())
+			.map(entry => {return entry.follows.toString()});
+
+		const secondHand = (await mongoose.models.User_follows_user.find({ follower: {$in : userFollows}}, 'follows -_id').limit(3).lean())
+			.map(entry => {return entry.follows.toString()})
+			.filter(user => !userFollows.includes(user) && user != req.params.id);
+
+		return res.json(secondHand);
+	} catch (err) {
+		next(err);
+	}
+});
+
 router.get("/api/v1/users/:id/profile_picture", async (req, res, next) => {
 	try {
 		// Get user by id from db
