@@ -12,7 +12,7 @@ router.get("/api/v1/comments/:id", authMiddleware, async function (req, res, nex
 	try {
 		let comment = await getCommentById(req.params.id, next);
 
-		if(!comment) throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
+		if (!comment) throw new NotFoundError(errorMsg.COMMENT_NOT_FOUND);
 
 		comment = comment.toJSON();
 		comment._links = {
@@ -117,8 +117,6 @@ async function postRequest(req, res, next) {
 
 		await parent.save();
 
-		//TODO: update images
-
 		return res.status(201).json(comment);
 
 	} catch (err) {
@@ -168,7 +166,7 @@ async function putForId(req, res, next) {
 		newData.comments = newData.comments || [];
 
 		Object.assign(comment, newData);
-		await updateImages(comment.images, req);
+		await updateImages(comment.images, req, comment.images);
 		await comment.save();
 
 		return res.status(200).json(comment);
@@ -201,20 +199,19 @@ async function patchForId(req, res, next) {
 		if (req.body.images === null)
 			throw new ValidationError(errorMsg.CANNOT_SET_IMAGES_TO_NULL);
 
-		let wouldHaveContent = req.body.content?.length ?? comment.content?.length;
-		let wouldHaveImages = req.body.images?.length ?? comment.images?.length;
-
-		if (!wouldHaveContent && !wouldHaveImages)
+		if (req.body.content === undefined &&
+			req.files?.length === 0 &&
+			req.body.deletedImages?.length === comment.images?.length)
 			throw new ValidationError(errorMsg.CANNOT_REMOVE_BOTH_CONTENT_AND_IMAGES);
 
 
-		if (req.body.content?.length || wouldHaveImages) {
+		if (req.body.content !== undefined) {
 			comment.content = req.body.content;
 			comment.is_edited = true;
 		}
 
-		if (req.files?.length) {
-			await updateImages(comment.images, req);
+		if (req.files?.length || req.body.deletedImages?.length) {
+			await updateImages(comment.images, req, req.body.deletedImages);
 			comment.is_edited = true;
 		}
 

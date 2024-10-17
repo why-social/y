@@ -10,7 +10,7 @@
       v-else
       class="avatar"
       :src="avatar"
-      @click.stop="goToUser(user.username)"
+      @click.stop="goToUser(author.username)"
     />
 
     <div class="data">
@@ -62,9 +62,11 @@
           ondrop="return false"
           contenteditable="false"
           placeholder="Text content"
-          :class="{ hidden: !this.content?.length }"
-          >{{ content }}</contenteditable
+          @keyup="computeValidity"
+          :class="{ hidden: !this.content?.length && editing }"
         >
+          {{ content }}
+        </contenteditable>
 
         <div
           class="pictures-container"
@@ -108,7 +110,7 @@
         <Button secondary style="margin-left: auto" @click.stop="cancelEditing">
           Cancel
         </Button>
-        <Button @click.stop="submitEdit"> Submit </Button>
+        <Button @click.stop="submitEdit" :disabled="!isValid"> Submit </Button>
       </div>
 
       <span class="date">{{ date }}</span>
@@ -205,14 +207,30 @@ export default {
       this.$refs.contentText.setAttribute('contenteditable', 'true')
     },
     cancelEditing() {
-      this.$router.go()
+      this.$refs.threadItem.removeAttribute('editable')
+      this.$refs.contentText.setAttribute('contenteditable', 'false')
+
+      Object.assign(this.$data, this.$options.data.call(this))
+
+      this.$refs.contentText.innerText = this.content
     },
     submitEdit() {
-      this.$emit('edit', {
-        content: this.$refs.contentText.innerText,
-        uploadedImages: this.uploadedImages,
-        deletedImages: this.deletedImages
-      })
+      const formData = new FormData()
+      formData.append('content', this.$refs.contentText.innerText)
+
+      for (const deleted of this.deletedImages) {
+        const captured = /^.*uploads\/(.*)\/.*$/.exec(deleted)
+
+        if (captured?.length > 0) {
+          formData.append('deletedImages', captured[1])
+        }
+      }
+
+      for (const image of this.uploadedImages) {
+        formData.append('images', image)
+      }
+
+      this.$emit('edit', formData)
 
       this.uploadedImages = []
       this.deletedImages = []
@@ -240,6 +258,8 @@ export default {
 
         return true
       })
+
+      this.computeValidity()
     },
     uploadImages() {
       let images = Object.values(event.target.files)
@@ -248,10 +268,16 @@ export default {
         images = images.slice(0, 4 - this.images?.length)
 
         images.forEach((image) => {
-          this.uploadedImages.push(image)
-          this.images.push(URL.createObjectURL(image))
+          if (image.size / 1024 / 1024 < 12) {
+            this.uploadedImages.push(image)
+            this.images.push(URL.createObjectURL(image))
+          } else {
+            window.alert('Images must not exceed 12 megabytes.')
+          }
         })
       }
+
+      this.computeValidity()
     },
     showModal(index) {
       this.isModalOpen = true
@@ -260,6 +286,10 @@ export default {
     closeModal() {
       this.isModalOpen = false
       this.modalImageIndex = null
+    },
+    computeValidity() {
+      this.isValid =
+        this.images?.length || this.$refs.contentText?.innerText?.length
     }
   },
 
@@ -268,7 +298,7 @@ export default {
       return VueJwtDecode.decode(localStorage.getItem('token'))
     },
     editing() {
-      return this.$refs.threadItem.hasAttribute('editable')
+      return this.$refs.threadItem?.hasAttribute('editable')
     },
     liked() {
       return this.likes.includes(this.viewer.userId)
@@ -282,6 +312,7 @@ div[thread-item] {
   position: relative;
   user-select: none;
   display: flex;
+  overflow-x: visible;
   width: 100%;
   font-size: 1.4rem;
   padding: 1rem;
@@ -311,12 +342,23 @@ div[thread-item] .data {
   box-sizing: border-box;
 }
 
+div[thread-item] .data {
+  overflow: visible;
+}
+
 div[thread-item] .content {
   padding-top: 1rem;
   padding-bottom: 1rem;
   display: flex;
+  overflow-x: visible;
   gap: 1rem;
   flex-direction: column;
+}
+
+div[thread-item] .content > contenteditable {
+  border-radius: 0.5rem;
+  margin: -0.5rem;
+  padding: 0.5rem;
 }
 
 div[thread-item] .name {
@@ -553,8 +595,6 @@ div[thread-item] .remove:hover {
 }
 
 div[thread-item][editable] [contenteditable='true'] {
-  border-radius: 0.5rem;
-  padding: 0.5rem;
   outline: 2px solid var(--color-outline);
 }
 

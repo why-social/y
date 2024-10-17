@@ -65,7 +65,8 @@ export default {
     async edit(payload) {
       await Api.patch(`/v1/posts/${this.item._id}`, payload, {
         headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+          'Content-Type': 'multipart/form-data',
+          Authorization: localStorage.getItem('token')
         }
       })
     },

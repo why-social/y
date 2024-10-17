@@ -117,7 +117,6 @@ export default {
     async updateUserData(updatedData) {
       try {
         const token = localStorage.getItem('token')
-        console.log(updatedData)
         updatedData = {
           name: updatedData.name,
           about_me: updatedData.about_me,
