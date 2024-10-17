@@ -25,6 +25,8 @@ async function updateImages(images, req, deleted) {
     if (Array.isArray(deleted)) {
         for (const hash of deleted) {
             await removeUsage(hash);
+        }
+        for (const hash of deleted) {
             removeFromArray(images, hash);
         }
     } else if (deleted?.length) {

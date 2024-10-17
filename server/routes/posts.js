@@ -262,9 +262,10 @@ router.put("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, async
 
 		newData.likes = newData.likes || [];
 		newData.comments = newData.comments || [];
+		newData.images = newData.images || [];
 
-		Object.assign(post, newData);
 		await updateImages(post.images, req, post.images);
+		Object.assign(post, newData);
 		await post.save();
 
 		return res.status(200).json(post);

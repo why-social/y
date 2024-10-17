@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "6327e569-d1a3-44e6-a5e6-386cb18f90b8",
+		"_postman_id": "17103147-fc8c-4671-99d4-6a60894c3d50",
 		"name": "server",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "38093461"
@@ -3654,8 +3654,7 @@
 											"key": "images",
 											"type": "file",
 											"src": [
-												"./tests/testImage3.png",
-												"./tests/testImage.png"
+												"./tests/testImage3.png"
 											]
 										}
 									]
@@ -3942,6 +3941,7 @@
 											"});\r",
 											"\r",
 											"pm.test(\"Only image 1 left\", function () {\r",
+											"    pm.expect(pm.response.json()).to.have.length(1);\r",
 											"    pm.expect(pm.response.json()).to.contain(pm.environment.get(\"image1\"));\r",
 											"});"
 										],
@@ -3969,6 +3969,21 @@
 						},
 						{
 							"name": "Delete post 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
 							"request": {
 								"method": "DELETE",
 								"header": [],
@@ -4292,8 +4307,7 @@
 													"key": "images",
 													"type": "file",
 													"src": [
-														"./tests/testImage.png",
-														"./tests/testImage2.png"
+														"./tests/testImage.png"
 													]
 												}
 											]
