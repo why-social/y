@@ -875,10 +875,11 @@
 									"});\r",
 									"\r",
 									"pm.test(\"All users found\", function () {\r",
-									"    pm.expect(pm.response.json()).to.have.length(2);\r",
+									"    pm.expect(pm.response.json()).to.have.length(3);\r",
 									"\r",
 									"    pm.expect(pm.response.json()).to.contain(pm.environment.get(\"username1\"));\r",
 									"    pm.expect(pm.response.json()).to.contain(pm.environment.get(\"username2\"));\r",
+									"    pm.expect(pm.response.json()).to.contain(\"Admin\");\r",
 									"})\r",
 									""
 								],
@@ -1002,6 +1003,60 @@
 								"users",
 								"{{user1}}",
 								"profile_picture"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log into admin account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if(pm.response.code == 200){\r",
+									"    pm.environment.set(\"admin_token\", pm.response.json().token);\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Token contains valid admin key\", function () {\r",
+									"    var atob = require('atob');\r",
+									"    const token = JSON.parse(atob(pm.response.json().token.split('.')[1]));\r",
+									"    pm.expect(token).to.be.an('object');\r",
+									"    pm.expect(token).to.have.property('adminKey');\r",
+									"    pm.expect(token.adminKey).to.eql(pm.environment.get(\"ADMIN_KEY\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"Admin\",\r\n    \"password\": \"{{ADMIN_PASSWORD}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/login",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"login"
 							]
 						}
 					},
@@ -4406,16 +4461,17 @@
 									],
 									"request": {
 										"auth": {
-											"type": "noauth"
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{admin_token}}",
+													"type": "string"
+												}
+											]
 										},
 										"method": "DELETE",
-										"header": [
-											{
-												"key": "authorization",
-												"value": "{{ADMIN_KEY}}",
-												"type": "text"
-											}
-										],
+										"header": [],
 										"url": {
 											"raw": "{{host}}/api/v1/images",
 											"host": [
@@ -4890,14 +4946,18 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{admin_token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
-						"header": [
-							{
-								"key": "authorization",
-								"value": "{{ADMIN_KEY}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "{{host}}/api/v1/users",
 							"host": [
@@ -4934,13 +4994,7 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "authorization",
-								"value": "{{ADMIN_KEY}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "{{host}}/api/v1/users",
 							"host": [

@@ -16,6 +16,7 @@ const authMiddleware = (req, res, next) => {
         const decoded = jwt.verify(token, JWT_SECRET_KEY); // Verify token
         req.user = decoded; // If token is valid, set user to decoded (user id)
 		req.isAuth = true;
+        req.isAdmin = (decoded.adminKey === process.env.ADMIN_KEY);
     } catch (error) {
         // No action needed, user is not logged in
     }

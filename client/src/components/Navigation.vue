@@ -93,7 +93,7 @@ export default {
   computed: {
     isAdmin: () => {
       const decoded = VueJwtDecode.decode(localStorage.getItem('token'))
-      return decoded.isAdmin
+      return !!decoded.adminKey
     }
   }
 }
