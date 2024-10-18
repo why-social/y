@@ -122,7 +122,10 @@
 							"script": {
 								"exec": [
 									"pm.environment.set(\"username1\", \"rizzvand1\");\r",
-									"pm.environment.set(\"password1\", \"megaPassSmolPipi*3d\");"
+									"pm.environment.set(\"password1\", \"megaPassSmolPipi*3d\");\r",
+									"pm.environment.set(\"name1\", \"Rizzvan Albu One\");\r",
+									"pm.environment.set(\"email1\", \"razvavnananna@gmail.com\");\r",
+									"pm.environment.set(\"birthday1\", \"1990-01-01T00:00:00Z\");"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -134,7 +137,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Rizzvan Albu One\",\n    \"email\": \"razvavnananna@gmail.com\",\n    \"username\": \"{{username1}}\",\n    \"password\": \"{{password1}}\",\n    \"birthday\": \"1990-01-01T00:00:00Z\"\n}",
+							"raw": "{\n    \"name\": \"{{name1}}\",\n    \"email\": \"{{email1}}\",\n    \"username\": \"{{username1}}\",\n    \"password\": \"{{password1}}\",\n    \"birthday\": \"{{birthday1}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -508,6 +511,16 @@
 								"type": "text/javascript",
 								"packages": {}
 							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"name1\", \"Rizzvan Albu name change\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
 					],
 					"request": {
@@ -525,7 +538,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Rizzvan Albu name change\"\n}",
+							"raw": "{\n    \"name\": \"{{name1}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -922,6 +935,13 @@
 								"type": "text/javascript",
 								"packages": {}
 							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"packages": {},
+								"type": "text/javascript"
+							}
 						}
 					],
 					"request": {
@@ -958,6 +978,70 @@
 								"users",
 								"{{user1}}",
 								"profile_picture"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "password change via PUT Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"password1\", pm.environment.get(\"password1\") + \"a\")",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"password\": \"{{password1}}\",\n    \"name\": \"{{name1}}\",\n    \"email\": \"{{email1}}\",\n    \"about_me\": \"{{about_me1}}\",\n    \"birthday\": \"{{birthday1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{user1}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{user1}}"
 							]
 						}
 					},
@@ -3653,9 +3737,7 @@
 										{
 											"key": "images",
 											"type": "file",
-											"src": [
-												"./tests/testImage3.png"
-											]
+											"src": "./tests/testImage3.png"
 										}
 									]
 								},
@@ -4306,9 +4388,7 @@
 												{
 													"key": "images",
 													"type": "file",
-													"src": [
-														"./tests/testImage.png"
-													]
+													"src": "./tests/testImage.png"
 												}
 											]
 										},

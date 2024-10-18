@@ -342,7 +342,7 @@ router.put('/api/v1/users/:id', authMiddleware, async (req, res, next) => {
       throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 
     // Check if the fields are present
-    if(!req.body || !req.body.name || !req.body.email || !req.body.birthday || !req.body.password || !('about_me' in req.body) || !req.body.profile_picture_url)
+    if(!req.body || !req.body.name || !req.body.email || !req.body.birthday || !req.body.password || !('about_me' in req.body))
       throw new ValidationError(errorMsg.REQUIRED_FIELDS);
 
     const newFields = req.body;
@@ -365,7 +365,6 @@ router.put('/api/v1/users/:id', authMiddleware, async (req, res, next) => {
     user.birthday = newFields.birthday;
     user.password = newFields.password;
     user.about_me = newFields.about_me;
-    user.profile_picture = newFields.profile_picture;
 
     await user.save();
 
