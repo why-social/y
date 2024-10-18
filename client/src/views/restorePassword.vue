@@ -81,7 +81,6 @@ export default {
         name: oldData.name,
         email: oldData.email,
         about_me: oldData.about_me,
-        profile_picture_url: oldData.profile_picture_url,
         birthday: oldData.birthday
       }
 
