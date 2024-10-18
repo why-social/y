@@ -302,8 +302,6 @@ router.patch("/api/v1/posts/:id", authMiddleware, uploadMiddleware.multiple, asy
 			post.is_edited = true;
 		}
 
-		console.log('3')
-
 		await post.save();
 
 		res.status(200).json(post);
