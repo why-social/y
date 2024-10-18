@@ -4,7 +4,7 @@
       <span>Who to follow</span>
     </div>
     <div class="suggestion" v-for="user of suggestions" :key="user">
-      <Follower :userId="user" />
+      <Follower :username="user" />
       <Button
         class="inter-tight-medium follow-button"
         @click="follow(user)"
@@ -27,8 +27,8 @@ export default {
     }
   },
   methods: {
-    async follow(id) {
-      await Api.post(`/v1/users/followings/${id}`, null, {
+    async follow(username) {
+      await Api.post(`/v1/users/followings/${username}`, null, {
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token')
         }
@@ -41,6 +41,7 @@ export default {
           Authorization: 'Bearer ' + localStorage.getItem('token')
         }
       }).then((response) => {
+        console.log(`suggestions: ${response.data}`)
         this.suggestions = response.data
       })
     }
@@ -50,7 +51,7 @@ export default {
   },
   computed: {
     viewer() {
-      return VueJwtDecode.decode(localStorage.getItem('token')).userId
+      return VueJwtDecode.decode(localStorage.getItem('token')).username
     }
   }
 }

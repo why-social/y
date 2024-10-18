@@ -100,7 +100,7 @@ export default {
       return VueJwtDecode.decode(localStorage.getItem('token'))
     },
     isFollowedByViewer() {
-      return this.userData.followers.includes(this.viewer.userId)
+      return this.userData.followers.includes(this.viewer.username)
     }
   },
   watch: {
@@ -113,7 +113,7 @@ export default {
   },
   methods: {
     async follow() {
-      await Api.post(`/v1/users/followings/${this.userData._id}`, null, {
+      await Api.post(`/v1/users/followings/${this.userData.username}`, null, {
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token')
         }
