@@ -18,12 +18,15 @@ router.get("/api/v1/users/search", async (req, res, next) => {
 	try{
 		// Check if the search query is present
 		if(!req.query.username) throw new ValidationError(errorMsg.REQUIRED_FIELDS);
+
+		let searchQuery = []
 		
 		// Check username validity
-		if(!usernameRegex.test(req.query.username)) throw new ValidationError(errorMsg.INVALID_USERNAME);
+		if(usernameRegex.test(req.query.username)) searchQuery.push({username: {$regex: new RegExp(req.query.username)}});
+		if(nameRegex.test(req.query.username)) searchQuery.push({name: {$regex: new RegExp(req.query.username)}});
 		
 		// Search for users by name or username
-		let result = await mongoose.models["Users"].findOne({username: req.query.username}).populate('profile_picture_url');
+		let result = await mongoose.models["Users"].findOne({$or: searchQuery}).populate('profile_picture_url');
 		if(!result) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
 		const response = {
