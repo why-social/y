@@ -262,15 +262,15 @@ export default {
       this.computeValidity()
     },
     uploadImages() {
-      let images = Object.values(event.target.files)
+      const images = Object.values(event.target.files)
 
       if (images?.length) {
-        images = images.slice(0, 4 - this.images?.length)
-
-        images.forEach((image) => {
-          if (image.size / 1024 / 1024 < 12) {
-            this.uploadedImages.push(image)
-            this.images.push(URL.createObjectURL(image))
+        images.forEach(async (image) => {
+          if (this.images?.length < 4 && image.size / 1024 / 1024 < 12) {
+            if (!(await this.checkForDuplicates(this.images, image))) {
+              this.uploadedImages.push(image)
+              this.images.push(URL.createObjectURL(image))
+            }
           } else {
             window.alert('Images must not exceed 12 megabytes.')
           }
@@ -290,6 +290,33 @@ export default {
     computeValidity() {
       this.isValid =
         this.images?.length || this.$refs.contentText?.innerText?.length
+    },
+    async checkForDuplicates(images, toAdd) {
+      const base64Image = await this.imageToBase64(toAdd)
+
+      for (let index = 0; index < images?.length; index++) {
+        const base64 = await this.imageUrlToBase64(images[index])
+
+        if (base64 === base64Image) {
+          return true
+        }
+      }
+
+      return false
+    },
+    imageToBase64(image) {
+      return new Promise((resolve) => {
+        const reader = new FileReader()
+
+        reader.onloadend = () => resolve(reader.result)
+        reader.readAsDataURL(image)
+      })
+    },
+    async imageUrlToBase64(url) {
+      const data = await fetch(url)
+      const blob = await data.blob()
+
+      return this.imageToBase64(blob)
     }
   },
 
