@@ -45,14 +45,23 @@
     --color-border: #757575;
   }
 
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+
   body,
   html {
     width: 100%;
-    min-height: 100vh;
     padding: 0;
     height: 0;
     background: var(--color-background);
     color: var(--color-on-background);
+  }
+
+  body {
+    min-height: 100vh;
+    overflow: auto;
   }
 
   hr {
@@ -64,10 +73,10 @@
 
   #app {
     width: 100%;
+    min-height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh + 1px);
   }
 
   .inter-tight-light,

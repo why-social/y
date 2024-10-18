@@ -7,7 +7,7 @@
     <hr />
 
     <NavigationItem to="/" icon="home" text="Home" />
-    <NavigationItem to="/discover" icon="search" text="Discover" />
+    <NavigationItem to="/discover" icon="search" text="Discover" id="nav-discover" />
     <NavigationItem to="/profile/me" icon="person" text="Profile" />
 
     <hr />
@@ -128,9 +128,7 @@ export default {
 #navbar {
   padding: 20px;
   box-sizing: border-box;
-  border-right: 1px solid var(--color-border);
   height: 100%;
-  position: fixed;
   display: flex;
   flex-direction: column;
 }
@@ -141,6 +139,7 @@ hr {
 
 button {
   margin: 0.5rem 0;
+  width: 100%;
 }
 
 .nav-logo {
@@ -228,6 +227,12 @@ button {
   }
 
   .nuke {
+    display: none;
+  }
+}
+
+@media (min-width: 1200px) {
+  #nav-discover {
     display: none;
   }
 }

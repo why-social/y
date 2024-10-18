@@ -1,9 +1,18 @@
 <template>
   <div id="search">
-    <Input icon="search" type="text" v-model="searchQuery" @input="handleInputChange"/>
-    <Follower :userId="searchUserId" v-if="searchUserId.length!=0"/>
-    <span class="search-not-found" v-if="searchQuery.length>=3&&searchUserId.length==0">No user found</span>
-    <Suggestions/>
+    <Input
+      icon="search"
+      type="text"
+      v-model="searchQuery"
+      @input="handleInputChange"
+    />
+    <Follower :userId="searchUserId" v-if="searchUserId.length != 0" />
+    <span
+      class="search-not-found"
+      v-if="searchQuery.length >= 3 && searchUserId.length == 0"
+      >No user found</span
+    >
+    <Suggestions />
   </div>
 </template>
 
@@ -25,7 +34,9 @@ export default {
           this.searchUserId = ''
           return
         }
-        const response = await Api.get('/v1/users/search?username=' + event.target.value)
+        const response = await Api.get(
+          '/v1/users/search?username=' + event.target.value
+        )
         this.searchUserId = response.data._id
       } catch (error) {
         if (error.response.status === 404 || error.response.status === 400) {
@@ -46,6 +57,7 @@ export default {
   width: 100%;
   position: relative;
   display: flex;
+  gap: 1rem;
   flex-direction: column;
 }
 
@@ -55,28 +67,12 @@ export default {
     padding-bottom: 20px;
     padding-left: 40px;
     box-sizing: border-box;
-    border-left: 1px solid var(--color-border);
-    position: fixed;
-  }
-
-  #search {
-    border-left: 1px solid var(--color-border);
-  }
-
-  .input-container {
-    width: 18rem;
-  }
-}
-
-@media (min-width: 1600px) {
-  .input-container {
-    width: 24rem;
   }
 }
 
 .search-not-found {
-  margin-top: 1.5rem;
-  margin-right: 0.5rem;
+  width: 100%;
+  text-align: center;
   color: var(--color-text-secondary);
   font-size: 1.2rem;
 }

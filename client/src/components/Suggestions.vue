@@ -4,10 +4,13 @@
       <span>Who to follow</span>
     </div>
     <div class="suggestion" v-for="user of suggestions" :key="user">
-      <Follower :userId="user"/>
-      <Button class="inter-tight-medium follow-button" @click="follow(user)" secondary>
+      <Follower :userId="user" />
+      <Button
+        class="inter-tight-medium follow-button"
+        @click="follow(user)"
+        secondary
+      >
         <span class="material-symbols-outlined">add</span>
-        Follow
       </Button>
     </div>
   </div>
@@ -37,7 +40,7 @@ export default {
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token')
         }
-      }).then(response => {
+      }).then((response) => {
         this.suggestions = response.data
       })
     }
@@ -51,7 +54,6 @@ export default {
     }
   }
 }
-
 </script>
 
 <style scoped>
@@ -59,9 +61,10 @@ export default {
   border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 0.7rem 1rem;
-  margin: 12rem 0;
   display: flex;
   flex-direction: column;
+  position: sticky;
+  top: 0;
 }
 
 .title {
@@ -79,21 +82,10 @@ export default {
 }
 
 .follow-button {
+  margin-left: auto;
   font-size: 1rem;
   padding: 0.5rem;
   height: fit-content;
   gap: 0.2rem;
-}
-
-@media (min-width: 1200px) {
-  .suggestions-container {
-    width: 18rem;
-  }
-}
-
-@media (min-width: 1600px) {
-  .suggestions-container {
-    width: 24rem;
-  }
 }
 </style>
