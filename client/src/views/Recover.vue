@@ -9,7 +9,10 @@
       type="email"
       placeholder="E-mail"
       required
+      @input="clearError"
     />
+
+    <span class="error text-center inter-tight-regular emailError">{{ errorText }}</span>
 
     <div class="d-flex justify-content-center flex-column gap-2 mt-5">
       <Button type="submit" class="w-100">Send recovery mail</Button>
@@ -23,7 +26,8 @@ import { Api } from '@/Api'
 export default {
   data() {
     return {
-      email: ''
+      email: '',
+      errorText: ''
     }
   },
   methods: {
@@ -39,11 +43,18 @@ export default {
           }
         })
         .catch((error) => {
-          if (error.response.status === 500) {
+          if (error.response.status === 404) {
+            this.errorText = 'Email not found'
+          } else if (error.response.status === 400) {
+            this.errorText = 'No email provided'
+          } else if (error.response.status === 500) {
             alert('Server error, please try again later')
           }
           console.error(error)
         })
+    },
+    clearError() {
+      this.errorText = ''
     }
   }
 }
@@ -52,5 +63,8 @@ export default {
 <style>
 .cool {
   font-size: 1.5rem;
+}
+.emailError {
+  height: 1rem;
 }
 </style>
