@@ -1,9 +1,13 @@
 const { faker } = require('@faker-js/faker');
 const database = require('../db/database');
-const crypto = require('crypto');
 const models = database.mongoose.models;
 
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/whyDB';
+
+const USER_COUNT = 200;
+const POST_COUNT = 1000;
+const COMMENT_COUNT = 2000;
+const FOLLOW_COUNT = USER_COUNT * 4;
 
 database.connect(mongoURI)
     .then(async () => {
@@ -44,18 +48,21 @@ database.connect(mongoURI)
                 profilePictures.push(image);
             }
 
-            console.log('Retrieved mock profile pictures.');
+            console.log('\nRetrieved mock profile pictures.');
 
             // Generate mock users
             const users = [];
-            for (let i = 0; i < 25; i++) {
+            process.stdout.write("Generating users");
+            for (let i = 0; i < USER_COUNT; i++) {
+                if (i % (USER_COUNT/10) === 0) process.stdout.write(".");
+
                 const firstName = faker.person.firstName()
                 const lastName = faker.person.lastName()
                 const user = new models.Users({
                     name: firstName + " " + lastName,
                     email: faker.internet.email(),
-                    password: faker.internet.password(),
-                    username: faker.internet.userName({ firstName, lastName }).replaceAll('.', '_').replaceAll('-','_'),
+                    password: faker.internet.password({ length: 20 }),
+                    username: faker.internet.userName({ firstName, lastName }).replaceAll('.', '_').replaceAll('-','_').slice(0, 20),
                     join_date: faker.date.past(),
                     birthday: faker.date.past(30, new Date('1950-01-01')),
                     last_time_posted: faker.date.recent(),
@@ -78,11 +85,14 @@ database.connect(mongoURI)
                 await user.save();
             }
 
-            console.log('Generated mock users.');
+            console.log('\nGenerated mock users.');
 
             // Generate mock posts
+            process.stdout.write("Generating posts");
             const posts = [];
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < POST_COUNT; i++) {
+                if (i % (POST_COUNT/10) === 0) process.stdout.write(".");
+
                 let userIndex = faker.number.int({ min: 0, max: users.length - 1 });
 
                 const post = new models.Posts({
@@ -124,11 +134,13 @@ database.connect(mongoURI)
                 await post.save();
             }
 
-            console.log('Generated mock posts.');
+            console.log('\nGenerated mock posts.');
 
             // Generate mock comments
+            process.stdout.write("Generating comments");
             const comments = [];
-            for (let i = 0; i < 125; i++) {
+            for (let i = 0; i < COMMENT_COUNT; i++) {
+                if (i % (COMMENT_COUNT/10) === 0) process.stdout.write(".");
                 let userIndex = faker.number.int({ min: 0, max: users.length - 1 });
 
                 const comment = new models.Comments({
@@ -169,10 +181,13 @@ database.connect(mongoURI)
                 await comment.save();
             }
 
-            console.log('Generated mock comments.');
+            console.log('\nGenerated mock comments.');
 
             // Generate user follow relationships
-            for (let i = 0; i < 20; i++) {
+            process.stdout.write("Generating follow relations");
+            for (let i = 0; i < FOLLOW_COUNT; i++) {
+                if (i % (FOLLOW_COUNT/10) === 0) process.stdout.write(".");
+
                 const follow = new models.User_follows_user({
                     follower: users[faker.number.int({ min: 0, max: users.length - 1 })]._id,
                     follows: users[faker.number.int({ min: 0, max: users.length - 1 })]._id
@@ -181,7 +196,7 @@ database.connect(mongoURI)
                 await follow.save();
             }
 
-            console.log('Generated mock follow relations.');
+            console.log('\nGenerated mock follow relations.');
 
             console.log('Mock data successfully created.');
         } catch (error) {
