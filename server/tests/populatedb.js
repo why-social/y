@@ -48,7 +48,7 @@ database.connect(mongoURI)
 
             // Generate mock users
             const users = [];
-            for (let i = 0; i < 25; i++) {
+            for (let i = 0; i < 200; i++) {
                 const firstName = faker.person.firstName()
                 const lastName = faker.person.lastName()
                 const user = new models.Users({
@@ -82,7 +82,7 @@ database.connect(mongoURI)
 
             // Generate mock posts
             const posts = [];
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 1000; i++) {
                 let userIndex = faker.number.int({ min: 0, max: users.length - 1 });
 
                 const post = new models.Posts({
@@ -128,7 +128,7 @@ database.connect(mongoURI)
 
             // Generate mock comments
             const comments = [];
-            for (let i = 0; i < 125; i++) {
+            for (let i = 0; i < 2000; i++) {
                 let userIndex = faker.number.int({ min: 0, max: users.length - 1 });
 
                 const comment = new models.Comments({
@@ -172,7 +172,7 @@ database.connect(mongoURI)
             console.log('Generated mock comments.');
 
             // Generate user follow relationships
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 600; i++) {
                 const follow = new models.User_follows_user({
                     follower: users[faker.number.int({ min: 0, max: users.length - 1 })]._id,
                     follows: users[faker.number.int({ min: 0, max: users.length - 1 })]._id
