@@ -52,7 +52,6 @@ export default {
   font-size: 1rem;
   padding: 0.8rem 0rem;
   gap: 0.25rem;
-  flex: 1;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -77,6 +76,7 @@ export default {
   text-overflow: ellipsis;
 }
 .info-name {
+  overflow: hidden;
   font-size: 1rem;
   font-weight: 600;
 }
@@ -85,6 +85,7 @@ export default {
   cursor: pointer;
 }
 .info-username {
+  overflow: hidden;
   font-size: 1rem;
   color: #aaa;
 }

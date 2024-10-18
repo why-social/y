@@ -30,12 +30,7 @@ export default {
 
   methods: {
     loadData() {
-      if (
-        !this.querying &&
-        this.next &&
-        this.lastQuery !== this.next &&
-        document.body.scrollHeight - window.innerHeight < window.scrollY + 500
-      ) {
+      if (!this.querying && this.next && this.lastQuery !== this.next) {
         this.querying = true
 
         Api.get(this.next, {
@@ -57,15 +52,23 @@ export default {
             this.querying = false
           })
       }
+    },
+    scrollListener() {
+      if (
+        document.body.scrollHeight - window.innerHeight <
+        document.body.scrollTop + 500
+      ) {
+        this.loadData()
+      }
     }
   },
 
   created() {
-    window.addEventListener('scroll', this.loadData)
+    document.body.addEventListener('scroll', this.scrollListener)
   },
 
   unmounted() {
-    window.removeEventListener('scroll', this.loadData)
+    window.removeEventListener('scroll', this.scrollListener)
   },
 
   mounted() {
@@ -78,7 +81,7 @@ export default {
 .recents-end-message {
   width: 100%;
   text-align: center;
-  margin: 2rem;
+  padding: 2rem;
   font-size: 1.5rem;
   font-weight: 300;
 }

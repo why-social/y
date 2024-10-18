@@ -469,7 +469,7 @@ div[thread-item] .clickable {
   align-items: center;
   gap: 0.2rem;
   cursor: pointer;
-  transition: 0.3s;
+  transition: 0.3s color;
   opacity: 0.7;
 }
 

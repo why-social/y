@@ -1,22 +1,34 @@
 <template>
-  <div class="discovery-search-container">
-    <Search />
-  </div>
+  <div class="discovery-search-container"></div>
 </template>
 
-<style scoped>
-.discovery-search-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  border-left: none;
-}
+<script>
+export default {
+  mounted() {
+    const content = document.getElementById('content-container')
+    const searchContainer = document.getElementById('search-container')
 
-@media (min-width: 1200px){
-  .discovery-search-container {
-    display: none;
+    content.style.flex = 'none'
+    content.style.width = '0px'
+
+    searchContainer.style.width = '100%'
+    searchContainer.style.display = 'flex'
+  },
+  unmounted() {
+    const content = document.getElementById('content-container')
+    const searchContainer = document.getElementById('search-container')
+
+    content.style.flex = ''
+    content.style.width = ''
+
+    searchContainer.style.width = ''
+    searchContainer.style.display = ''
   }
+}
+</script>
+
+<style>
+.discovery-search-container {
+  width: 0px;
 }
 </style>

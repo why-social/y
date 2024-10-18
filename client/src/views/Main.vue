@@ -3,9 +3,17 @@
     <div class="nav-container">
       <Navigation />
     </div>
+
+    <div class="divider"></div>
+
     <div class="search-content-container">
-      <router-view :key="$route.fullPath" />
-      <div class="search-container">
+      <div id="content-container">
+        <router-view :key="$route.fullPath" />
+      </div>
+
+      <div class="divider"></div>
+
+      <div id="search-container">
         <Search />
       </div>
     </div>
@@ -24,57 +32,95 @@ export default {
 
 <style scoped>
 .container {
-  padding-left: 0;
-  padding-right: 0;
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
 }
 
 .nav-container {
-  min-height: 100vh;
   box-sizing: border-box;
-  display: relative;
-  padding-right: calc(4.4rem + 40px);
+  position: sticky;
+  height: 100vh;
+  top: 0;
+  width: fit-content;
+  bottom: unset;
 }
 
 .search-content-container {
   display: flex;
   width: 100%;
-  overflow: hidden;
 }
 
-.search-container {
+#content-container {
+  flex: 1;
   min-height: 100vh;
   box-sizing: border-box;
-  display: none;
-  padding-right: 0;
 }
 
-/* god bless */
+#search-container {
+  min-height: 100vh;
+  height: 100%;
+  width: fit-content;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: none;
+}
+
+.divider {
+  position: sticky;
+  top: 0;
+  width: 1px;
+  display: none;
+  background: var(--color-border);
+}
+
+.container .divider {
+  display: unset;
+}
+
 @media (max-width: 630px) {
+  .container {
+    max-width: 100%;
+  }
+
   .nav-container {
-    padding-right: 0;
+    width: 100%;
+    height: fit-content;
+    top: unset;
+    bottom: 0;
     position: fixed;
     z-index: 100000;
   }
-}
 
-@media (max-width: 768px) {
-  .container {
-    max-width: 100%;
+  .container .divider {
+    display: none;
   }
 }
 
 /* s (small screens, 768px and up) */
 @media (min-width: 768px) {
   .container {
-    max-width: 808px;
-    margin: 0;
+    max-width: unset;
+  }
+}
+
+@media (min-width: 820px) {
+  .container {
+    max-width: 820px;
+  }
+
+  .search-content-container .divider {
+    display: unset;
   }
 }
 
 /* l (large desktops, 992px and up) */
 @media (min-width: 992px) {
   .container {
-    max-width: 808px;
+    max-width: 820px;
   }
 }
 
@@ -84,8 +130,8 @@ export default {
     max-width: 1160px;
   }
 
-  .search-container {
-    padding-right: calc(18rem + 40px);
+  #search-container {
+    width: 20rem;
     display: inherit;
   }
 }
@@ -96,8 +142,8 @@ export default {
     max-width: 1340px;
   }
 
-  .nav-container {
-    padding-right: calc(13rem + 60px);
+  #search-container {
+    width: 24rem;
   }
 }
 
@@ -106,9 +152,8 @@ export default {
   .container {
     max-width: 1540px;
   }
-
-  .search-container {
-    padding-right: calc(24rem + 40px);
+  #search-container {
+    width: 28rem;
   }
 }
 </style>
