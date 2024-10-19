@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "17103147-fc8c-4671-99d4-6a60894c3d50",
+		"_postman_id": "83dc3d4d-1149-4f41-b785-dd69d4ef85d4",
 		"name": "server",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "38093461"
@@ -9,94 +9,6 @@
 		{
 			"name": "USERS",
 			"item": [
-				{
-					"name": "get invalid ID",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 400\", function () {",
-									"    pm.response.to.have.status(400);",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "asdf",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/api/v1/users/123sd",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"123sd"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "get invalid user",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 404\", function () {",
-									"    pm.response.to.have.status(404);",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "asdf",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/api/v1/users/66e76ceeae466024710b57ff",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"66e76ceeae466024710b57ff"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "create user 1",
 					"event": [
@@ -179,7 +91,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/{{user1}}",
+							"raw": "{{host}}/api/v1/users/{{username1}}",
 							"host": [
 								"{{host}}"
 							],
@@ -187,7 +99,7 @@
 								"api",
 								"v1",
 								"users",
-								"{{user1}}"
+								"{{username1}}"
 							]
 						}
 					},
@@ -223,7 +135,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/{{user1}}",
+							"raw": "{{host}}/api/v1/users/{{username1}}",
 							"host": [
 								"{{host}}"
 							],
@@ -231,7 +143,7 @@
 								"api",
 								"v1",
 								"users",
-								"{{user1}}"
+								"{{username1}}"
 							]
 						}
 					},
@@ -273,7 +185,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Rizzvan Albu Two\",\n    \"email\": \"asddsddsf@hot.com\",\n    \"password\": \"megaPassSmolPipi*3d\",\n    \"username\": \"rizzvand2\",\n    \"birthday\": \"1990-01-01T00:00:00Z\"\n}",
+							"raw": "{\n    \"name\": \"Rizzvan Albu Two\",\n    \"email\": \"asddsddsf@hot.com\",\n    \"password\": \"megaPassSmolPipi*3d\",\n    \"username\": \"{{username2}}\",\n    \"birthday\": \"1990-01-01T00:00:00Z\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -315,7 +227,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/{{user2}}",
+							"raw": "{{host}}/api/v1/users/{{username2}}",
 							"host": [
 								"{{host}}"
 							],
@@ -323,7 +235,7 @@
 								"api",
 								"v1",
 								"users",
-								"{{user2}}"
+								"{{username2}}"
 							]
 						}
 					},
@@ -359,7 +271,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/followings/{{user2}}",
+							"raw": "{{host}}/api/v1/users/followings/{{username2}}",
 							"host": [
 								"{{host}}"
 							],
@@ -368,7 +280,7 @@
 								"v1",
 								"users",
 								"followings",
-								"{{user2}}"
+								"{{username2}}"
 							]
 						}
 					},
@@ -381,12 +293,15 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Your test name\", function () {",
-									"    var jsonData = pm.response.json()[0];",
-									"    var razvan1ID = pm.environment.get(\"user1\");",
-									"    var razvan2ID = pm.environment.get(\"user2\");",
-									"    pm.expect(jsonData.follower).to.eql(razvan1ID);",
-									"    pm.expect(jsonData.follows).to.eql(razvan2ID);",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Correct followings list\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    pm.expect(jsonData).to.have.length(1);",
+									"    pm.expect(jsonData).to.contain(pm.environment.get(\"username2\"));",
 									"});"
 								],
 								"type": "text/javascript",
@@ -398,7 +313,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/{{user1}}/followings",
+							"raw": "{{host}}/api/v1/users/{{username1}}/followings",
 							"host": [
 								"{{host}}"
 							],
@@ -406,7 +321,7 @@
 								"api",
 								"v1",
 								"users",
-								"{{user1}}",
+								"{{username1}}",
 								"followings"
 							]
 						}
@@ -420,12 +335,15 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Your test name\", function () {",
-									"    var jsonData = pm.response.json()[0];",
-									"    var razvan1ID = pm.environment.get(\"user1\");",
-									"    var razvan2ID = pm.environment.get(\"user2\");",
-									"    pm.expect(jsonData.follower).to.eql(razvan1ID);",
-									"    pm.expect(jsonData.follows).to.eql(razvan2ID);",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Correct followings list\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    pm.expect(jsonData).to.have.length(1);",
+									"    pm.expect(jsonData).to.contain(pm.environment.get(\"username1\"));",
 									"});"
 								],
 								"type": "text/javascript",
@@ -437,7 +355,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/{{user2}}/followers",
+							"raw": "{{host}}/api/v1/users/{{username2}}/followers",
 							"host": [
 								"{{host}}"
 							],
@@ -445,7 +363,7 @@
 								"api",
 								"v1",
 								"users",
-								"{{user2}}",
+								"{{username2}}",
 								"followers"
 							]
 						}
@@ -482,7 +400,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/followings/{{user1}}",
+							"raw": "{{host}}/api/v1/users/followings/{{username1}}",
 							"host": [
 								"{{host}}"
 							],
@@ -491,7 +409,7 @@
 								"v1",
 								"users",
 								"followings",
-								"{{user1}}"
+								"{{username1}}"
 							]
 						}
 					},
@@ -624,6 +542,16 @@
 								"type": "text/javascript",
 								"packages": {}
 							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"username3\", \"rizzvand3\")"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
 					],
 					"request": {
@@ -631,7 +559,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Rizzvan Albu Three\",\n    \"email\": \"asddsddsf@mail.com\",\n    \"password\": \"megaPassSmolPipi*3d\",\n    \"username\": \"rizzvand3\",\n    \"birthday\": \"1990-01-01T00:00:00Z\"\n}",
+							"raw": "{\n    \"name\": \"Rizzvan Albu Three\",\n    \"email\": \"asddsddsf@mail.com\",\n    \"password\": \"megaPassSmolPipi*3d\",\n    \"username\": \"{{username3}}\",\n    \"birthday\": \"1990-01-01T00:00:00Z\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -683,7 +611,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/followings/{{user3}}",
+							"raw": "{{host}}/api/v1/users/followings/{{username3}}",
 							"host": [
 								"{{host}}"
 							],
@@ -692,7 +620,7 @@
 								"v1",
 								"users",
 								"followings",
-								"{{user3}}"
+								"{{username3}}"
 							]
 						}
 					},
@@ -711,7 +639,7 @@
 									"\r",
 									"pm.test(\"Suggestions generated correctly\", function () {\r",
 									"   pm.expect(pm.response.json()).to.be.an('array');\r",
-									"   pm.expect(pm.response.json()).to.contain(pm.environment.get(\"user3\"));\r",
+									"   pm.expect(pm.response.json()).to.contain(pm.environment.get(\"username3\"));\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -733,7 +661,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/{{user1}}/suggestions",
+							"raw": "{{host}}/api/v1/users/{{username1}}/suggestions",
 							"host": [
 								"{{host}}"
 							],
@@ -741,7 +669,7 @@
 								"api",
 								"v1",
 								"users",
-								"{{user1}}",
+								"{{username1}}",
 								"suggestions"
 							]
 						}
@@ -841,7 +769,11 @@
 									"});\r",
 									"\r",
 									"pm.test(\"User found\", function () {\r",
-									"    pm.expect(pm.response.json().username).to.equal(pm.environment.get(\"username1\"));\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.be.an('array');\r",
+									"    pm.expect(responseJson).to.have.length(1);\r",
+									"\r",
+									"    pm.expect(responseJson).to.contain(pm.environment.get(\"username1\"));\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -856,7 +788,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/api/v1/users/search?username={{username1}}",
+							"raw": "{{host}}/api/v1/users/search?query={{username1}}",
 							"host": [
 								"{{host}}"
 							],
@@ -868,8 +800,60 @@
 							],
 							"query": [
 								{
-									"key": "username",
+									"key": "query",
 									"value": "{{username1}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search by part of username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"User found\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.be.an('array');\r",
+									"    pm.expect(responseJson).to.have.length(2);\r",
+									"\r",
+									"    pm.expect(responseJson).to.contain(pm.environment.get(\"username1\"));\r",
+									"    pm.expect(responseJson).to.contain(pm.environment.get(\"username2\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/v1/users/search?query=rizz",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "rizz"
 								}
 							]
 						}
