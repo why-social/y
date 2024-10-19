@@ -1,8 +1,14 @@
 <template>
   <div id="container">
-    <ProfileHeader :userData="userData" @updateUserData="updateUserData" />
-    <hr />
-    <ProfilePosts :userData="userData" />
+    <template v-if="isLoaded">
+      <ProfileHeader :userData="userData" @updateUserData="updateUserData" />
+      <hr />
+      <ProfilePosts :userData="userData" />
+    </template>
+
+    <template v-else>
+      <Spinner />
+    </template>
   </div>
 </template>
 
@@ -32,23 +38,27 @@ export default {
         email: '',
         isViewer: false
       },
-      avatarUrl: 'https://via.placeholder.com/150'
+      avatarUrl: 'https://via.placeholder.com/150',
+      isLoaded: false
     }
   },
   async created() {
     await this.handleRouteChange()
   },
   mounted() {
-    window.scrollTo(0, 0)
+    document.body.scrollTo(0, 0)
   },
   watch: {
-    '$route.params.userId': 'handleRouteChange'
+    '$route.params.username': 'handleRouteChange'
   },
   methods: {
     async handleRouteChange() {
+      this.isLoaded = false
+
       const paramUsername = this.$route.params.username
       const token = localStorage.getItem('token')
       let decodedUserId
+
       if (token) {
         // Check if token has expired
         const decoded = VueJwtDecode.decode(token)
@@ -71,7 +81,9 @@ export default {
         this.userData.isViewer = false
 
         try {
-          const userReq = await Api.get('/v1/users/search?username=' + paramUsername)
+          const userReq = await Api.get(
+            '/v1/users/search?username=' + paramUsername
+          )
           this.userData._id = userReq.data._id
 
           // Redirect to /profile/me if user tries to access his own profile
@@ -87,11 +99,12 @@ export default {
           }
         }
       }
+
+      this.isLoaded = true
     },
+
     async fetchUserData(userId, userReq) {
       const userReqData = userReq.data
-
-      // TODO Add profile picture support
 
       const followersReq = await Api.get('/v1/users/' + userId + '/followers')
       const followingsReq = await Api.get('/v1/users/' + userId + '/followings')
@@ -106,7 +119,8 @@ export default {
       this.userData.following = followingsReq.data.map(
         (entry) => entry.following
       )
-      this.userData.avatarUrl = userReqData.profile_picture_url || this.avatarUrl
+      this.userData.avatarUrl =
+        userReqData.profile_picture_url || this.avatarUrl
       this.userData.about_me = userReqData.about_me || ''
       if (userReqData.email) {
         this.userData.email = userReqData.email
@@ -114,9 +128,11 @@ export default {
         this.userData.email = ''
       }
     },
+
     async updateUserData(updatedData) {
       try {
         const token = localStorage.getItem('token')
+
         updatedData = {
           name: updatedData.name,
           about_me: updatedData.about_me,
@@ -147,6 +163,7 @@ export default {
         })
         this.userData.name = updatedData.name
         this.userData.about_me = updatedData.about_me
+
         console.log('Updated user data:', updatedData)
       } catch (error) {
         console.error('Error updating user data:', error)
@@ -159,6 +176,7 @@ export default {
 <style>
 #container {
   width: 100%;
+  height: 100%;
   padding: 20px;
 }
 </style>

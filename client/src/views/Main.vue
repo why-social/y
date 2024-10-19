@@ -8,7 +8,7 @@
 
     <div class="search-content-container">
       <div id="content-container">
-        <router-view :key="$route.fullPath" />
+        <router-view />
       </div>
 
       <div class="divider"></div>
@@ -25,8 +25,7 @@ export default {
   data() {
     return {
       sidebarScroll: 0,
-      lastSidebarScroll: 0,
-      isLoaded: false
+      lastSidebarScroll: 0
     }
   },
   mounted() {

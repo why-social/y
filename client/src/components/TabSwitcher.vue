@@ -18,11 +18,13 @@ export default {
   methods: {
     switchTab(tab) {
       this.activeTab = this.tabs.indexOf(tab)
-      this.$router.push(tab.route)
+      this.$router.replace(tab.route)
     },
+
     resetTab() {
       const route = this.$route.name
       const tab = this.tabs.find(tab => tab.route === route)
+
       if (tab) {
         this.activeTab = this.tabs.indexOf(tab)
       } else {
@@ -30,9 +32,11 @@ export default {
       }
     }
   },
+
   created() {
     this.resetTab()
   },
+
   watch: {
     $route(to, from) {
       if (to.meta.resetTab) {
@@ -46,6 +50,7 @@ export default {
 <style scoped>
 .tab-switcher {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-around;
   gap: 1rem;
 }

@@ -383,6 +383,9 @@ div[thread-item] .content {
 }
 
 div[thread-item] .content > contenteditable {
+  overflow-wrap: break-word;
+  hyphens: auto;
+  width: 100%;
   border-radius: 0.5rem;
   margin: -0.5rem;
   padding: 0.5rem;
@@ -627,6 +630,7 @@ div[thread-item][editable] [contenteditable='true'] {
 
 div[thread-item][editable] [contenteditable='true']:empty:before {
   display: unset !important;
+  position: absolute;
   content: attr(placeholder);
   cursor: text;
   opacity: 0.7;

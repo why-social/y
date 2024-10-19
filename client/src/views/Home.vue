@@ -42,7 +42,30 @@ export default {
 
   mounted() {
     if (this.$route.query?.focus) {
-      document.getElementById('homePostPrompt').setAttribute('focused', '')
+      this.focus(true)
+    }
+  },
+
+  methods: {
+    focus(value) {
+      if (value) {
+        document.body.scrollTo(0, 0)
+
+        const element = document.getElementById('homePostPrompt')
+
+        if (element) {
+          element.setAttribute('focused', '')
+        }
+      }
+    }
+  },
+
+  watch: {
+    '$route.query.focus': {
+      immediate: true,
+      handler(value) {
+        this.focus(value)
+      }
     }
   }
 }

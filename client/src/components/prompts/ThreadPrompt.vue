@@ -88,6 +88,8 @@ export default {
       this.images = event.target.files
     },
     resetQuery() {
+      this.$refs.threadForm.removeAttribute('focused')
+
       if (this.$route.query?.focus) {
         this.$router.replace({
           path: this.$route.path,
@@ -110,10 +112,6 @@ export default {
         this.avatar = response.data
       }
     })
-
-    if (this.$route.query?.focus) {
-      window.scrollTo(0, 0)
-    }
   }
 }
 </script>
@@ -135,7 +133,7 @@ form[thread-prompt] .form-container {
 
 form[thread-prompt] .form-row {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 form[thread-prompt] .avatar {
@@ -147,7 +145,13 @@ form[thread-prompt] .avatar {
 form[thread-prompt] contenteditable {
   flex-grow: 1;
   resize: none;
-  padding: 0.8rem;
+  padding: 0.5rem;
+  height: fit-content;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  width: 100%;
+  margin-top: 0.3rem;
+  margin-bottom: 0.5rem;
   overflow: hidden;
   font-size: 1.3rem;
   color: var(--color-on-background);
@@ -161,9 +165,11 @@ form[thread-prompt] contenteditable:focus {
 }
 
 form[thread-prompt] [contenteditable='true']:empty:before {
+  position: absolute;
   content: attr(placeholder);
   cursor: text;
   opacity: 0.7;
+  background: transparent;
   color: var(--color-on-background);
 }
 
@@ -187,7 +193,7 @@ form[thread-prompt] .file-counter {
 form[thread-prompt] .attach-label {
   display: flex;
   user-select: none;
-  margin-left: 5rem;
+  margin-left: 4rem;
   font-size: 1.3rem;
   align-items: center;
   cursor: pointer;

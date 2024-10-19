@@ -2,7 +2,7 @@
   <div class="profile-feed">
     <TabSwitcher :tabs="tabs" />
 
-    <router-view :key="$route.path" />
+    <router-view />
   </div>
 </template>
 

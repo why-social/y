@@ -23,7 +23,7 @@
           local_fire_department
         </span>
 
-        <span class="nav-label inter-tight-medium">LET IT BURN</span>
+        <span class="nav-label inter-tight-medium">BURN IT</span>
       </Button>
 
       <Button @click="redirectToPost">

@@ -62,15 +62,6 @@ export default {
   flex-direction: column;
 }
 
-@media (min-width: 1200px) {
-  #search {
-    padding-top: 20px;
-    padding-bottom: 20px;
-    padding-left: 40px;
-    box-sizing: border-box;
-  }
-}
-
 .search-not-found {
   width: 100%;
   text-align: center;
