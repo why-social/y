@@ -101,14 +101,17 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 #### Users
 - GET /api/v1/users/search
 - GET /api/v1/users
-- GET /api/v1/users/:id
-- GET /api/v1/users/:id/followers
-- GET /api/v1/users/:id/followings
-- GET /api/v1/users/:id/posts
-- GET /api/v1/users/:id/comments
+- GET /api/v1/users/:username
+- GET /api/v1/users/:username/suggestions
+- GET /api/v1/users/:id/profile_picture
+- GET /api/v1/users/:username/followers
+- GET /api/v1/users/:username/followings
+- GET /api/v1/users/:username/posts
+- GET /api/v1/users/:username/comments
 - POST /api/v1/users
-- POST /api/v1/users/:id/profile_picture
-- POST /api/v1/users/followings/:following_id
+- POST /api/v1/users/followings/:target_username
+- PUT /api/v1/users/:id/profile_picture
+- PUT /api/v1/users/:id
 - PATCH /api/v1/users/:id
 - DELETE /api/v1/users
 - DELETE /api/v1/users/:id
@@ -116,22 +119,25 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 - DELETE /api/v1/users/followings/:following_id
 
 #### Posts
+- GET /api/v1/posts
 - GET /api/v1/posts/:id
 - GET /api/v1/posts/:post_id/likes/:user_id
 - POST /api/v1/posts/
+- POST /api/v1/posts/repost
 - POST /api/v1/posts/:post_id/likes/
 - PUT /api/v1/posts/:id
 - PATCH /api/v1/posts/:id
+- DELETE /api/v1/posts
 - DELETE /api/v1/posts/:id
 - DELETE /api/v1/posts/:post_id/likes/:user_id
 
 #### Comments
 - GET /api/v1/comments/:id
-- GET /api/v1/comments/:comment_id/likes/
+- GET /api/v1/comments/:comment_id/likes/:user_id
 - POST /api/v1/comments
 - POST /api/v1/comments/:comment_id/likes
-- PATCH /api/v1/comments/:id
 - PUT /api/v1/comments/:id
+- PATCH /api/v1/comments/:id
 - DELETE /api/v1/comments/:id
 - DELETE /api/v1/comments/:comment_id/likes/:user_id
 
