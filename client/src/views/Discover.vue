@@ -16,6 +16,7 @@ export default {
     searchContainer.style.display = 'flex'
 
     search.style.width = '100%'
+    search.style.transform = ''
     search.style.position = 'relative'
 
     document.body.scrollTop = 0

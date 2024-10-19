@@ -13,12 +13,11 @@ import { Api } from '@/Api'
 
 export default {
   name: 'Profile',
-  props: ['userId'],
+  props: ['username'],
   data() {
     return {
       pfp: '',
       name: '',
-      username: '',
       redirectToProfileId: ''
     }
   },
@@ -27,10 +26,9 @@ export default {
   },
   methods: {
     async fetchUserData() {
-      const response = await Api.get('/v1/users/' + this.userId)
+      const response = await Api.get('/v1/users/' + this.username)
       this.pfp = response.data.profile_picture_url
       this.name = response.data.name
-      this.username = response.data.username
     },
     redirectToProfile() {
       this.$router.push(`/profile/${this.username}/posts`)

@@ -70,7 +70,7 @@ export default {
       }
 
       // Get old data
-      let oldData = await Api.get('/v1/users/' + decoded.userId, {
+      let oldData = await Api.get('/v1/users/' + decoded.username, {
         headers: { Authorization: this.$route.query.token }
       })
       oldData = oldData.data
@@ -81,7 +81,6 @@ export default {
         name: oldData.name,
         email: oldData.email,
         about_me: oldData.about_me,
-        profile_picture_url: oldData.profile_picture_url,
         birthday: oldData.birthday
       }
 

@@ -70,7 +70,7 @@ export default {
         }
       })
     },
-    repost() {
+    async repost() {
       Api.post(
         '/v1/posts/repost',
         { postId: this.item._id },
@@ -79,7 +79,9 @@ export default {
             Authorization: 'Bearer ' + localStorage.getItem('token')
           }
         }
-      )
+      ).then((response) => {
+        this.$router.push('/thread/' + response.data._id)
+      })
     }
   },
 

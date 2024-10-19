@@ -62,13 +62,13 @@
         <span class="profile-follow-number">{{ userData.following.length }}</span> Following
       </a>
     </div>
-    <div class="profile-aboutme" v-if="userData.about_me">
-      About me:
+    <div class="profile-aboutme">
+      <span v-if="userData.about_me">About me:</span>
       <template v-if="editMode">
         <Input customClass="profile-edit-input" v-model="editableUserData.about_me" modelValue="editableUserData.about_me" placeholder="About me" />
       </template>
       <template v-else>
-        <div>{{ userData.about_me }}</div>
+        <div v-if="userData.about_me">{{ userData.about_me }}</div>
       </template>
     </div>
   </div>
@@ -100,7 +100,7 @@ export default {
       return VueJwtDecode.decode(localStorage.getItem('token'))
     },
     isFollowedByViewer() {
-      return this.userData.followers.includes(this.viewer.userId)
+      return this.userData.followers.includes(this.viewer.username)
     }
   },
   watch: {
@@ -113,7 +113,7 @@ export default {
   },
   methods: {
     async follow() {
-      await Api.post(`/v1/users/followings/${this.userData._id}`, null, {
+      await Api.post(`/v1/users/followings/${this.userData.username}`, null, {
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token')
         }

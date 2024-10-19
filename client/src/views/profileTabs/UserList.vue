@@ -1,6 +1,6 @@
 <template>
   <div class="userList-container">
-    <Follower v-for="user in users" :userId="user" :key="user._id"/>
+    <Follower v-for="user in users" :username="user" :key="user._id"/>
   </div>
 </template>
 
@@ -15,25 +15,23 @@ export default {
     }
   },
   async mounted() {
-    let userId
+    let username
     if (this.$route.params.username === 'me') {
-      userId = VueJwtDecode.decode(localStorage.getItem('token')).userId
+      username = VueJwtDecode.decode(localStorage.getItem('token')).username
     } else {
-      const username = this.$route.params.username
-      const res = await Api.get('/v1/users/search?username=' + username)
-      userId = res.data._id
+      username = this.$route.params.username
     }
 
     let response
     if (this.$route.name === 'followers') {
-      response = await Api.get('/v1/users/' + userId + '/followers')
-      for (const relation of response.data) {
-        this.users.push(relation.follower)
+      response = await Api.get('/v1/users/' + username + '/followers')
+      for (const follower of response.data) {
+        this.users.push(follower)
       }
     } else if (this.$route.name === 'followings') {
-      response = await Api.get('/v1/users/' + userId + '/followings')
-      for (const relation of response.data) {
-        this.users.push(relation.follows)
+      response = await Api.get('/v1/users/' + username + '/followings')
+      for (const follows of response.data) {
+        this.users.push(follows)
       }
     }
   }

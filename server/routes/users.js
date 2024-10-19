@@ -17,27 +17,23 @@ const updatableFields = ['name', 'email', 'username', 'birthday', 'about_me', 'p
 router.get("/api/v1/users/search", async (req, res, next) => {
 	try{
 		// Check if the search query is present
-		if(!req.query.username) throw new ValidationError(errorMsg.REQUIRED_FIELDS);
+		if(!req.query.query) throw new ValidationError(errorMsg.REQUIRED_FIELDS);
+
+		let searchQuery = [];
 		
+		const target = req.query.query;
 		// Check username validity
-		if(!usernameRegex.test(req.query.username)) throw new ValidationError(errorMsg.INVALID_USERNAME);
+		if(usernameRegex.test(target)) // if the query can be a username
+			searchQuery.push({username: {$regex: new RegExp(target, 'i')}});
+		if(nameRegex.test(target)) // if the query can be a name
+			searchQuery.push({name: {$regex: new RegExp(target, 'i')}});
 		
 		// Search for users by name or username
-		let result = await mongoose.models["Users"].findOne({username: req.query.username}).populate('profile_picture_url');
+		let result = (await mongoose.models["Users"].find({$or: searchQuery}).limit(7).populate('profile_picture_url'))
+			.map(entry => {return entry.username});
 		if(!result) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
-		
-		const response = {
-			_id: result._id,
-			name: result.name,
-			username: result.username,
-			about_me: result.about_me,
-			join_date: result.join_date,
-			birthday: result.birthday,
-			last_time_posted: result.last,
-			profile_picture_url: result.profile_picture_url
-		}
-		
-		res.status(200).json(response);
+
+		res.status(200).json(result);
 	} catch (err) {
 		next(err);
 	}
@@ -56,15 +52,16 @@ router.get("/api/v1/users", authMiddleware, async (req, res, next) => {
 	}
 });
 
-router.get("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
+router.get("/api/v1/users/:username", authMiddleware, async (req, res, next) => {
 	try {
-		// Get user by id from db
-		let user = await mongoose.models["Users"].findById(req.params.id).populate('profile_picture_url');
+		// Get user by username from db
+		let user = await mongoose.models["Users"].findOne({ username: req.params.username }).populate('profile_picture_url');
 		
 		// If user not found return 404
 		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
 		let partialResponse = {
+			_id: user._id,
 			name: user.name,
 			email: user.email,
 			about_me: user.about_me,
@@ -85,18 +82,40 @@ router.get("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 	}
 });
 
-router.get("/api/v1/users/:id/suggestions", authMiddleware, async (req, res, next) => {
+router.get("/api/v1/users/:username/suggestions", authMiddleware, async (req, res, next) => {
 	try {
-		if(!req.isAuth || req.user?.userId != req.params.id) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+		const user = await mongoose.models["Users"].findOne({ username: req.params.username });
+		if (!user)
+			throw new NotFoundError(errorMsg.USER_NOT_FOUND);
+
+		if(!req.isAuth || req.user?.userId != user._id) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 		
-		const userFollows = (await mongoose.models.User_follows_user.find({ follower: req.params.id}, 'follows -_id').lean())
-			.map(entry => {return entry.follows.toString()});
+		let userFollowsIds = [];
+		let userFollowsUsernames = [];
+		(await mongoose.models.User_follows_user.find({ follower: user._id}, 'follows -_id').populate('follows', 'username'))
+			.forEach(entry => {
+				userFollowsIds.push(entry.follows._id.toString());
+				userFollowsUsernames.push(entry.follows.username);
+			});
 
-		const secondHand = (await mongoose.models.User_follows_user.find({ follower: {$in : userFollows}}, 'follows -_id').limit(3).lean())
-			.map(entry => {return entry.follows.toString()})
-			.filter(user => !userFollows.includes(user) && user != req.params.id);
-
-		return res.json(secondHand);
+		const secondHand = (await mongoose.models.User_follows_user.find({ follower: {$in : userFollowsIds}}, 'follows').populate('follows', 'username'))
+			.map(entry => {return entry.follows.username})
+			.filter(username => {return !userFollowsUsernames.includes(username) && username != user.username})
+			.sort(() => 0.5 - Math.random()) // shuffle array
+			.slice(0, 5); // limit results
+		
+		let result = [];
+		if (secondHand.length) result = secondHand;
+		else { // if no second-hand suggestions found
+			const userCount = await mongoose.models["Users"].countDocuments({});
+			for (let i = 0; i < Math.min(5, userCount); i++) { // pick random users to suggest
+				const random = Math.floor(Math.random() * userCount);
+				const randomUser = await mongoose.models["Users"].findOne().skip(random).select('username');
+				if (user.username != randomUser.username) result.push(randomUser.username);
+			}
+		}
+			
+		return res.json(result);
 	} catch (err) {
 		next(err);
 	}
@@ -116,14 +135,15 @@ router.get("/api/v1/users/:id/profile_picture", async (req, res, next) => {
 	}
 });
 
-router.get("/api/v1/users/:id/followers", async (req, res, next) => {
+router.get("/api/v1/users/:username/followers", async (req, res, next) => {
 	try{
 		// Check if the user exists
-		let user = await mongoose.models["Users"].findById(req.params.id).exec();
+		let user = await mongoose.models["Users"].findOne({ username: req.params.username }).exec();
 		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
 		// Get all users that follow the user
-		let result = await mongoose.models["User_follows_user"].find({follows: req.params.id}).exec();
+		let result = (await mongoose.models["User_follows_user"].find({follows: user._id}).populate('follower', 'username -_id'))
+			.map(entry => {return entry.follower.username});
 		
 		res.status(200).json(result);
 	} catch (err) {
@@ -131,15 +151,17 @@ router.get("/api/v1/users/:id/followers", async (req, res, next) => {
 	}
 });
 
-router.get("/api/v1/users/:id/followings", async (req, res, next) => {
+router.get("/api/v1/users/:username/followings", async (req, res, next) => {
 	try{
 		// Check if the user exists
-		let user = await mongoose.models["Users"].findById(req.params.id).exec();
+		let user = await mongoose.models["Users"].findOne({ username: req.params.username }).exec();
 		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
 		// Get all users that the user follows
-		let result = await mongoose.models["User_follows_user"].find({follower: req.params.id}).exec();
+		let result = (await mongoose.models["User_follows_user"].find({follower: user._id}, 'follows -_id').populate('follows', 'username -_id'))
+			.map(entry => {return entry.follows.username});
 		
+		console.log(result)
 		res.status(200).json(result);
 	} catch (err) {
 		next(err);
@@ -275,28 +297,28 @@ router.post("/api/v1/users", async (req, res, next) => {
 	}
 });
 
-router.post("/api/v1/users/followings/:following_id", authMiddleware, async (req, res, next) => {
+router.post("/api/v1/users/followings/:target_username", authMiddleware, async (req, res, next) => {
 	try{
 		// Check if the user is authenticated
-		if(!req.isAuth) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
+		if(!req.isAuth || !req.user) throw new UnauthorizedError(errorMsg.UNAUTHORIZED);
 		
 		// Check if user exists by using their token
-		let user = await mongoose.models["Users"].findById(req.user?.userId).exec();
+		const user = await mongoose.models["Users"].findById(req.user?.userId).lean();
 		if(!user) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
-		// Check if following exists
-		let following = await mongoose.models["Users"].findById(req.params.following_id).exec();
-		if(!following) throw new NotFoundError(errorMsg.FOLLOWING_NOT_FOUND);
+		// Get the target user
+		const target = await mongoose.models["Users"].findOne({ username: req.params.target_username});
+		if(!target) throw new NotFoundError(errorMsg.USER_NOT_FOUND);
 		
 		// Check if user tries to follow themselves
-		if(user._id.toString() === req.params.following_id) throw new ValidationError(errorMsg.CANNOT_FOLLOW_YOURSELF);
+		if(user.username === req.params.target_username) throw new ValidationError(errorMsg.CANNOT_FOLLOW_YOURSELF);
 		
 		// Check if user is already following
-		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: user._id.toString(), follows: req.params.following_id}).exec();
+		let alreadyFollowing = await mongoose.models["User_follows_user"].findOne({follower: user._id.toString(), follows: target._id.toString()}).exec();
 		if(alreadyFollowing) throw new ConflictError(errorMsg.ALREADY_FOLLOWING);
 		
 		// Create new following and save to db
-		let newFollowing = new mongoose.models["User_follows_user"]({follower: user._id.toString(), follows: req.params.following_id});
+		let newFollowing = new mongoose.models["User_follows_user"]({follower: user._id.toString(), follows: target._id.toString()});
 		await newFollowing.save();
 		
 		res.status(201).json({message: "Following created"});

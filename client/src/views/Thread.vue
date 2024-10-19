@@ -93,6 +93,7 @@ export default {
         return null
       }
     },
+
     async getPost() {
       try {
         const response = await Api.get(`/v1/posts/${this.$route.params.id}`, {
@@ -109,6 +110,10 @@ export default {
 
     goToParent() {
       this.$router.push(`/thread/${this.parent_id}`)
+    },
+
+    refreshOnId() {
+      this.$router.go()
     }
   },
 
@@ -138,6 +143,10 @@ export default {
 
         return true
       })
+  },
+
+  watch: {
+    '$route.params.id': 'refreshOnId'
   }
 }
 </script>

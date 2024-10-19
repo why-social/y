@@ -57,41 +57,37 @@ export default {
 
       const paramUsername = this.$route.params.username
       const token = localStorage.getItem('token')
-      let decodedUserId
-
+      let decodedUsername
       if (token) {
         // Check if token has expired
         const decoded = VueJwtDecode.decode(token)
         const expired = decoded.exp - Date.now() / 1000 < 0
         if (expired) return this.$router.push('/auth/login')
 
-        decodedUserId = decoded.userId
+        decodedUsername = decoded.username
       }
 
       if (paramUsername === 'me') {
-        this.userData._id = decodedUserId
+        this.userData._id = decodedUsername
         this.userData.isViewer = true
 
-        const userReq = await Api.get('/v1/users/' + decodedUserId, {
+        const userReq = await Api.get('/v1/users/' + decodedUsername, {
           headers: { Authorization: token }
         })
 
-        await this.fetchUserData(decodedUserId, userReq)
+        await this.fetchUserData(decodedUsername, userReq)
       } else {
         this.userData.isViewer = false
 
         try {
-          const userReq = await Api.get(
-            '/v1/users/search?username=' + paramUsername
-          )
-          this.userData._id = userReq.data._id
+          const userReq = await Api.get('/v1/users/' + paramUsername)
 
           // Redirect to /profile/me if user tries to access his own profile
-          if (decodedUserId && this.userData._id === decodedUserId) {
+          if (decodedUsername && userReq.data.username === decodedUsername) {
             return this.$router.push('/profile/me')
           }
 
-          await this.fetchUserData(this.userData._id, userReq)
+          await this.fetchUserData(paramUsername, userReq)
         } catch (error) {
           // User not found by id
           if (error.response.status === 404 || error.response.status === 400) {
@@ -102,25 +98,21 @@ export default {
 
       this.isLoaded = true
     },
-
-    async fetchUserData(userId, userReq) {
+    async fetchUserData(username, userReq) {
       const userReqData = userReq.data
 
-      const followersReq = await Api.get('/v1/users/' + userId + '/followers')
-      const followingsReq = await Api.get('/v1/users/' + userId + '/followings')
+      const followersReq = await Api.get('/v1/users/' + username + '/followers')
+      const followingsReq = await Api.get('/v1/users/' + username + '/followings')
 
-      this.userData._id = userId
+      this.userData._id = userReqData._id
       this.userData.name = userReqData.name
       this.userData.username = userReqData.username
       this.userData.joinDate = moment(userReqData.joinDate).format(
         'DD MMMM YYYY'
       )
-      this.userData.followers = followersReq.data.map((entry) => entry.follower)
-      this.userData.following = followingsReq.data.map(
-        (entry) => entry.following
-      )
-      this.userData.avatarUrl =
-        userReqData.profile_picture_url || this.avatarUrl
+      this.userData.followers = followersReq.data
+      this.userData.following = followingsReq.data
+      this.userData.avatarUrl = userReqData.profile_picture_url || this.avatarUrl
       this.userData.about_me = userReqData.about_me || ''
       if (userReqData.email) {
         this.userData.email = userReqData.email
