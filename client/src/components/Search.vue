@@ -50,12 +50,13 @@ export default {
 
 <style scoped>
 #search {
+  min-height: 100%;
   padding: 20px;
+  position: fixed;
   box-sizing: border-box;
   border-left: none;
-  height: 100%;
-  width: 100%;
-  position: relative;
+  height: fit-content;
+  width: inherit;
   display: flex;
   gap: 1rem;
   flex-direction: column;

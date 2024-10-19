@@ -13,7 +13,7 @@
 
       <div class="divider"></div>
 
-      <div id="search-container">
+      <div ref="sidebar" id="search-container">
         <Search />
       </div>
     </div>
@@ -24,7 +24,40 @@
 export default {
   data() {
     return {
+      sidebarScroll: 0,
+      lastSidebarScroll: 0,
       isLoaded: false
+    }
+  },
+  mounted() {
+    document.body.addEventListener('scroll', this.updateSideBarPosition)
+    window.addEventListener('resize', this.updateSideBarPosition)
+  },
+  methods: {
+    updateSideBarPosition() {
+      const sidebar = document.getElementById('search')
+      const delta = document.body.scrollTop - this.lastSidebarScroll
+
+      this.sidebarScroll += delta
+      this.lastSidebarScroll = document.body.scrollTop
+
+      if (this.sidebarScroll < 0) {
+        this.sidebarScroll = 0
+      } else if (
+        this.sidebarScroll >
+        sidebar.scrollHeight - window.innerHeight
+      ) {
+        this.sidebarScroll = sidebar.scrollHeight - window.innerHeight
+      }
+
+      if (
+        window.getComputedStyle(sidebar).getPropertyValue('position') ===
+        'fixed'
+      ) {
+        sidebar.style.transform = `translateY(${-this.sidebarScroll}px)`
+      } else {
+        sidebar.style.transform = ''
+      }
     }
   }
 }
@@ -51,6 +84,7 @@ export default {
 
 .search-content-container {
   display: flex;
+  overflow: visible;
   width: 100%;
 }
 
@@ -63,6 +97,7 @@ export default {
 #search-container {
   min-height: 100vh;
   height: 100%;
+  position: relative;
   width: fit-content;
   overflow: hidden;
   box-sizing: border-box;
