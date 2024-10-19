@@ -6,12 +6,10 @@
       v-model="searchQuery"
       @input="handleInputChange"
     />
-    <Follower :userId="searchUserId" v-if="searchUserId.length != 0" />
-    <span
-      class="search-not-found"
-      v-if="searchQuery.length >= 3 && searchUserId.length == 0"
-      >No user found</span
-    >
+    <div v-if="result.length != 0" class="search-results">
+      <Follower v-for="username of result" :key="username" :username="username" />
+    </div>
+    <span v-else-if="searchQuery.length >= 3" class="search-not-found">No user found</span>
     <Suggestions />
   </div>
 </template>
@@ -24,25 +22,22 @@ export default {
   data() {
     return {
       searchQuery: '',
-      searchUserId: ''
+      result: []
     }
   },
   methods: {
-    async handleInputChange(event) {
-      try {
-        if (event.target.value.length < 3) {
-          this.searchUserId = ''
-          return
-        }
-        const response = await Api.get(
-          '/v1/users/search?username=' + event.target.value
-        )
-        this.searchUserId = response.data._id
-      } catch (error) {
-        if (error.response.status === 404 || error.response.status === 400) {
-          this.searchUserId = ''
-        }
+    handleInputChange(event) {
+      if (event.target.value.length < 3) {
+        this.result = []
+        return
       }
+      Api.get('/v1/users/search?query=' + event.target.value)
+        .then(response => { this.result = response.data })
+        .catch(error => {
+          if (error.response.status === 404 || error.response.status === 400) {
+            this.result = []
+          } else console.error(error)
+        })
     }
   }
 }
@@ -75,5 +70,16 @@ export default {
   text-align: center;
   color: var(--color-text-secondary);
   font-size: 1.2rem;
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.search-results > .follower-container {
+  padding: 0.1rem
 }
 </style>
