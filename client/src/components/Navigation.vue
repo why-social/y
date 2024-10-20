@@ -209,6 +209,11 @@ button {
   display: none;
 }
 
+.buttons {
+  display: flex;
+  flex-direction: column;
+}
+
 .nuke {
   background: var(--bs-red);
   border: 2px solid var(--bs-red);

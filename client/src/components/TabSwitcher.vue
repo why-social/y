@@ -99,7 +99,7 @@ export default {
       const walk = x - startX
       slider.scrollLeft = scrollLeft - walk
 
-      if (walk > 10) { // artificially increase move click threshold
+      if (Math.abs(walk) > 7) { // artificially increase move click threshold
         this.preventClick = true
       }
 

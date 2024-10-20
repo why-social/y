@@ -12,9 +12,8 @@
       @input="clearError"
     />
 
-    <span class="error text-center inter-tight-regular emailError">{{ errorText }}</span>
-
-    <div class="d-flex justify-content-center flex-column gap-2 mt-5">
+    <div class="d-flex justify-content-center flex-column gap-2 mt-4">
+      <span class="error text-center inter-tight-regular emailError">{{ errorText }}</span>
       <Button type="submit" class="w-100">Send recovery mail</Button>
     </div>
   </form>
