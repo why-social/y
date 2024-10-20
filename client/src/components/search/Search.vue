@@ -1,3 +1,10 @@
+<script setup>
+import { Api } from '@/Api'
+
+import Suggestions from '@/components/search/Suggestions.vue'
+import Follower from '@/components/Follower.vue'
+</script>
+
 <template>
   <div id="search">
     <Input
@@ -21,9 +28,6 @@
 </template>
 
 <script>
-// import Input from '@/components/Input.vue'
-import { Api } from '@/Api'
-
 export default {
   data() {
     return {

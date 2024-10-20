@@ -1,3 +1,12 @@
+<script setup>
+import VueJwtDecode from 'vue-jwt-decode'
+import moment from 'moment'
+
+import ImageCarousel from '@/components/items/ImageCarousel.vue'
+import Button from '@/components/misc/Button.vue'
+import DropDown from '@/components/misc/DropDown.vue'
+</script>
+
 <template>
   <div thread-item ref="threadItem" @click="goToThread">
     <img
@@ -148,9 +157,6 @@
 </template>
 
 <script>
-import moment from 'moment'
-import VueJwtDecode from 'vue-jwt-decode'
-
 export default {
   props: ['item', 'dateFormat'],
 

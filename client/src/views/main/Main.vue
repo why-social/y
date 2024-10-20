@@ -1,3 +1,8 @@
+<script setup>
+import Navigation from '@/components/navigation/Navigation.vue'
+import Search from '@/components/search/Search.vue'
+</script>
+
 <template>
   <b-container class="d-flex">
     <div class="nav-container">

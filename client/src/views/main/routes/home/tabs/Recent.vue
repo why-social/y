@@ -1,5 +1,7 @@
 <script setup>
 import { Api } from '@/Api'
+
+import Post from '@/components/items/Post.vue'
 </script>
 
 <template>
@@ -12,7 +14,7 @@ import { Api } from '@/Api'
     />
 
     <template v-if="!next">
-      <p class="feeds-end-message">All caught up!</p>
+      <p class="recents-end-message">All caught up!</p>
     </template>
   </div>
 </template>
@@ -22,7 +24,7 @@ export default {
   data() {
     return {
       posts: [],
-      next: '/v1/feeds',
+      next: '/v1/posts',
       lastQuery: null,
       querying: false
     }
@@ -64,7 +66,7 @@ export default {
   },
 
   created() {
-    window.addEventListener('scroll', this.scrollListener)
+    document.body.addEventListener('scroll', this.scrollListener)
   },
 
   unmounted() {
@@ -78,7 +80,7 @@ export default {
 </script>
 
 <style scoped>
-.feeds-end-message {
+.recents-end-message {
   width: 100%;
   text-align: center;
   padding: 2rem;

@@ -1,3 +1,7 @@
+<script setup>
+import { Api } from '@/Api'
+</script>
+
 <template>
   <div class="follower-container">
     <img class="pfp" :src="pfp" @click="redirectToProfile" />
@@ -9,8 +13,6 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-
 export default {
   name: 'Profile',
   props: ['username'],
@@ -59,7 +61,7 @@ export default {
   height: 3rem;
   border-radius: 100%;
 }
-.pfp:hover{
+.pfp:hover {
   cursor: pointer;
 }
 .follower-info {

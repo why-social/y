@@ -1,3 +1,7 @@
+<script setup>
+import TabSwitcher from '../TabSwitcher.vue'
+</script>
+
 <template>
   <div class="profile-feed">
     <hr style="margin-bottom: 0px" />

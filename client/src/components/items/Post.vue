@@ -1,3 +1,12 @@
+<script setup>
+import VueJwtDecode from 'vue-jwt-decode'
+import { Api } from '@/Api'
+
+import ThreadItem from '@/components/items/ThreadItem.vue'
+import Button from '@/components/misc/Button.vue'
+</script>
+
+
 <template>
   <ThreadItem
     v-bind="$props"
@@ -22,9 +31,6 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-import VueJwtDecode from 'vue-jwt-decode'
-
 export default {
   props: {
     dateFormat: {

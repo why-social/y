@@ -1,3 +1,10 @@
+<script setup>
+import { Api } from '@/Api'
+import VueJwtDecode from 'vue-jwt-decode'
+
+import Button from '@/components/misc/Button.vue'
+</script>
+
 <template>
   <form thread-prompt ref="threadForm" @submit.prevent="submit()">
     <div class="form-container">
@@ -39,9 +46,6 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-import VueJwtDecode from 'vue-jwt-decode'
-
 export default {
   data() {
     return {

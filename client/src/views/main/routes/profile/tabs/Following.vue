@@ -1,3 +1,7 @@
+<script setup>
+import Follower from '@/components/Follower.vue'
+</script>
+
 <template>
   <div class="userList-container">
     <Follower v-for="user in users" :username="user" :key="user._id" />
@@ -23,9 +27,9 @@ export default {
       username = this.$route.params.username
     }
 
-    const response = await Api.get('/v1/users/' + username + '/followers')
-    for (const follower of response.data) {
-      this.users.push(follower)
+    const response = await Api.get('/v1/users/' + username + '/followings')
+    for (const follows of response.data) {
+      this.users.push(follows)
     }
   }
 }

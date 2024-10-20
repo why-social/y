@@ -1,3 +1,11 @@
+<script setup>
+import VueJwtDecode from 'vue-jwt-decode'
+import { Api } from '@/Api'
+
+import NavigationItem from '@/components/navigation/NavigationItem.vue'
+import Button from '@/components/misc/Button.vue'
+</script>
+
 <template>
   <div id="navbar">
     <div class="nav-logo cool-font" @click="$router.push({ path: '/' })">
@@ -70,9 +78,6 @@
 </template>
 
 <script>
-import VueJwtDecode from 'vue-jwt-decode'
-import { Api } from '@/Api'
-
 export default {
   methods: {
     logout() {
@@ -131,6 +136,7 @@ export default {
 #confirm-nuke {
   --bs-modal-header-border-color: var(--color-background-highlight) !important;
   --bs-modal-footer-border-color: var(--color-background-highlight) !important;
+  background: rgba(0, 0, 0, 0.6);
   pointer-events: all;
   backdrop-filter: blur(4px);
 }

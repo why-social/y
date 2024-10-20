@@ -1,7 +1,18 @@
+<script setup>
+import { Api } from '@/Api'
+import VueJwtDecode from 'vue-jwt-decode'
+import moment from 'moment'
+
+import ProfileHeader from '@/components/profile/ProfileHeader.vue'
+import ProfilePosts from '@/components/profile/ProfilePosts.vue'
+import Spinner from '@/components/Spinner.vue'
+</script>
+
 <template>
   <div id="container">
     <template v-if="isLoaded">
       <ProfileHeader :userData="userData" @updateUserData="updateUserData" />
+
       <ProfilePosts :userData="userData" />
     </template>
 
@@ -12,12 +23,6 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-import VueJwtDecode from 'vue-jwt-decode'
-import moment from 'moment'
-import ProfileHeader from '../components/ProfileHeader.vue'
-import ProfilePosts from '../components/ProfilePosts.vue'
-
 export default {
   components: {
     ProfileHeader,
@@ -101,7 +106,9 @@ export default {
       const userReqData = userReq.data
 
       const followersReq = await Api.get('/v1/users/' + username + '/followers')
-      const followingsReq = await Api.get('/v1/users/' + username + '/followings')
+      const followingsReq = await Api.get(
+        '/v1/users/' + username + '/followings'
+      )
 
       this.userData._id = userReqData._id
       this.userData.name = userReqData.name
@@ -111,7 +118,8 @@ export default {
       )
       this.userData.followers = followersReq.data
       this.userData.following = followingsReq.data
-      this.userData.avatarUrl = userReqData.profile_picture_url || this.avatarUrl
+      this.userData.avatarUrl =
+        userReqData.profile_picture_url || this.avatarUrl
       this.userData.about_me = userReqData.about_me || ''
       if (userReqData.email) {
         this.userData.email = userReqData.email

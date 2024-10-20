@@ -1,3 +1,12 @@
+<script setup>
+import { Api } from '@/Api'
+
+import Post from '@/components/items/Post.vue'
+import Comment from '@/components/items/Comment.vue'
+import Spinner from '@/components/Spinner.vue'
+import CommentPrompt from '@/components/prompts/CommentPrompt.vue'
+</script>
+
 <template>
   <div id="thread-container">
     <template v-if="isLoaded">
@@ -51,8 +60,6 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-
 export default {
   data() {
     return {

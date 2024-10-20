@@ -1,3 +1,11 @@
+<script setup>
+import { Api } from '@/Api'
+
+import Input from '@/components/misc/Input.vue'
+import Select from '@/components/misc/Select.vue'
+import Button from '@/components/misc/Button.vue'
+</script>
+
 <template>
   <form style="pointer-events: all;"
     @submit.prevent="onSubmit"
@@ -113,8 +121,6 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-
 export default {
   data() {
     return {

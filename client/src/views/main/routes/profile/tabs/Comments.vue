@@ -1,18 +1,18 @@
 <script setup>
-import Post from '../../components/items/Post.vue'
+import Comment from '@/components/items/Comment.vue'
 </script>
 
 <template>
-  <div v-if="posts.length != 0">
-    <Post
-      v-for="post in posts"
-      :item="post"
+  <div v-if="comments.length != 0">
+    <Comment
+      v-for="comment in comments"
+      :item="comment"
       :dateFormat="'now'"
-      :key="post._id"
+      :key="comment._id"
     />
   </div>
   <div v-else class="posts-no-posts">
-    <span>No posts yet</span>
+    <span>No comments yet</span>
   </div>
 </template>
 
@@ -23,7 +23,7 @@ import VueJwtDecode from 'vue-jwt-decode'
 export default {
   data() {
     return {
-      posts: []
+      comments: []
     }
   },
   async mounted() {
@@ -34,12 +34,12 @@ export default {
       } else {
         username = this.$route.params.username
       }
-      const response = await Api.get('/v1/users/' + username + '/posts')
-      this.posts = response.data
+      const response = await Api.get('/v1/users/' + username + '/comments')
+      this.comments = response.data
     } catch (error) {
       console.error(error)
       if (error.response?.status === 404) {
-        this.posts = []
+        this.comments = []
       }
     }
   }

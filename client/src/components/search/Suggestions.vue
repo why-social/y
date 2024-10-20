@@ -1,3 +1,11 @@
+<script setup>
+import { Api } from '@/Api'
+import VueJwtDecode from 'vue-jwt-decode'
+
+import Follower from '@/components/Follower.vue'
+import Button from '@/components/misc/Button.vue'
+</script>
+
 <template>
   <div class="suggestions-container" v-if="suggestions?.length > 0">
     <div class="title">
@@ -5,6 +13,7 @@
     </div>
     <div class="suggestion" v-for="user of suggestions" :key="user">
       <Follower :username="user" />
+
       <Button
         class="inter-tight-medium follow-button"
         @click="follow(user)"
@@ -17,9 +26,6 @@
 </template>
 
 <script>
-import VueJwtDecode from 'vue-jwt-decode'
-import { Api } from '@/Api'
-
 export default {
   data() {
     return {
