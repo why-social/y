@@ -914,7 +914,11 @@
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {\r",
 									"    pm.response.to.have.status(201);\r",
-									"});"
+									"});\r",
+									"\r",
+									"if(pm.response.code == 201){\r",
+									"    pm.environment.set(\"pfp1\", pm.response.json().pfp);\r",
+									"}"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -951,6 +955,59 @@
 								}
 							]
 						},
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{user1}}/profile_picture",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{user1}}",
+								"profile_picture"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get pfp of user1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Test if pfp is set\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.eql(pm.environment.get(\"pfp1\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
 						"url": {
 							"raw": "{{host}}/api/v1/users/{{user1}}/profile_picture",
 							"host": [
