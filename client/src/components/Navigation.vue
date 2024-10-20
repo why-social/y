@@ -35,10 +35,10 @@
           class="nav-icon material-symbols-outlined"
           style="font-variation-settings: 'wght' 400"
         >
-          local_fire_department
+          bomb
         </span>
 
-        <span class="nav-label inter-tight-medium">BURN IT</span>
+        <span class="nav-label inter-tight-medium">NUKE IT</span>
       </Button>
 
       <Button @click="redirectToPost">
@@ -129,8 +129,10 @@ export default {
 
 <style>
 #confirm-nuke {
-  --bs-modal-header-border-color: var(--color-outline) !important;
-  --bs-modal-footer-border-color: var(--color-outline) !important;
+  --bs-modal-header-border-color: var(--color-background-highlight) !important;
+  --bs-modal-footer-border-color: var(--color-background-highlight) !important;
+  pointer-events: all;
+  backdrop-filter: blur(4px);
 }
 
 .musk-header {
@@ -147,7 +149,9 @@ export default {
 }
 
 .musk-dialog .modal-content {
-  border: 1px solid var(--color-outline);
+  border: 1px solid var(--color-background-highlight);
+  box-shadow: 0 0 0.2rem var(--color-background-highlight),
+    0 0 1rem var(--color-background-highlight);
   background-color: var(--color-background);
   border-radius: 1rem;
 }
