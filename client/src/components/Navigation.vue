@@ -6,9 +6,24 @@
 
     <hr />
 
-    <NavigationItem to="/" icon="home" text="Home" />
-    <NavigationItem to="/discover" icon="search" text="Discover" id="nav-discover" />
-    <NavigationItem to="/profile/me" icon="person" text="Profile" />
+    <NavigationItem
+      to="/"
+      icon="home"
+      :class="{ filled: isHome }"
+      text="Home"
+    />
+    <NavigationItem
+      to="/discover"
+      icon="search"
+      text="Discover"
+      id="nav-discover"
+    />
+    <NavigationItem
+      to="/profile/me"
+      icon="person"
+      :class="{ filled: isProfile }"
+      text="Profile"
+    />
 
     <hr />
 
@@ -64,18 +79,23 @@ export default {
       localStorage.removeItem('token')
       this.$router.push({ path: '/login' })
     },
+
     closeModal() {
       this.$refs.confirmNuke.hide('confirm-nuke')
     },
+
     async nuke() {
       this.closeModal()
-      const authHeader = { Authorization: 'Bearer ' + localStorage.getItem('token') }
+      const authHeader = {
+        Authorization: 'Bearer ' + localStorage.getItem('token')
+      }
       await Api.delete('v1/posts', { headers: authHeader })
       await Api.delete('v1/users', { headers: authHeader })
 
       await this.$nextTick()
       this.$router.go()
     },
+
     redirectToPost() {
       const route = {
         query: {
@@ -94,6 +114,14 @@ export default {
     isAdmin: () => {
       const decoded = VueJwtDecode.decode(localStorage.getItem('token'))
       return !!decoded.adminKey
+    },
+
+    isHome() {
+      return this.$route.path.startsWith('/home')
+    },
+
+    isProfile() {
+      return this.$route.path.startsWith('/profile')
     }
   }
 }
@@ -101,8 +129,8 @@ export default {
 
 <style>
 #confirm-nuke {
-  --bs-modal-header-border-color: var(--color-border) !important;
-  --bs-modal-footer-border-color: var(--color-border) !important;
+  --bs-modal-header-border-color: var(--color-outline) !important;
+  --bs-modal-footer-border-color: var(--color-outline) !important;
 }
 
 .musk-header {
@@ -119,7 +147,8 @@ export default {
 }
 
 .musk-dialog .modal-content {
-  background-color: #282828;
+  border: 1px solid var(--color-outline);
+  background-color: var(--color-background);
   border-radius: 1rem;
 }
 </style>
@@ -183,8 +212,12 @@ button {
 .nuke:hover,
 .nuke:active,
 .nuke:focus {
-  background: #df4654;
-  border: 2px solid #df4654;
+  background: var(--color-error);
+  border: 2px solid var(--color-error);
+}
+
+.filled * {
+  font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 10 !important;
 }
 
 /* god bless */
