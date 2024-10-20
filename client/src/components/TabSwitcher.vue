@@ -74,32 +74,57 @@ export default {
     let startX
     let scrollLeft
 
-    slider.addEventListener('mousedown', (e) => {
+    slider.addEventListener('mousedown', (event) => {
       isDown = true
 
       this.preventClick = false
 
-      startX = e.pageX - slider.offsetLeft
+      startX = event.pageX - slider.offsetLeft
+      scrollLeft = slider.scrollLeft
+    })
+    slider.addEventListener('touchstart', (event) => {
+      isDown = true
+
+      this.preventClick = false
+
+      startX = event.touches[0].pageX - slider.offsetLeft
       scrollLeft = slider.scrollLeft
     })
 
-    slider.addEventListener('mouseleave', () => {
+    const outListener = () => {
       isDown = false
-    })
+    }
 
-    slider.addEventListener('mouseup', () => {
-      isDown = false
-    })
+    slider.addEventListener('mouseleave', outListener)
+    slider.addEventListener('mouseup', outListener)
+    slider.addEventListener('touchend', outListener)
 
-    slider.addEventListener('mousemove', (e) => {
+    slider.addEventListener('mousemove', (event) => {
       if (!isDown) return
-      e.preventDefault()
+      event.preventDefault()
 
-      const x = e.pageX - slider.offsetLeft
+      const x = event.pageX - slider.offsetLeft
       const walk = x - startX
       slider.scrollLeft = scrollLeft - walk
 
-      if (Math.abs(walk) > 7) { // artificially increase move click threshold
+      if (Math.abs(walk) > 7) {
+        // artificially increase move click threshold
+        this.preventClick = true
+      }
+
+      this.fadeTabs()
+    })
+
+    slider.addEventListener('touchmove', (event) => {
+      if (!isDown) return
+      event.preventDefault()
+
+      const x = event.touches[0].pageX - slider.offsetLeft
+      const walk = x - startX
+      slider.scrollLeft = scrollLeft - walk
+
+      if (Math.abs(walk) > 7) {
+        // artificially increase move click threshold
         this.preventClick = true
       }
 

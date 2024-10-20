@@ -16,12 +16,12 @@
 
 <script scoped>
 const puns = [
-  'did <span class="cool-font">𝕏</span> go to therapy? Too many exes…',
-  'are we still here… Just to suffer…',
-  'is there always one sock missing after laundry?',
-  'is it so hard to open a bag of chips quietly?',
-  'do we park in driveways and drive on parkways?',
-  'does the toast always land butter&#8209;side down?'
+  '…did <span class="cool-font">𝕏</span> go to therapy? Too many exes…',
+  '…are we still here… Just to suffer…',
+  '…is there always one sock missing after laundry?',
+  '…is it so hard to open a bag of chips quietly?',
+  '…do we park in driveways and drive on parkways?',
+  '…does the toast always land butter&#8209;side down?'
 ]
 
 export default {
