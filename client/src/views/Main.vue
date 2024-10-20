@@ -35,27 +35,30 @@ export default {
   methods: {
     updateSideBarPosition() {
       const sidebar = document.getElementById('search')
-      const delta = document.body.scrollTop - this.lastSidebarScroll
 
-      this.sidebarScroll += delta
-      this.lastSidebarScroll = document.body.scrollTop
+      if (sidebar) {
+        const delta = document.body.scrollTop - this.lastSidebarScroll
 
-      if (this.sidebarScroll < 0) {
-        this.sidebarScroll = 0
-      } else if (
-        this.sidebarScroll >
-        sidebar.scrollHeight - window.innerHeight
-      ) {
-        this.sidebarScroll = sidebar.scrollHeight - window.innerHeight
-      }
+        this.sidebarScroll += delta
+        this.lastSidebarScroll = document.body.scrollTop
 
-      if (
-        window.getComputedStyle(sidebar).getPropertyValue('position') ===
-        'fixed'
-      ) {
-        sidebar.style.transform = `translateY(${-this.sidebarScroll}px)`
-      } else {
-        sidebar.style.transform = ''
+        if (this.sidebarScroll < 0) {
+          this.sidebarScroll = 0
+        } else if (
+          this.sidebarScroll >
+          sidebar.scrollHeight - window.innerHeight
+        ) {
+          this.sidebarScroll = sidebar.scrollHeight - window.innerHeight
+        }
+
+        if (
+          window.getComputedStyle(sidebar).getPropertyValue('position') ===
+          'fixed'
+        ) {
+          sidebar.style.transform = `translateY(${-this.sidebarScroll}px)`
+        } else {
+          sidebar.style.transform = ''
+        }
       }
     }
   }
@@ -65,7 +68,6 @@ export default {
 <style scoped>
 .container {
   height: 100%;
-  width: 100%;
   max-width: 100%;
   margin: 0;
   padding: 0;
@@ -83,12 +85,15 @@ export default {
 
 .search-content-container {
   display: flex;
+  min-width: 0;
   overflow: visible;
   width: 100%;
 }
 
 #content-container {
   flex: 1;
+  min-width: 0;
+  max-width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
 }
@@ -111,7 +116,11 @@ export default {
   background: var(--color-border);
 }
 
-.container .divider {
+.search-content-container > .divider {
+  display: none;
+}
+
+.container > .divider {
   display: unset;
 }
 
@@ -129,7 +138,7 @@ export default {
     z-index: 100000;
   }
 
-  .container .divider {
+  .container > .divider {
     display: none;
   }
 }
@@ -146,7 +155,7 @@ export default {
     max-width: 820px;
   }
 
-  .search-content-container .divider {
+  .search-content-container > .divider {
     display: unset;
   }
 }

@@ -2,7 +2,6 @@
   <div id="container">
     <template v-if="isLoaded">
       <ProfileHeader :userData="userData" @updateUserData="updateUserData" />
-      <hr />
       <ProfilePosts :userData="userData" />
     </template>
 

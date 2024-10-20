@@ -14,7 +14,8 @@ import Register from './views/Register.vue'
 import Profile from './views/Profile.vue'
 import Posts from './views/profileTabs/Posts.vue'
 import Comments from './views/profileTabs/Comments.vue'
-import UserList from './views/profileTabs/UserList.vue'
+import Followers from './views/profileTabs/Followers.vue'
+import Following from './views/profileTabs/Following.vue'
 import Feed from './views/homeTabs/Feed.vue'
 import Recent from './views/homeTabs/Recent.vue'
 import restorePassword from './views/restorePassword.vue'
@@ -76,12 +77,12 @@ const routes = [
           {
             path: 'followers',
             name: 'followers',
-            component: UserList
+            component: Followers
           },
           {
             path: 'followings',
             name: 'followings',
-            component: UserList
+            component: Following
           }
         ]
       },

@@ -23,7 +23,7 @@
             <span class="profile-username">{{ userData.username }}</span>
           </div>
           <div v-if="userData.email" class="profile-info">
-            <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
               width="512px" height="512px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="email-icon">
               <path d="M448,64H64C28.656,64,0,92.656,0,128v256c0,35.344,28.656,64,64,64h384c35.344,0,64-28.656,64-64V128
                 C512,92.656,483.344,64,448,64z M342.656,234.781l135.469-116.094c0.938,3,1.875,6,1.875,9.313v256
@@ -62,7 +62,7 @@
         <span class="profile-follow-number">{{ userData.following.length }}</span> Following
       </a>
     </div>
-    <div class="profile-aboutme">
+    <div v-if="userData.about_me || editMode" class="profile-aboutme">
       <span v-if="userData.about_me">About me:</span>
       <template v-if="editMode">
         <Input customClass="profile-edit-input" v-model="editableUserData.about_me" modelValue="editableUserData.about_me" placeholder="About me" />
@@ -183,8 +183,8 @@ export default {
 }
 .profile-avatar {
   position: relative;
-  width: 150px;
-  height: 150px;
+  width: 9rem;
+  height: 9rem;
   border-radius: 50%;
   overflow: hidden;
 }
@@ -285,5 +285,12 @@ export default {
 .profile-aboutme {
   font-size: 1rem;
   padding-top: 0.5rem;
+}
+
+@media (max-width: 630px) {
+  .profile-avatar {
+    width: 6rem;
+    height: 6rem;
+  }
 }
 </style>

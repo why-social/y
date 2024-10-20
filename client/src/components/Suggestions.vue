@@ -41,7 +41,6 @@ export default {
           Authorization: 'Bearer ' + localStorage.getItem('token')
         }
       }).then((response) => {
-        console.log(`suggestions: ${response.data}`)
         this.suggestions = response.data
       })
     }

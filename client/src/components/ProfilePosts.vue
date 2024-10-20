@@ -1,8 +1,10 @@
 <template>
   <div class="profile-feed">
+    <hr style="margin-bottom: 0px" />
+
     <TabSwitcher :tabs="tabs" />
 
-    <router-view />
+    <router-view id="profileContent" />
   </div>
 </template>
 
@@ -32,7 +34,10 @@ export default {
 .profile-feed {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+}
+#profileContent {
+  position: relative;
+  z-index: -1;
 }
 .profile-navbar {
   display: flex;

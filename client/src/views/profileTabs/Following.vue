@@ -1,6 +1,6 @@
 <template>
   <div class="userList-container">
-    <Follower v-for="user in users" :username="user" :key="user._id"/>
+    <Follower v-for="user in users" :username="user" :key="user._id" />
   </div>
 </template>
 
@@ -16,30 +16,23 @@ export default {
   },
   async mounted() {
     let username
+
     if (this.$route.params.username === 'me') {
       username = VueJwtDecode.decode(localStorage.getItem('token')).username
     } else {
       username = this.$route.params.username
     }
 
-    let response
-    if (this.$route.name === 'followers') {
-      response = await Api.get('/v1/users/' + username + '/followers')
-      for (const follower of response.data) {
-        this.users.push(follower)
-      }
-    } else if (this.$route.name === 'followings') {
-      response = await Api.get('/v1/users/' + username + '/followings')
-      for (const follows of response.data) {
-        this.users.push(follows)
-      }
+    const response = await Api.get('/v1/users/' + username + '/followings')
+    for (const follows of response.data) {
+      this.users.push(follows)
     }
   }
 }
 </script>
 
 <style scoped>
-.userList-container{
+.userList-container {
   padding: 0 2rem;
   display: flex;
   flex-direction: column;

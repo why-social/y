@@ -1,21 +1,27 @@
 <template>
   <div id="content">
     <PostPrompt id="homePostPrompt" />
-    <hr />
+
+    <hr style="margin-bottom: 0px;"/>
+
     <TabSwitcher :tabs="tabs" />
-    <hr />
-    <router-view />
+
+    <router-view id="homeContent" />
   </div>
 </template>
 
 <style scoped>
 #content {
-  overflow: hidden;
   display: block;
   padding-left: 20px;
   padding-right: 20px;
   height: 100%;
   width: 100%;
+}
+
+#homeContent {
+  position: relative;
+  z-index: -1;
 }
 
 @media (max-width: 630px) {
