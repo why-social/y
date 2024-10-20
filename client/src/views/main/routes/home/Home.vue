@@ -82,7 +82,10 @@ export default {
   #content {
     padding-left: 0;
     padding-right: 0;
-    padding-bottom: 20rem;
+  }
+
+  #home-content {
+    padding-bottom: 10rem;
   }
 }
 </style>

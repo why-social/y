@@ -5,7 +5,7 @@ import Search from '@/components/search/Search.vue'
 
 <template>
   <b-container class="d-flex">
-    <div class="nav-container">
+    <div class="nav-container" ref="navbar">
       <Navigation />
     </div>
 
@@ -33,10 +33,23 @@ export default {
       lastSidebarScroll: 0
     }
   },
+
   mounted() {
     document.body.addEventListener('scroll', this.updateSideBarPosition)
+
+    window.addEventListener('scroll', this.updateNavBarPosition)
     window.addEventListener('resize', this.updateSideBarPosition)
+    window.addEventListener('resize', this.updateNavBarPosition)
   },
+
+  unmounted() {
+    document.body.removeEventListener('scroll', this.updateSideBarPosition)
+
+    window.removeEventListener('scroll', this.updateNavBarPosition)
+    window.removeEventListener('resize', this.updateSideBarPosition)
+    window.removeEventListener('resize', this.updateNavBarPosition)
+  },
+
   methods: {
     updateSideBarPosition() {
       const sidebar = document.getElementById('search')
@@ -65,6 +78,11 @@ export default {
           sidebar.style.transform = ''
         }
       }
+    },
+    updateNavBarPosition() {
+      const navbar = this.$refs.navbar
+
+      navbar.style.transform = `translateX(${-window.scrollX}px)`
     }
   }
 }
@@ -74,6 +92,7 @@ export default {
 .container {
   height: 100%;
   max-width: 100%;
+  min-width: 375px;
   pointer-events: none;
   margin: 0;
   padding: 0;
@@ -132,13 +151,19 @@ export default {
   display: unset;
 }
 
+@media (max-width: 375px) {
+  .nav-container {
+    width: 375px !important;
+  }
+}
+
 @media (max-width: 630px) {
   .container {
     max-width: 100%;
   }
 
   .nav-container {
-    width: 100%;
+    width: inherit;
     height: fit-content;
     top: unset;
     bottom: 0;

@@ -167,6 +167,8 @@ hr {
 }
 .tab-switcher {
   overflow-x: auto;
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
   transition: 0.5s;
   width: 100%;
   user-select: none;
@@ -176,6 +178,9 @@ hr {
   padding-top: 1rem;
   padding-bottom: 1rem;
   justify-content: space-around;
+}
+.tab-switcher::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 .tab {
   display: flex;

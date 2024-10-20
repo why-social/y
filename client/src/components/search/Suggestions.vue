@@ -19,7 +19,7 @@ import Button from '@/components/misc/Button.vue'
         @click="follow(user)"
         secondary
       >
-        <span class="material-symbols-outlined">add</span>
+        <span class="material-symbols-outlined">person_add</span>
       </Button>
     </div>
   </div>

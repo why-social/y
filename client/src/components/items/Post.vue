@@ -6,7 +6,6 @@ import ThreadItem from '@/components/items/ThreadItem.vue'
 import Button from '@/components/misc/Button.vue'
 </script>
 
-
 <template>
   <ThreadItem
     v-bind="$props"
@@ -18,14 +17,14 @@ import Button from '@/components/misc/Button.vue'
     <Button
       v-if="item.author._id !== viewer.userId"
       secondary
-      class="inter-tight-medium"
+      class="inter-tight-medium repost-button"
       @click.stop="this.repost()"
       style="margin-left: auto"
     >
       <span class="icon" style="font-variation-settings: 'wght' 400"
         >cached</span
       >
-      <span style="padding-right: 0.3rem">Repost</span>
+      <span>Repost</span>
     </Button>
   </ThreadItem>
 </template>
@@ -98,3 +97,9 @@ export default {
   }
 }
 </script>
+
+<style>
+.repost-button {
+  padding: 0.1rem 0.6rem 0.1rem 0.4rem !important;
+}
+</style>

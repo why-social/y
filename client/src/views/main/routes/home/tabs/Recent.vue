@@ -5,7 +5,7 @@ import Post from '@/components/items/Post.vue'
 </script>
 
 <template>
-  <div ref="container">
+  <div id="container">
     <Post
       v-for="post in posts"
       :item="post"
@@ -70,7 +70,7 @@ export default {
   },
 
   unmounted() {
-    window.removeEventListener('scroll', this.scrollListener)
+    document.body.removeEventListener('scroll', this.scrollListener)
   },
 
   mounted() {

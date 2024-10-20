@@ -51,7 +51,9 @@ import DropDown from '@/components/misc/DropDown.vue'
         </div>
 
         <div
-          v-if="this.viewer?.userId === this.author?._id"
+          v-if="
+            this.viewer?.userId === this.author?._id && !this.item.is_deleted
+          "
           @click.stop
           style="margin-left: auto"
         >
@@ -65,6 +67,7 @@ import DropDown from '@/components/misc/DropDown.vue'
 
       <div class="content">
         <contenteditable
+          v-if="!this.item.is_deleted"
           ref="contentText"
           id="thread-prompt-input"
           v-model="content"
@@ -72,9 +75,18 @@ import DropDown from '@/components/misc/DropDown.vue'
           contenteditable="false"
           placeholder="Text content"
           @keyup="computeValidity"
-          :class="{ hidden: !this.content?.length && editing }"
+          :class="{ hidden: !this.content?.length && !editing }"
         >
           {{ content }}
+        </contenteditable>
+        <contenteditable
+          v-else
+          id="thread-prompt-input"
+          contenteditable="false"
+          style="opacity: 0.7;"
+          class="inter-tight-regular-italic"
+        >
+          Deleted
         </contenteditable>
 
         <div
@@ -359,8 +371,10 @@ div[thread-item] .avatar {
   border-radius: 100%;
 }
 
-div[thread-item] button {
-  padding: 0.5rem;
+div[thread-item] .edit-interactions button,
+div[thread-item] .interactions button {
+  height: 2.5rem;
+  padding: 0.5rem 0.7rem;
   font-size: 1.2rem;
 }
 
@@ -571,11 +585,6 @@ div[thread-item] .reposter-data:hover .handle-link {
   div[thread-item] .clickable {
     margin-right: 1rem;
   }
-
-  div[thread-item] button {
-    padding: 0.5rem;
-    font-size: 1.2rem;
-  }
 }
 
 div[thread-item] input[type='file'] {
@@ -605,6 +614,8 @@ div[thread-item] .attach-icon {
   user-select: none;
   color: var(--color-accent);
   vertical-align: center;
+  width: 1.5rem;
+  margin-left: -0.3rem;
   font-size: 2rem;
 }
 
@@ -652,6 +663,7 @@ div[thread-item][editable] .interactions {
 }
 
 div[thread-item][editable] .edit-interactions {
-  display: inherit;
+  display: flex;
+  align-items: center;
 }
 </style>

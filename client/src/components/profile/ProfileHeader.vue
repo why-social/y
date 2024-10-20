@@ -13,7 +13,7 @@ import Button from '@/components/misc/Button.vue'
         <img :src="userData.avatarUrl" alt="avatar" id="avatarImg" />
 
         <div v-if="editMode" class="edit-overlay">
-          <span class="edit-icon">✎</span>
+          <span class="edit-icon icon">edit</span>
         </div>
 
         <input
@@ -83,13 +83,19 @@ import Button from '@/components/misc/Button.vue'
           </template>
 
           <template v-else>
-            <Button secondary @click="toggleEditMode">Edit profile</Button>
+            <Button secondary @click="toggleEditMode">
+              <span class="icon">edit</span>
+            </Button>
           </template>
         </template>
 
         <template v-else>
-          <Button v-if="!isFollowedByViewer" @click="follow">Follow</Button>
-          <Button v-else secondary @click="unfollow">Unfollow</Button>
+          <Button v-if="!isFollowedByViewer" @click="follow">
+            <span class="icon">person_add</span>
+          </Button>
+          <Button v-else secondary @click="unfollow">
+            <span class="icon">person_remove</span>
+          </Button>
         </template>
       </div>
     </div>
@@ -145,6 +151,7 @@ export default {
   data() {
     return {
       editMode: false,
+      followers: this.userData.followers,
       editableUserData: {
         name: this.userData.name,
         about_me: this.userData.about_me
@@ -156,7 +163,7 @@ export default {
       return VueJwtDecode.decode(localStorage.getItem('token'))
     },
     isFollowedByViewer() {
-      return this.userData.followers.includes(this.viewer.username)
+      return this.followers.includes(this.viewer.username)
     }
   },
   watch: {
@@ -169,23 +176,47 @@ export default {
   },
   methods: {
     async follow() {
-      await Api.post(`/v1/users/followings/${this.userData.username}`, null, {
-        headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+      const response = await Api.post(
+        `/v1/users/followings/${this.userData.username}`,
+        null,
+        {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
         }
-      })
+      )
 
-      this.$router.go()
+      if (response.status === 201) {
+        const newFollowerList = this.followers
+        newFollowerList.push(this.viewer.username)
+
+        this.followers = newFollowerList
+      }
     },
+
     async unfollow() {
-      await Api.delete(`/v1/users/followings/${this.userData._id}`, {
-        headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token')
+      const response = await Api.delete(
+        `/v1/users/followings/${this.userData._id}`,
+        {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
         }
-      })
+      )
 
-      this.$router.go()
+      if (response.status === 200) {
+        const newFollowerList = []
+
+        this.followers.forEach((follower) => {
+          if (follower !== this.viewer.username) {
+            newFollowerList.push(follower)
+          }
+        })
+
+        this.followers = newFollowerList
+      }
     },
+
     toggleEditMode() {
       this.editMode = !this.editMode
       if (!this.editMode) {
@@ -193,6 +224,7 @@ export default {
         document.querySelector('#avatarImg').src = this.userData.avatarUrl
       }
     },
+
     async saveChanges() {
       console.log(this.editableUserData)
 
@@ -205,7 +237,7 @@ export default {
         return
       }
 
-      await this.$emit('updateUserData', this.editableUserData)
+      this.$emit('updateUserData', this.editableUserData)
       this.toggleEditMode()
     },
     selectNewImage() {
@@ -232,7 +264,7 @@ export default {
 <style scoped>
 .profile-header {
   pointer-events: all;
-  padding: 2.5rem 1rem 0;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -240,17 +272,17 @@ export default {
 .profile-avatar-container {
   display: flex;
   width: 100%;
+  gap: 1.5rem;
   box-sizing: border-box;
   justify-content: flex-start;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 .profile-avatar {
   position: relative;
-  width: 9rem;
-  height: 9rem;
+  width: 8rem;
+  height: 8rem;
   border-radius: 50%;
-  overflow: hidden;
 }
 .profile-avatar img {
   width: 100%;
@@ -264,13 +296,18 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  box-sizing: content-box;
+  padding: 3px; /* blur radius + 1 */
+  margin-left: -3px;
+  margin-top: -3px;
+  background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 50%;
+  transition: 0.2s;
 }
 .edit-overlay:hover {
+  backdrop-filter: blur(2px);
   background-color: rgba(0, 0, 0, 0.7);
 }
 .edit-icon {
@@ -282,7 +319,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-left: 1rem;
 }
 .username-email-container {
   display: flex;
@@ -291,7 +327,6 @@ export default {
 .profile-info {
   display: flex;
   align-items: center;
-  margin-top: 8px;
 }
 .profile-name {
   font-size: 1.5rem;
@@ -343,11 +378,24 @@ export default {
 }
 .profile-buttons button {
   font-size: 1.2rem;
-  padding: 0.7rem 1rem;
+  padding: 0.2rem 0.7rem;
 }
+
 .profile-aboutme {
   font-size: 1rem;
   padding-top: 0.5rem;
+}
+
+.icon {
+  user-select: none;
+  font-variation-settings: 'wght' 400;
+  font-size: 1.5rem;
+  line-height: 80%;
+}
+
+.profile-buttons button {
+  width: 3rem;
+  height: 3rem;
 }
 
 @media (max-width: 630px) {

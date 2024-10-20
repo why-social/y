@@ -38,6 +38,7 @@ import CommentPrompt from '@/components/prompts/CommentPrompt.vue'
       <hr />
 
       <CommentPrompt
+        v-if="!this.head.is_deleted"
         :parent="this.head?._id"
         :parentIsPost="this.type == 'post'"
       />
@@ -199,6 +200,10 @@ export default {
   .icon {
     font-size: 1.5rem;
     line-height: 80%;
+  }
+
+  #thread-container {
+    padding-bottom: 10rem;
   }
 }
 </style>

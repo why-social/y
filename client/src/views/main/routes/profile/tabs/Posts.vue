@@ -1,9 +1,10 @@
 <script setup>
 import Post from '@/components/items/Post.vue'
+import Spinner from '@/components/Spinner.vue'
 </script>
 
 <template>
-  <div v-if="posts.length != 0">
+  <div v-if="isLoaded && posts.length != 0">
     <Post
       v-for="post in posts"
       :item="post"
@@ -11,8 +12,11 @@ import Post from '@/components/items/Post.vue'
       :key="post._id"
     />
   </div>
-  <div v-else class="posts-no-posts">
+  <div v-else-if="isLoaded" class="no-posts">
     <span>No posts yet</span>
+  </div>
+  <div v-else>
+    <Spinner />
   </div>
 </template>
 
@@ -23,6 +27,7 @@ import VueJwtDecode from 'vue-jwt-decode'
 export default {
   data() {
     return {
+      isLoaded: false,
       posts: []
     }
   },
@@ -42,12 +47,14 @@ export default {
         this.posts = []
       }
     }
+
+    this.isLoaded = true
   }
 }
 </script>
 
 <style scoped>
-.posts-no-posts {
+.no-posts {
   padding-top: 1rem;
   font-size: 1.5rem;
   color: var(--color-on-background);

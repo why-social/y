@@ -63,4 +63,10 @@ export default {
 .navbar-element.active {
   border-bottom: 2px solid var(--color-button-emphasize);
 }
+
+@media (max-width: 630px) {
+  #profile-content {
+    padding-bottom: 10rem;
+  }
+}
 </style>

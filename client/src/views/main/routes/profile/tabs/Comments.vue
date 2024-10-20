@@ -1,9 +1,10 @@
 <script setup>
 import Comment from '@/components/items/Comment.vue'
+import Spinner from '@/components/Spinner.vue'
 </script>
 
 <template>
-  <div v-if="comments.length != 0">
+  <div v-if="isLoaded && comments.length != 0">
     <Comment
       v-for="comment in comments"
       :item="comment"
@@ -11,8 +12,11 @@ import Comment from '@/components/items/Comment.vue'
       :key="comment._id"
     />
   </div>
-  <div v-else class="posts-no-posts">
+  <div v-else-if="isLoaded" class="no-comments">
     <span>No comments yet</span>
+  </div>
+  <div v-else>
+    <Spinner />
   </div>
 </template>
 
@@ -23,6 +27,7 @@ import VueJwtDecode from 'vue-jwt-decode'
 export default {
   data() {
     return {
+      isLoaded: false,
       comments: []
     }
   },
@@ -42,12 +47,14 @@ export default {
         this.comments = []
       }
     }
+
+    this.isLoaded = true
   }
 }
 </script>
 
 <style scoped>
-.posts-no-posts {
+.no-comments {
   padding-top: 1rem;
   font-size: 1.5rem;
   color: var(--color-on-background);

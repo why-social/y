@@ -1,8 +1,6 @@
 <script setup>
 import { Api } from '@/Api'
 import VueJwtDecode from 'vue-jwt-decode'
-
-import Button from '@/components/misc/Button.vue'
 </script>
 
 <template>
@@ -197,7 +195,7 @@ form[thread-prompt] .file-counter {
 form[thread-prompt] .attach-label {
   display: flex;
   user-select: none;
-  margin-left: 4rem;
+  margin-left: 4.5rem;
   font-size: 1.3rem;
   align-items: center;
   cursor: pointer;
@@ -207,6 +205,8 @@ form[thread-prompt] .attach-icon {
   user-select: none;
   color: var(--color-accent);
   vertical-align: center;
+  width: 1.5rem;
+  margin-left: -0.3rem;
   font-size: 2rem;
 }
 

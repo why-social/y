@@ -4,7 +4,7 @@ import VueJwtDecode from 'vue-jwt-decode'
 import moment from 'moment'
 
 import ProfileHeader from '@/components/profile/ProfileHeader.vue'
-import ProfilePosts from '@/components/profile/ProfilePosts.vue'
+import ProfileTabs from '@/components/profile/ProfileTabs.vue'
 import Spinner from '@/components/Spinner.vue'
 </script>
 
@@ -13,7 +13,7 @@ import Spinner from '@/components/Spinner.vue'
     <template v-if="isLoaded">
       <ProfileHeader :userData="userData" @updateUserData="updateUserData" />
 
-      <ProfilePosts :userData="userData" />
+      <ProfileTabs :userData="userData" />
     </template>
 
     <template v-else>
@@ -26,7 +26,7 @@ import Spinner from '@/components/Spinner.vue'
 export default {
   components: {
     ProfileHeader,
-    ProfilePosts
+    ProfileTabs
   },
   data() {
     return {

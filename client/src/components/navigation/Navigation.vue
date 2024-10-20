@@ -240,6 +240,7 @@ button {
 @media (max-width: 630px) {
   #navbar {
     width: 100%;
+    min-width: 375px;
     height: fit-content;
     flex-direction: row;
     border-top: 1px solid var(--color-border);

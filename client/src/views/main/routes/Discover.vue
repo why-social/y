@@ -14,6 +14,7 @@ export default {
 
     searchContainer.style.width = '100%'
     searchContainer.style.display = 'flex'
+    searchContainer.style.paddingBottom = '10rem'
 
     search.style.width = '100%'
     search.style.transform = ''
@@ -31,6 +32,7 @@ export default {
 
     searchContainer.style.width = ''
     searchContainer.style.display = ''
+    searchContainer.style.paddingBottom = ''
 
     search.style.width = ''
     search.style.position = ''

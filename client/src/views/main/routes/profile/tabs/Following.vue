@@ -1,10 +1,17 @@
 <script setup>
 import Follower from '@/components/Follower.vue'
+import Spinner from '@/components/Spinner.vue'
 </script>
 
 <template>
-  <div class="userList-container">
+  <div v-if="isLoaded && users.length != 0" class="userList-container">
     <Follower v-for="user in users" :username="user" :key="user._id" />
+  </div>
+  <div v-else-if="isLoaded" class="no-followings">
+    <span>Not following anyone</span>
+  </div>
+  <div v-else>
+    <Spinner />
   </div>
 </template>
 
@@ -15,6 +22,7 @@ import VueJwtDecode from 'vue-jwt-decode'
 export default {
   data() {
     return {
+      isLoaded: false,
       users: []
     }
   },
@@ -31,14 +39,23 @@ export default {
     for (const follows of response.data) {
       this.users.push(follows)
     }
+
+    this.isLoaded = true
   }
 }
 </script>
 
 <style scoped>
-.userList-container {
+.list-container {
   padding: 0 2rem;
   display: flex;
   flex-direction: column;
+}
+
+.no-followings {
+  padding-top: 1rem;
+  font-size: 1.5rem;
+  color: var(--color-on-background);
+  text-align: center;
 }
 </style>
