@@ -4,7 +4,7 @@
 
     <TabSwitcher :tabs="tabs" />
 
-    <router-view id="profileContent" />
+    <router-view id="profile-content" />
   </div>
 </template>
 
@@ -33,9 +33,11 @@ export default {
 <style scoped>
 .profile-feed {
   display: flex;
+  pointer-events: none;
   flex-direction: column;
 }
-#profileContent {
+#profile-content {
+  pointer-events: all;
   position: relative;
   z-index: -1;
 }

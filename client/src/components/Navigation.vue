@@ -155,6 +155,7 @@ export default {
 
 <style scoped>
 #navbar {
+  pointer-events: all;
   padding: 20px;
   box-sizing: border-box;
   height: 100%;

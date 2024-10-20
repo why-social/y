@@ -118,7 +118,7 @@ export default {
 
 <style>
 form[thread-prompt] {
-  /* Actual fixed scope */
+  pointer-events: all;
   padding: 1rem;
   overflow: hidden;
   width: 100%;

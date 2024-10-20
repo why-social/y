@@ -1,5 +1,5 @@
 <template>
-  <div id="container">
+  <div id="thread-container">
     <template v-if="isLoaded">
       <div
         class="thread-parent"
@@ -152,7 +152,8 @@ export default {
 </script>
 
 <style scoped>
-#container {
+#thread-container {
+  pointer-events: all;
   width: 100%;
   height: 100%;
   padding: 0;

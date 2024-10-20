@@ -69,12 +69,14 @@ export default {
 .container {
   height: 100%;
   max-width: 100%;
+  pointer-events: none;
   margin: 0;
   padding: 0;
   position: relative;
 }
 
 .nav-container {
+  pointer-events: all;
   box-sizing: border-box;
   position: sticky;
   height: 100vh;
@@ -99,6 +101,7 @@ export default {
 }
 
 #search-container {
+  pointer-events: all;
   min-height: 100vh;
   height: 100%;
   position: relative;

@@ -6,7 +6,7 @@
 
     <TabSwitcher :tabs="tabs" />
 
-    <router-view id="homeContent" />
+    <router-view id="home-content" />
   </div>
 </template>
 
@@ -19,7 +19,12 @@
   width: 100%;
 }
 
-#homeContent {
+#homePostPrompt {
+  pointer-events: all;
+}
+
+#home-content {
+  pointer-events: all;
   position: relative;
   z-index: -1;
 }

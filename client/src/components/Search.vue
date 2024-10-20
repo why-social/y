@@ -7,9 +7,15 @@
       @input="handleInputChange"
     />
     <div v-if="result.length != 0" class="search-results">
-      <Follower v-for="username of result" :key="username" :username="username" />
+      <Follower
+        v-for="username of result"
+        :key="username"
+        :username="username"
+      />
     </div>
-    <span v-else-if="searchQuery.length >= 3" class="search-not-found">No user found</span>
+    <span v-else-if="searchQuery.length >= 3" class="search-not-found"
+      >No user found</span
+    >
     <Suggestions />
   </div>
 </template>
@@ -32,8 +38,10 @@ export default {
         return
       }
       Api.get('/v1/users/search?query=' + event.target.value)
-        .then(response => { this.result = response.data })
-        .catch(error => {
+        .then((response) => {
+          this.result = response.data
+        })
+        .catch((error) => {
           if (error.response.status === 404 || error.response.status === 400) {
             this.result = []
           } else console.error(error)
@@ -45,6 +53,7 @@ export default {
 
 <style scoped>
 #search {
+  pointer-events: all;
   min-height: 100%;
   padding: 20px;
   position: fixed;
@@ -72,6 +81,6 @@ export default {
 }
 
 .search-results > .follower-container {
-  padding: 0.1rem
+  padding: 0.1rem;
 }
 </style>

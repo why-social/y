@@ -18,7 +18,7 @@ import Followers from './views/profileTabs/Followers.vue'
 import Following from './views/profileTabs/Following.vue'
 import Feed from './views/homeTabs/Feed.vue'
 import Recent from './views/homeTabs/Recent.vue'
-import restorePassword from './views/restorePassword.vue'
+import Restore from './views/Restore.vue'
 
 const routes = [
   {
@@ -118,7 +118,7 @@ const routes = [
       {
         path: 'restorePassword',
         name: 'restorePassword',
-        component: restorePassword
+        component: Restore
       }
     ]
   },

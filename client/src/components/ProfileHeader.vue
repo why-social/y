@@ -168,6 +168,7 @@ export default {
 
 <style scoped>
 .profile-header {
+  pointer-events: all;
   padding: 2.5rem 1rem 0;
   display: flex;
   flex-direction: column;

@@ -134,6 +134,7 @@ hr {
   margin-top: 0;
 }
 .tab-switcher-container {
+  pointer-events: all;
   overflow: hidden;
   width: 100%;
   position: sticky;

@@ -49,7 +49,7 @@
           <DropDown
             @edit="enableEditing"
             @delete="this.$emit('delete')"
-            :options="['Edit', 'Delete']"
+            :options="isRepost ? ['Delete'] : ['Edit', 'Delete']"
           />
         </div>
       </div>
@@ -385,7 +385,7 @@ div[thread-item] .content {
 div[thread-item] .content > contenteditable {
   overflow-wrap: break-word;
   hyphens: auto;
-  width: 100%;
+  width: calc(100% + 1rem - 2px);
   border-radius: 0.5rem;
   margin: -0.5rem;
   padding: 0.5rem;

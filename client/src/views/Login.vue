@@ -1,5 +1,5 @@
 <template>
-  <form
+  <form style="pointer-events: all;"
     @submit.prevent="onSubmit"
     class="inter-tight-regular d-flex flex-column gap-2"
   >
