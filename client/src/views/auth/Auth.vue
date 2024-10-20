@@ -44,9 +44,10 @@ export default {
 .login-container {
   padding: 2rem;
   display: flex;
+  overflow: hidden;
   justify-content: center;
   align-items: center;
-  width: 50%;
+  width: 50vw;
 }
 
 .login-form {
@@ -63,7 +64,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 50vw;
   top: 0;
 }
 
@@ -90,6 +91,7 @@ export default {
   }
 
   .logo-container {
+    width: 100%;
     margin-top: 2rem;
     margin-bottom: -2rem;
     height: fit-content;
