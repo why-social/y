@@ -1,5 +1,14 @@
+<script setup>
+import { Api } from '@/Api'
+
+import Post from '@/components/items/Post.vue'
+import Comment from '@/components/items/Comment.vue'
+import Spinner from '@/components/Spinner.vue'
+import CommentPrompt from '@/components/prompts/CommentPrompt.vue'
+</script>
+
 <template>
-  <div id="container">
+  <div id="thread-container">
     <template v-if="isLoaded">
       <div
         class="thread-parent"
@@ -29,6 +38,7 @@
       <hr />
 
       <CommentPrompt
+        v-if="!this.head.is_deleted"
         :parent="this.head?._id"
         :parentIsPost="this.type == 'post'"
       />
@@ -51,8 +61,6 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-
 export default {
   data() {
     return {
@@ -93,6 +101,7 @@ export default {
         return null
       }
     },
+
     async getPost() {
       try {
         const response = await Api.get(`/v1/posts/${this.$route.params.id}`, {
@@ -109,11 +118,16 @@ export default {
 
     goToParent() {
       this.$router.push(`/thread/${this.parent_id}`)
+    },
+
+    refreshOnId() {
+      this.$router.go()
     }
   },
 
   mounted() {
-    window.scrollTo(0, 0)
+    document.body.scrollTo(0, 0)
+
     this.getPost()
       .then(async (result) => {
         if (result) {
@@ -137,12 +151,17 @@ export default {
 
         return true
       })
+  },
+
+  watch: {
+    '$route.params.id': 'refreshOnId'
   }
 }
 </script>
 
 <style scoped>
-#container {
+#thread-container {
+  pointer-events: all;
   width: 100%;
   height: 100%;
   padding: 0;
@@ -181,6 +200,10 @@ export default {
   .icon {
     font-size: 1.5rem;
     line-height: 80%;
+  }
+
+  #thread-container {
+    padding-bottom: 10rem;
   }
 }
 </style>

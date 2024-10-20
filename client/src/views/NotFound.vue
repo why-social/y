@@ -1,3 +1,7 @@
+<script setup>
+import Button from '@/components/misc/Button.vue'
+</script>
+
 <template>
   <div>
     <h1>Nothing to <br />see here</h1>
@@ -5,9 +9,6 @@
     <Button @click="$router.push({ path: '/' })"> Go home </Button>
   </div>
 </template>
-
-<script>
-</script>
 
 <style scoped>
 div {

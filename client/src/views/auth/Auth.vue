@@ -1,6 +1,8 @@
 <template>
   <div class="login-root">
-    <p class="logo cool-font">𝕐</p>
+    <div class="logo-container">
+      <p class="logo cool-font">𝕐</p>
+    </div>
     <div class="login-container">
       <div class="login-form">
         <h1 class="inter-tight-bold pun" ref="pun"></h1>
@@ -14,12 +16,12 @@
 
 <script scoped>
 const puns = [
-  'did <span class="cool-font">𝕏</span> go to therapy? Too many exes…',
-  'are we still here… Just to suffer…',
-  'is there always one sock missing after laundry?',
-  'is it so hard to open a bag of chips quietly?',
-  'do we park in driveways and drive on parkways?',
-  'does the toast always land butter&#8209;side down?'
+  '…did <span class="cool-font">𝕏</span> go to therapy? Too many exes…',
+  '…are we still here… Just to suffer…',
+  '…is there always one sock missing after laundry?',
+  '…is it so hard to open a bag of chips quietly?',
+  '…do we park in driveways and drive on parkways?',
+  '…does the toast always land butter&#8209;side down?'
 ]
 
 export default {
@@ -31,17 +33,21 @@ export default {
 
 <style scoped>
 .login-root {
+  pointer-events: all;
   box-sizing: border-box;
+  height: fit-content;
   width: 100%;
-  padding: 2rem;
   display: flex;
   flex-direction: row;
-  align-items: center;
 }
 
 .login-container {
+  padding: 2rem;
   display: flex;
-  width: 50%;
+  overflow: hidden;
+  justify-content: center;
+  align-items: center;
+  width: 50vw;
 }
 
 .login-form {
@@ -51,12 +57,22 @@ export default {
   gap: 3rem;
 }
 
+.logo-container {
+  height: 100vh;
+  position: sticky;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50vw;
+  top: 0;
+}
+
 .logo {
+  margin: 0;
   flex-grow: 1;
   text-align: center;
   font-size: 30vw;
-  margin-bottom: 0;
-  margin-top: 4vw;
 }
 
 .pun {
@@ -72,6 +88,14 @@ export default {
   .login-container {
     width: 100%;
     justify-content: center;
+  }
+
+  .logo-container {
+    width: 100%;
+    margin-top: 2rem;
+    margin-bottom: -2rem;
+    height: fit-content;
+    position: relative;
   }
 
   .logo {

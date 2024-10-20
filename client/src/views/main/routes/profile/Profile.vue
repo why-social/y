@@ -1,22 +1,32 @@
+<script setup>
+import { Api } from '@/Api'
+import VueJwtDecode from 'vue-jwt-decode'
+import moment from 'moment'
+
+import ProfileHeader from '@/components/profile/ProfileHeader.vue'
+import ProfileTabs from '@/components/profile/ProfileTabs.vue'
+import Spinner from '@/components/Spinner.vue'
+</script>
+
 <template>
   <div id="container">
-    <ProfileHeader :userData="userData" @updateUserData="updateUserData" />
-    <hr />
-    <ProfilePosts :userData="userData" />
+    <template v-if="isLoaded">
+      <ProfileHeader :userData="userData" @updateUserData="updateUserData" />
+
+      <ProfileTabs :userData="userData" />
+    </template>
+
+    <template v-else>
+      <Spinner />
+    </template>
   </div>
 </template>
 
 <script>
-import { Api } from '@/Api'
-import VueJwtDecode from 'vue-jwt-decode'
-import moment from 'moment'
-import ProfileHeader from '../components/ProfileHeader.vue'
-import ProfilePosts from '../components/ProfilePosts.vue'
-
 export default {
   components: {
     ProfileHeader,
-    ProfilePosts
+    ProfileTabs
   },
   data() {
     return {
@@ -32,20 +42,23 @@ export default {
         email: '',
         isViewer: false
       },
-      avatarUrl: 'https://via.placeholder.com/150'
+      avatarUrl: 'https://via.placeholder.com/150',
+      isLoaded: false
     }
   },
   async created() {
     await this.handleRouteChange()
   },
   mounted() {
-    window.scrollTo(0, 0)
+    document.body.scrollTo(0, 0)
   },
   watch: {
-    '$route.params.userId': 'handleRouteChange'
+    '$route.params.username': 'handleRouteChange'
   },
   methods: {
     async handleRouteChange() {
+      this.isLoaded = false
+
       const paramUsername = this.$route.params.username
       const token = localStorage.getItem('token')
       let decodedUsername
@@ -86,12 +99,16 @@ export default {
           }
         }
       }
+
+      this.isLoaded = true
     },
     async fetchUserData(username, userReq) {
       const userReqData = userReq.data
 
       const followersReq = await Api.get('/v1/users/' + username + '/followers')
-      const followingsReq = await Api.get('/v1/users/' + username + '/followings')
+      const followingsReq = await Api.get(
+        '/v1/users/' + username + '/followings'
+      )
 
       this.userData._id = userReqData._id
       this.userData.name = userReqData.name
@@ -101,7 +118,8 @@ export default {
       )
       this.userData.followers = followersReq.data
       this.userData.following = followingsReq.data
-      this.userData.avatarUrl = userReqData.profile_picture_url || this.avatarUrl
+      this.userData.avatarUrl =
+        userReqData.profile_picture_url || this.avatarUrl
       this.userData.about_me = userReqData.about_me || ''
       if (userReqData.email) {
         this.userData.email = userReqData.email
@@ -109,9 +127,11 @@ export default {
         this.userData.email = ''
       }
     },
+
     async updateUserData(updatedData) {
       try {
         const token = localStorage.getItem('token')
+
         updatedData = {
           name: updatedData.name,
           about_me: updatedData.about_me,
@@ -142,6 +162,7 @@ export default {
         })
         this.userData.name = updatedData.name
         this.userData.about_me = updatedData.about_me
+
         console.log('Updated user data:', updatedData)
       } catch (error) {
         console.error('Error updating user data:', error)
@@ -154,6 +175,7 @@ export default {
 <style>
 #container {
   width: 100%;
+  height: 100%;
   padding: 20px;
 }
 </style>

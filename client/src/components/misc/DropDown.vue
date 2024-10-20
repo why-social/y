@@ -1,5 +1,5 @@
 <template>
-  <b-dropdown right class="themed-drop-down icon" text="more_vert">
+  <b-dropdown end class="themed-drop-down icon" text="more_vert" data-bs-display="static">
     <b-dropdown-item
       v-for="option in options"
       :key="option"

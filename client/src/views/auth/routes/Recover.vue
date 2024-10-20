@@ -1,5 +1,12 @@
+<script setup>
+import { Api } from '@/Api'
+
+import Input from '@/components/misc/Input.vue'
+import Button from '@/components/misc/Button.vue'
+</script>
+
 <template>
-  <form
+  <form style="pointer-events: all;"
     @submit.prevent="onSubmit"
     class="inter-tight-regular d-flex flex-column gap-2"
   >
@@ -12,17 +19,14 @@
       @input="clearError"
     />
 
-    <span class="error text-center inter-tight-regular emailError">{{ errorText }}</span>
-
-    <div class="d-flex justify-content-center flex-column gap-2 mt-5">
+    <div class="d-flex justify-content-center flex-column gap-2 mt-4">
+      <span class="error text-center inter-tight-regular emailError">{{ errorText }}</span>
       <Button type="submit" class="w-100">Send recovery mail</Button>
     </div>
   </form>
 </template>
 
 <script>
-import { Api } from '@/Api'
-
 export default {
   data() {
     return {

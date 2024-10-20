@@ -1,6 +1,6 @@
 <script>
 import { Api } from '@/Api'
-import ThreadPrompt from './ThreadPrompt.vue'
+import ThreadPrompt from '@/components/prompts/ThreadPrompt.vue'
 
 export default {
   mixins: [ThreadPrompt],
