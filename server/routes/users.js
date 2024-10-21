@@ -432,7 +432,7 @@ router.patch("/api/v1/users/:id", authMiddleware, async (req, res, next) => {
 		}
 		
 		updatableFields.forEach(field => {
-			if(req.body[field]) {
+			if (req.body[field] !== undefined && req.body[field] !== null) {
 				user[field] = req.body[field];
 			}
 		});
