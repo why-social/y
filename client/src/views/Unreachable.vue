@@ -4,9 +4,9 @@ import Button from '@/components/misc/Button.vue'
 
 <template>
   <div>
-    <h1>Nothing to <br />see here</h1>
+    <h1>Server is <br />unreachable</h1>
 
-    <Button @click="$router.push({ path: '/' })"> Go home </Button>
+    <Button @click="$router.push({ path: '/' })"> Try again </Button>
   </div>
 </template>
 
