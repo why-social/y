@@ -1,8 +1,14 @@
+<script setup>
+import TabSwitcher from '../TabSwitcher.vue'
+</script>
+
 <template>
   <div class="profile-feed">
+    <hr style="margin-bottom: 0px" />
+
     <TabSwitcher :tabs="tabs" />
 
-    <router-view :key="$route.path" />
+    <router-view id="profile-content" />
   </div>
 </template>
 
@@ -31,8 +37,13 @@ export default {
 <style scoped>
 .profile-feed {
   display: flex;
+  pointer-events: none;
   flex-direction: column;
-  gap: 1rem;
+}
+#profile-content {
+  pointer-events: all;
+  position: relative;
+  z-index: -1;
 }
 .profile-navbar {
   display: flex;
@@ -51,5 +62,11 @@ export default {
 }
 .navbar-element.active {
   border-bottom: 2px solid var(--color-button-emphasize);
+}
+
+@media (max-width: 630px) {
+  #profile-content {
+    padding-bottom: 10rem;
+  }
 }
 </style>

@@ -1,3 +1,8 @@
+<script setup>
+import { Api } from '@/Api'
+import VueJwtDecode from 'vue-jwt-decode'
+</script>
+
 <template>
   <form thread-prompt ref="threadForm" @submit.prevent="submit()">
     <div class="form-container">
@@ -39,9 +44,6 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-import VueJwtDecode from 'vue-jwt-decode'
-
 export default {
   data() {
     return {
@@ -88,6 +90,8 @@ export default {
       this.images = event.target.files
     },
     resetQuery() {
+      this.$refs.threadForm.removeAttribute('focused')
+
       if (this.$route.query?.focus) {
         this.$router.replace({
           path: this.$route.path,
@@ -110,17 +114,13 @@ export default {
         this.avatar = response.data
       }
     })
-
-    if (this.$route.query?.focus) {
-      window.scrollTo(0, 0)
-    }
   }
 }
 </script>
 
 <style>
 form[thread-prompt] {
-  /* Actual fixed scope */
+  pointer-events: all;
   padding: 1rem;
   overflow: hidden;
   width: 100%;
@@ -135,7 +135,7 @@ form[thread-prompt] .form-container {
 
 form[thread-prompt] .form-row {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 form[thread-prompt] .avatar {
@@ -147,7 +147,13 @@ form[thread-prompt] .avatar {
 form[thread-prompt] contenteditable {
   flex-grow: 1;
   resize: none;
-  padding: 0.8rem;
+  padding: 0.5rem;
+  height: fit-content;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  width: 100%;
+  margin-top: 0.3rem;
+  margin-bottom: 0.5rem;
   overflow: hidden;
   font-size: 1.3rem;
   color: var(--color-on-background);
@@ -161,9 +167,11 @@ form[thread-prompt] contenteditable:focus {
 }
 
 form[thread-prompt] [contenteditable='true']:empty:before {
+  position: absolute;
   content: attr(placeholder);
   cursor: text;
   opacity: 0.7;
+  background: transparent;
   color: var(--color-on-background);
 }
 
@@ -187,7 +195,7 @@ form[thread-prompt] .file-counter {
 form[thread-prompt] .attach-label {
   display: flex;
   user-select: none;
-  margin-left: 5rem;
+  margin-left: 4.5rem;
   font-size: 1.3rem;
   align-items: center;
   cursor: pointer;
@@ -197,6 +205,8 @@ form[thread-prompt] .attach-icon {
   user-select: none;
   color: var(--color-accent);
   vertical-align: center;
+  width: 1.5rem;
+  margin-left: -0.3rem;
   font-size: 2rem;
 }
 

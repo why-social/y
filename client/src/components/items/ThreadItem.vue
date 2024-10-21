@@ -1,3 +1,12 @@
+<script setup>
+import VueJwtDecode from 'vue-jwt-decode'
+import moment from 'moment'
+
+import ImageCarousel from '@/components/items/ImageCarousel.vue'
+import Button from '@/components/misc/Button.vue'
+import DropDown from '@/components/misc/DropDown.vue'
+</script>
+
 <template>
   <div thread-item ref="threadItem" @click="goToThread">
     <img
@@ -42,20 +51,23 @@
         </div>
 
         <div
-          v-if="this.viewer?.userId === this.author?._id"
+          v-if="
+            this.viewer?.userId === this.author?._id && !this.item.is_deleted
+          "
           @click.stop
           style="margin-left: auto"
         >
           <DropDown
             @edit="enableEditing"
             @delete="this.$emit('delete')"
-            :options="['Edit', 'Delete']"
+            :options="isRepost ? ['Delete'] : ['Edit', 'Delete']"
           />
         </div>
       </div>
 
       <div class="content">
         <contenteditable
+          v-if="!this.item.is_deleted"
           ref="contentText"
           id="thread-prompt-input"
           v-model="content"
@@ -63,9 +75,18 @@
           contenteditable="false"
           placeholder="Text content"
           @keyup="computeValidity"
-          :class="{ hidden: !this.content?.length && editing }"
+          :class="{ hidden: !this.content?.length && !editing }"
         >
           {{ content }}
+        </contenteditable>
+        <contenteditable
+          v-else
+          id="thread-prompt-input"
+          contenteditable="false"
+          style="opacity: 0.7;"
+          class="inter-tight-regular-italic"
+        >
+          Deleted
         </contenteditable>
 
         <div
@@ -148,9 +169,6 @@
 </template>
 
 <script>
-import moment from 'moment'
-import VueJwtDecode from 'vue-jwt-decode'
-
 export default {
   props: ['item', 'dateFormat'],
 
@@ -353,8 +371,10 @@ div[thread-item] .avatar {
   border-radius: 100%;
 }
 
-div[thread-item] button {
-  padding: 0.5rem;
+div[thread-item] .edit-interactions button,
+div[thread-item] .interactions button {
+  height: 2.5rem;
+  padding: 0.5rem 0.7rem;
   font-size: 1.2rem;
 }
 
@@ -383,6 +403,9 @@ div[thread-item] .content {
 }
 
 div[thread-item] .content > contenteditable {
+  overflow-wrap: break-word;
+  hyphens: auto;
+  width: calc(100% + 1rem - 2px);
   border-radius: 0.5rem;
   margin: -0.5rem;
   padding: 0.5rem;
@@ -562,11 +585,6 @@ div[thread-item] .reposter-data:hover .handle-link {
   div[thread-item] .clickable {
     margin-right: 1rem;
   }
-
-  div[thread-item] button {
-    padding: 0.5rem;
-    font-size: 1.2rem;
-  }
 }
 
 div[thread-item] input[type='file'] {
@@ -596,6 +614,8 @@ div[thread-item] .attach-icon {
   user-select: none;
   color: var(--color-accent);
   vertical-align: center;
+  width: 1.5rem;
+  margin-left: -0.3rem;
   font-size: 2rem;
 }
 
@@ -627,6 +647,7 @@ div[thread-item][editable] [contenteditable='true'] {
 
 div[thread-item][editable] [contenteditable='true']:empty:before {
   display: unset !important;
+  position: absolute;
   content: attr(placeholder);
   cursor: text;
   opacity: 0.7;
@@ -642,6 +663,7 @@ div[thread-item][editable] .interactions {
 }
 
 div[thread-item][editable] .edit-interactions {
-  display: inherit;
+  display: flex;
+  align-items: center;
 }
 </style>

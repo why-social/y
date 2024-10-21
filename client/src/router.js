@@ -2,22 +2,36 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import VueJwtDecode from 'vue-jwt-decode'
 
+// 404
 import NotFound from './views/NotFound.vue'
-import Main from './views/Main.vue'
-import Home from './views/Home.vue'
-import Thread from './views/Thread.vue'
-import Discover from './views/Discover.vue'
-import Auth from './views/Auth.vue'
-import Login from './views/Login.vue'
-import Recover from './views/Recover.vue'
-import Register from './views/Register.vue'
-import Profile from './views/Profile.vue'
-import Posts from './views/profileTabs/Posts.vue'
-import Comments from './views/profileTabs/Comments.vue'
-import UserList from './views/profileTabs/UserList.vue'
-import Feed from './views/homeTabs/Feed.vue'
-import Recent from './views/homeTabs/Recent.vue'
-import restorePassword from './views/restorePassword.vue'
+
+// Auth
+import Auth from './views/auth/Auth.vue'
+import Login from './views/auth/routes/Login.vue'
+import Recover from './views/auth/routes/Recover.vue'
+import Register from './views/auth/routes/Register.vue'
+import Restore from './views/auth/routes/Restore.vue'
+
+// Main
+import Main from './views/main/Main.vue'
+
+// Main > Home
+import Home from './views/main/routes/home/Home.vue'
+import Feed from './views/main/routes/home/tabs/Feed.vue'
+import Recent from './views/main/routes/home/tabs/Recent.vue'
+
+// Main > Thread
+import Thread from './views/main/routes/Thread.vue'
+
+// Main > Discover
+import Discover from './views/main/routes/Discover.vue'
+
+// Main > Profile
+import Profile from './views/main/routes/profile/Profile.vue'
+import Posts from './views/main/routes/profile/tabs/Posts.vue'
+import Comments from './views/main/routes/profile/tabs/Comments.vue'
+import Followers from './views/main/routes/profile/tabs/Followers.vue'
+import Following from './views/main/routes/profile/tabs/Following.vue'
 
 const routes = [
   {
@@ -76,12 +90,12 @@ const routes = [
           {
             path: 'followers',
             name: 'followers',
-            component: UserList
+            component: Followers
           },
           {
             path: 'followings',
             name: 'followings',
-            component: UserList
+            component: Following
           }
         ]
       },
@@ -117,7 +131,7 @@ const routes = [
       {
         path: 'restorePassword',
         name: 'restorePassword',
-        component: restorePassword
+        component: Restore
       }
     ]
   },

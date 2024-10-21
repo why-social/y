@@ -65,7 +65,7 @@ export default {
   width: 100%;
   height: fit-content;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 input {
@@ -119,6 +119,9 @@ input:focus {
 }
 
 .profile-edit-input {
-  padding: 0.3rem 1rem;
+  width: calc(100% + 1rem);
+  margin-left: -0.5rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.5rem;
 }
 </style>

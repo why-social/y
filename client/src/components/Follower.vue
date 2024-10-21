@@ -1,5 +1,9 @@
+<script setup>
+import { Api } from '@/Api'
+</script>
+
 <template>
-  <div class="follower-container">
+  <div v-if="isLoaded" class="follower-container">
     <img class="pfp" :src="pfp" @click="redirectToProfile" />
     <div class="follower-info">
       <span class="info-name" @click="redirectToProfile">{{ name }}</span>
@@ -9,13 +13,12 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-
 export default {
   name: 'Profile',
   props: ['username'],
   data() {
     return {
+      isLoaded: false,
       pfp: '',
       name: '',
       redirectToProfileId: ''
@@ -27,8 +30,11 @@ export default {
   methods: {
     async fetchUserData() {
       const response = await Api.get('/v1/users/' + this.username)
+
       this.pfp = response.data.profile_picture_url
       this.name = response.data.name
+
+      this.isLoaded = true
     },
     redirectToProfile() {
       this.$router.push(`/profile/${this.username}/posts`)
@@ -59,7 +65,7 @@ export default {
   height: 3rem;
   border-radius: 100%;
 }
-.pfp:hover{
+.pfp:hover {
   cursor: pointer;
 }
 .follower-info {
