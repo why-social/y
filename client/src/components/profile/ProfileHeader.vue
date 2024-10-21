@@ -38,7 +38,7 @@ import Button from '@/components/misc/Button.vue'
             </template>
 
             <template v-else>
-              {{ userData.name }}
+              {{ editableUserData.name }}
             </template>
           </div>
           <div class="username-email-container">
@@ -80,7 +80,13 @@ import Button from '@/components/misc/Button.vue'
         <div class="profile-buttons">
           <template v-if="userData.isViewer">
             <template v-if="editMode">
-              <Button primary class="icon" @click="saveChanges">save</Button>
+              <Button
+                primary
+                class="icon"
+                @click="saveChanges"
+                :disabled="!isNameValid"
+                >save</Button
+              >
               <Button secondary class="icon" @click="toggleEditMode"
                 >close</Button
               >
@@ -169,6 +175,12 @@ export default {
     },
     isFollowedByViewer() {
       return this.followers.includes(this.viewer.username)
+    },
+    isNameValid() {
+      return (
+        this.editableUserData.name?.length > 2 &&
+        /^[a-zA-Z ]{3,40}$/.test(this.editableUserData.name)
+      )
     }
   },
   watch: {
@@ -237,10 +249,12 @@ export default {
         this.editableUserData.about_me === this.userData.about_me &&
         !this.editableUserData.avatar
       ) {
+        this.toggleEditMode()
         return
       }
 
       this.$emit('updateUserData', this.editableUserData)
+
       this.toggleEditMode()
     },
     selectNewImage() {

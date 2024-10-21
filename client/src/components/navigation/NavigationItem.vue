@@ -1,5 +1,5 @@
 <template>
-  <div @click="$router.push({ path: this.to })" class="nav-pill">
+  <div @click="$router.push({ path: to })" class="nav-pill">
     <span class="material-symbols-outlined icon">{{ icon }}</span>
     <span class="label">{{ text }}</span>
   </div>

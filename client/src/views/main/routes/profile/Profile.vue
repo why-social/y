@@ -160,10 +160,9 @@ export default {
         await Api.patch('/v1/users/' + this.userData._id, updatedData, {
           headers: { Authorization: token }
         })
+
         this.userData.name = updatedData.name
         this.userData.about_me = updatedData.about_me
-
-        console.log('Updated user data:', updatedData)
       } catch (error) {
         console.error('Error updating user data:', error)
       }

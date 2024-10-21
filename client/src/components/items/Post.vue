@@ -18,7 +18,7 @@ import Button from '@/components/misc/Button.vue'
       v-if="item.author._id !== viewer.userId"
       secondary
       class="inter-tight-medium repost-button"
-      @click.stop="this.repost()"
+      @click.stop="repost"
       style="margin-left: auto"
     >
       <span class="icon" style="font-variation-settings: 'wght' 400"

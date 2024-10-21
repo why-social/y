@@ -3,7 +3,7 @@
     <div class="tab-switcher" ref="tabs">
       <div
         class="tab"
-        v-for="tab in this.tabs"
+        v-for="tab in tabs"
         :key="tab.route"
         :class="{ active: tabs[activeTab] === tab }"
         @click="switchTab(tab)"

@@ -1,21 +1,45 @@
 <template>
-  <div class="modal-overlay" @click.stop="closeModal" v-on:keydown.esc="closeModal">
-    <span class="material-symbols-outlined modal-icon modal-button-container" @click.stop="closeModal">arrow_left_alt</span>
+  <Teleport to="body">
+    <div
+      class="modal-overlay"
+      @click.stop="closeModal"
+      v-on:keydown.esc="closeModal"
+    >
+      <span
+        class="material-symbols-outlined modal-icon modal-button-container"
+        @click.stop="closeModal"
+        >arrow_left_alt</span
+      >
 
-    <div class="modal-center">
-      <div class="modal-button-container" :class="{disabled: currentIndex === 0}" @click.stop>
-        <span class="material-symbols-outlined modal-icon"
-          @click.stop="prevImage">chevron_left</span>
-      </div>
+      <div class="modal-center">
+        <div
+          class="modal-button-container"
+          :class="{ disabled: currentIndex === 0 }"
+          @click.stop
+        >
+          <span
+            class="material-symbols-outlined modal-icon"
+            @click.stop="prevImage"
+            >chevron_left</span
+          >
+        </div>
 
-      <img :src="images[currentIndex]" class="full-image" @click.stop />
+        <img :src="images[currentIndex]" class="full-image" @click.stop />
 
-      <div class="modal-button-container" :class="{disabled: currentIndex === images.length - 1}" @click.stop>
-        <span class="material-symbols-outlined modal-icon"
-          @click.stop="nextImage">chevron_right</span>
+        <div
+          class="modal-button-container"
+          :class="{ disabled: currentIndex === images.length - 1 }"
+          @click.stop
+        >
+          <span
+            class="material-symbols-outlined modal-icon"
+            @click.stop="nextImage"
+            >chevron_right</span
+          >
+        </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script>
@@ -63,6 +87,7 @@ export default {
 
 <style scoped>
 .modal-overlay {
+  pointer-events: all;
   position: fixed;
   top: 0;
   left: 0;
