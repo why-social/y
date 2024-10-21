@@ -22,12 +22,12 @@ import CommentPrompt from '@/components/prompts/CommentPrompt.vue'
       </div>
 
       <template v-if="isLoaded">
-        <template v-if="this.type == 'post'">
-          <Post :item="this.head" />
+        <template v-if="type == 'post'">
+          <Post :item="head" />
         </template>
 
-        <template v-if="this.type == 'comment'">
-          <Comment :item="this.head" />
+        <template v-if="type == 'comment'">
+          <Comment :item="head" />
         </template>
       </template>
 
@@ -38,16 +38,16 @@ import CommentPrompt from '@/components/prompts/CommentPrompt.vue'
       <hr />
 
       <CommentPrompt
-        v-if="!this.head.is_deleted"
-        :parent="this.head?._id"
-        :parentIsPost="this.type == 'post'"
+        v-if="!head.is_deleted"
+        :parent="head?._id"
+        :parentIsPost="type == 'post'"
       />
 
-      <template v-if="this.head?.comments?.length">
+      <template v-if="head?.comments?.length">
         <hr />
 
         <Comment
-          v-for="comment in this.head.comments"
+          v-for="comment in head.comments"
           :item="comment"
           :key="comment._id"
         />

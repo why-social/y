@@ -4,7 +4,7 @@ import VueJwtDecode from 'vue-jwt-decode'
 </script>
 
 <template>
-  <form thread-prompt ref="threadForm" @submit.prevent="submit()">
+  <form thread-prompt ref="threadForm" @submit.prevent="submit">
     <div class="form-container">
       <div class="form-row">
         <img class="avatar" :src="avatar" />
@@ -23,7 +23,7 @@ import VueJwtDecode from 'vue-jwt-decode'
       <div class="form-row">
         <label class="attach-label" for="images">
           <span class="material-symbols-outlined attach-icon">attach_file</span>
-          <span class="file-counter">{{ images.length }}/4</span>
+          <span class="file-counter">{{ images?.length }}/4</span>
         </label>
 
         <input
@@ -35,7 +35,7 @@ import VueJwtDecode from 'vue-jwt-decode'
           @change="uploadImage"
         />
 
-        <Button :disabled="isSubmitDisabled"> {{ buttonMesage }} </Button>
+        <Button :disabled="isSubmitDisabled"> {{ submitMessage }} </Button>
       </div>
     </div>
 
@@ -45,10 +45,10 @@ import VueJwtDecode from 'vue-jwt-decode'
 
 <script>
 export default {
+  props: ['submitMessage', 'placeholder'],
+
   data() {
     return {
-      buttonMesage: this.getSubmitMessage(),
-      placeholder: this.getPlaceholder(),
       content: '',
       avatar: '',
       images: []
@@ -57,20 +57,11 @@ export default {
 
   computed: {
     isSubmitDisabled() {
-      return this.content.trim().length === 0 && this.images.length === 0
+      return this.content?.trim().length === 0 && this.images?.length === 0
     }
   },
 
   methods: {
-    post() {
-      throw new Error('Not implemented!')
-    },
-    getPlaceholder() {
-      throw new Error('Not implemented!')
-    },
-    getSubmitMessage() {
-      throw new Error('Not implemented!')
-    },
     submit() {
       const formData = new FormData()
       formData.append('content', this.content)
@@ -79,7 +70,7 @@ export default {
         formData.append('images', image)
       }
 
-      this.post(formData)
+      this.$emit('post', formData)
 
       this.$refs.threadForm.reset()
       this.$refs.textInput.innerText = ''

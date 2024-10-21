@@ -35,7 +35,7 @@ import Button from '@/components/misc/Button.vue'
 
     <hr />
 
-    <NavigationItem @click="this.logout()" icon="logout" text="Logout" />
+    <NavigationItem @click="logout" icon="logout" text="Logout" />
 
     <div class="buttons" style="margin-top: auto">
       <Button v-if="isAdmin" class="nuke" v-b-modal.confirm-nuke>

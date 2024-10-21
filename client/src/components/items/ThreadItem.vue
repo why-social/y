@@ -52,14 +52,14 @@ import DropDown from '@/components/misc/DropDown.vue'
 
         <div
           v-if="
-            this.viewer?.userId === this.author?._id && !this.item.is_deleted
+            viewer?.userId === author?._id && !item.is_deleted
           "
           @click.stop
           style="margin-left: auto"
         >
           <DropDown
             @edit="enableEditing"
-            @delete="this.$emit('delete')"
+            @delete="$emit('delete')"
             :options="isRepost ? ['Delete'] : ['Edit', 'Delete']"
           />
         </div>
@@ -67,7 +67,7 @@ import DropDown from '@/components/misc/DropDown.vue'
 
       <div class="content">
         <contenteditable
-          v-if="!this.item.is_deleted"
+          v-if="!item.is_deleted"
           ref="contentText"
           id="thread-prompt-input"
           v-model="content"
@@ -75,7 +75,7 @@ import DropDown from '@/components/misc/DropDown.vue'
           contenteditable="false"
           placeholder="Text content"
           @keyup="computeValidity"
-          :class="{ hidden: !this.content?.length && !editing }"
+          :class="{ hidden: !content?.length && !editing }"
         >
           {{ content }}
         </contenteditable>
@@ -91,7 +91,7 @@ import DropDown from '@/components/misc/DropDown.vue'
 
         <div
           class="pictures-container"
-          :class="{ hidden: !this.images?.length }"
+          :class="{ hidden: !images?.length }"
         >
           <div
             class="picture-container"
@@ -113,8 +113,8 @@ import DropDown from '@/components/misc/DropDown.vue'
       <div class="edit-interactions">
         <label class="attach-label" for="images">
           <span class="material-symbols-outlined attach-icon">attach_file</span>
-          <span class="file-counter" :class="{ error: images.length >= 4 }">
-            {{ images.length }}/4
+          <span class="file-counter" :class="{ error: images?.length >= 4 }">
+            {{ images?.length }}/4
           </span>
         </label>
 

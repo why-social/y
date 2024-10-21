@@ -3,7 +3,7 @@
     <b-dropdown-item
       v-for="option in options"
       :key="option"
-      @click="this.$emit(option.toLowerCase())"
+      @click="$emit(option.toLowerCase())"
     >
       {{ option }}
     </b-dropdown-item>
