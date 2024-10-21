@@ -1,10 +1,18 @@
-<script>
+<script setup>
 import { Api } from '@/Api'
 import ThreadPrompt from '@/components/prompts/ThreadPrompt.vue'
+</script>
 
+<template>
+  <ThreadPrompt
+    :submitMessage="'Comment'"
+    :placeholder="'Your reply'"
+    @post="post"
+  />
+</template>
+
+<script>
 export default {
-  mixins: [ThreadPrompt],
-
   props: ['parent', 'parentIsPost'],
 
   methods: {
@@ -24,12 +32,6 @@ export default {
         .catch((error) => {
           console.error('Error creating post:', error)
         })
-    },
-    getPlaceholder() {
-      return 'Your reply'
-    },
-    getSubmitMessage() {
-      return 'Comment'
     }
   }
 }
