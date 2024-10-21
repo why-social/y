@@ -66,16 +66,15 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
 
 ### Pages
 
-* **Feed:** The feed will be the start page of our application. It allows the user to view posts from accounts they follow. Every post can be liked, commented, or reposted, as well as opened to view all comments (see *Post* page). 
+* **Authentication:** This includes pages for login, registering and restoring accounts. Users will be able to login using their username and password. To register a new user will need to fill out their username, password, name, e-mail and birthday. Furthermore, users can recover lost accounts by resetting their passwords using the e-mail address associated with their account.
 
-* **Post:** When an individual post is opened, the post’s content is shown at the top of the page, followed by the comment thread. Each comment can be replied to and liked. If a comment has replies, ‘view replies’ button appears under the comment. If the user is viewing their own post, they can edit and delete the post.
+* **Home:** Home page is the primary source of content on the platform. It provides infinetely scrolling feeds, both for activity from people you follow and general Y activity. This is also the place to go if you want to post something new.
 
-* **Profile:** On this page a user can view any profile on the platform, whether it's someone else’s or their own. At the top of the page the user’s information (such as name, profile picture, about section, etc.) is displayed. If the user is viewing their own profile, they can edit their information. Below the info section, the user’s posts, as well as re-posts, are put into a feed in chronological order (newest first). The profile feed has the same functionality as the home feed (liking, commenting, reposting). The user can also follow another user on this page.
+* **Thread:** When an individual post or comment is opened, the item's content is shown at the top of the page, followed by the comment thread. Each post and comment can be replied to and liked. Threads can be unwound both ways, and depeneding on who is viewing, change layout (e.g. original poster can edit their own posts and comments)
 
-* **Login/Registration:** A page for login and registration of the user. Users will be able to login using their username and password. To register a new user will need to fill out their username, password, name and birthday.
+* **Profile:** On this page a user can view any profile on the platform, whether it's someone else’s or their own. At the top of the page the user’s information (such as name, profile picture, about section, etc.) is displayed. If the user is viewing their own profile, they can edit their information. Below the info section, the user’s posts, as well as re-posts and comments are put into a feed in chronological order (newest first). The profile feed has the same functionality as the home feed (liking, commenting, reposting). The user can also follow another user on this page.
 
-**NOTE:** On every page there will be a *persistent search bar* that allows user to search for other users.
-
+* **Discover:** This is the platform's search page. On desktop, it takes the form of a persistent side-bar; on mobile, it becomes its own tab in the navigation. Discover provides suggestions on who to follow and allows users to easily find old friends, or get in touch with anyone else on the platform.
 
 ### Entity-Relationship (ER) Diagram
 
