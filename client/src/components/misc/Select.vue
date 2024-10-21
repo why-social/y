@@ -51,6 +51,7 @@ select {
   padding-bottom: 0.7rem;
   padding-left: 1.3rem;
   padding-right: 1.3rem;
+  background: var(--color-background);
   color: var(--color-on-background);
   transition: 0.5s;
   appearance: none;

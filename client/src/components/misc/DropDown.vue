@@ -16,10 +16,10 @@
 }
 
 .themed-drop-down > button {
-  height: 3rem;
-  width: 3rem;
+  height: 3.15rem;
+  width: 3.15rem;
   font-size: 1.5rem;
-  line-height: 65%;
+  line-height: 100%;
   background: transparent;
   text-align: center;
   border-radius: 100%;

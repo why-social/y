@@ -83,7 +83,7 @@ import DropDown from '@/components/misc/DropDown.vue'
           v-else
           id="thread-prompt-input"
           contenteditable="false"
-          style="opacity: 0.7;"
+          style="opacity: 0.7"
           class="inter-tight-regular-italic"
         >
           Deleted
@@ -134,7 +134,7 @@ import DropDown from '@/components/misc/DropDown.vue'
         <Button @click.stop="submitEdit" :disabled="!isValid"> Submit </Button>
       </div>
 
-      <span class="date">{{ date }}</span>
+      <span class="date">{{ date + (edited ? ' (edited)' : '')}}</span>
 
       <div class="interactions">
         <div
@@ -181,10 +181,15 @@ export default {
       images: this.item.image_urls || [],
       likes: this.item.likes,
       comments: this.item.comments,
+      edited: this.item.is_edited,
+
       modalImageIndex: null,
       isModalOpen: false,
       isRepost: !!this.item.original_post,
 
+      isValid: false,
+      oldContent: this.item.content,
+      oldImages: [...this.item.image_urls],
       uploadedImages: [],
       deletedImages: []
     }
@@ -228,7 +233,8 @@ export default {
       this.$refs.threadItem.removeAttribute('editable')
       this.$refs.contentText.setAttribute('contenteditable', 'false')
 
-      Object.assign(this.$data, this.$options.data.call(this))
+      this.content = this.oldContent
+      this.images = [...this.oldImages]
 
       this.$refs.contentText.innerText = this.content
     },
@@ -249,6 +255,11 @@ export default {
       }
 
       this.$emit('edit', formData)
+
+      this.edited = true
+
+      this.oldContent = this.$refs.contentText.innerText
+      this.oldImages = [...this.images]
 
       this.uploadedImages = []
       this.deletedImages = []
@@ -279,20 +290,24 @@ export default {
 
       this.computeValidity()
     },
-    uploadImages() {
+    async uploadImages() {
       const images = Object.values(event.target.files)
 
       if (images?.length) {
-        images.forEach(async (image) => {
-          if (this.images?.length < 4 && image.size / 1024 / 1024 < 12) {
-            if (!(await this.checkForDuplicates(this.images, image))) {
-              this.uploadedImages.push(image)
-              this.images.push(URL.createObjectURL(image))
+        for (let image in images) {
+          image = images[image]
+
+          if (this.images?.length < 4) {
+            if (image.size / 1024 / 1024 < 12) {
+              if (!(await this.checkForDuplicates(this.images, image))) {
+                this.uploadedImages.push(image)
+                this.images.push(URL.createObjectURL(image))
+              }
+            } else {
+              window.alert('Images must not exceed 12 megabytes.')
             }
-          } else {
-            window.alert('Images must not exceed 12 megabytes.')
           }
-        })
+        }
       }
 
       this.computeValidity()
@@ -306,8 +321,9 @@ export default {
       this.modalImageIndex = null
     },
     computeValidity() {
-      this.isValid =
-        this.images?.length || this.$refs.contentText?.innerText?.length
+      this.isValid = !!(
+        this.images?.length || this.$refs.contentText?.innerText?.trim().length
+      )
     },
     async checkForDuplicates(images, toAdd) {
       const base64Image = await this.imageToBase64(toAdd)

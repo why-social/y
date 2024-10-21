@@ -3,6 +3,7 @@
     <span class="material-symbols-outlined input-icon">{{ icon }}</span>
     <input
       class="inter-tight-regular"
+      autocomplete="one-time-code"
       :type="type"
       :title="title"
       :value="modelValue"
@@ -113,7 +114,7 @@ input:focus {
   border: 2px solid var(--color-accent);
 }
 
-.input-icon:has(+input:focus) {
+.input-icon:has(+ input:focus) {
   opacity: 1;
   color: var(--color-accent);
 }

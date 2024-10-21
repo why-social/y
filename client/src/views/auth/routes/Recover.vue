@@ -19,8 +19,8 @@ import Button from '@/components/misc/Button.vue'
       @input="clearError"
     />
 
-    <div class="d-flex justify-content-center flex-column gap-2 mt-4">
-      <span class="error text-center inter-tight-regular emailError">{{ errorText }}</span>
+    <div class="d-flex justify-content-center flex-column gap-2 mt-3">
+      <span class="error text-center inter-tight-regular" style="height: 2rem;">{{ errorText }}</span>
       <Button type="submit" class="w-100">Send recovery mail</Button>
     </div>
   </form>
@@ -67,8 +67,5 @@ export default {
 <style>
 .cool {
   font-size: 1.5rem;
-}
-.emailError {
-  height: 1rem;
 }
 </style>

@@ -7,7 +7,8 @@ import Button from '@/components/misc/Button.vue'
 </script>
 
 <template>
-  <form style="pointer-events: all;"
+  <form
+    style="pointer-events: all"
     @submit.prevent="onSubmit"
     class="inter-tight-regular d-flex flex-column gap-2"
   >
@@ -107,8 +108,12 @@ import Button from '@/components/misc/Button.vue'
       />
     </div>
 
-    <div class="d-flex justify-content-center flex-column gap-2 mt-5">
-      <span class="error text-center inter-tight-regular">{{ message }}</span>
+    <div class="d-flex justify-content-center flex-column gap-2 mt-3">
+      <span
+        class="error text-center inter-tight-regular"
+        style="height: 2rem"
+        >{{ message }}</span
+      >
       <Button type="submit" class="w-100">Sign up</Button>
     </div>
 
