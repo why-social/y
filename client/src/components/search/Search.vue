@@ -1,3 +1,10 @@
+<script setup>
+import { Api } from '@/Api'
+
+import Suggestions from '@/components/search/Suggestions.vue'
+import Follower from '@/components/Follower.vue'
+</script>
+
 <template>
   <div id="search">
     <Input
@@ -7,17 +14,20 @@
       @input="handleInputChange"
     />
     <div v-if="result.length != 0" class="search-results">
-      <Follower v-for="username of result" :key="username" :username="username" />
+      <Follower
+        v-for="username of result"
+        :key="username"
+        :username="username"
+      />
     </div>
-    <span v-else-if="searchQuery.length >= 3" class="search-not-found">No user found</span>
+    <span v-else-if="searchQuery.length >= 3" class="search-not-found"
+      >No user found</span
+    >
     <Suggestions />
   </div>
 </template>
 
 <script>
-// import Input from '@/components/Input.vue'
-import { Api } from '@/Api'
-
 export default {
   data() {
     return {
@@ -32,8 +42,10 @@ export default {
         return
       }
       Api.get('/v1/users/search?query=' + event.target.value)
-        .then(response => { this.result = response.data })
-        .catch(error => {
+        .then((response) => {
+          this.result = response.data
+        })
+        .catch((error) => {
           if (error.response.status === 404 || error.response.status === 400) {
             this.result = []
           } else console.error(error)
@@ -45,24 +57,17 @@ export default {
 
 <style scoped>
 #search {
+  pointer-events: all;
+  min-height: 100%;
   padding: 20px;
+  position: fixed;
   box-sizing: border-box;
   border-left: none;
-  height: 100%;
-  width: 100%;
-  position: relative;
+  height: fit-content;
+  width: inherit;
   display: flex;
   gap: 1rem;
   flex-direction: column;
-}
-
-@media (min-width: 1200px) {
-  #search {
-    padding-top: 20px;
-    padding-bottom: 20px;
-    padding-left: 40px;
-    box-sizing: border-box;
-  }
 }
 
 .search-not-found {
@@ -74,12 +79,12 @@ export default {
 
 .search-results {
   display: flex;
+  padding: 0.5rem;
   flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 1rem;
 }
 
 .search-results > .follower-container {
-  padding: 0.1rem
+  padding: 0.1rem;
 }
 </style>

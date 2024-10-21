@@ -3,6 +3,7 @@
     <span class="material-symbols-outlined input-icon">{{ icon }}</span>
     <input
       class="inter-tight-regular"
+      autocomplete="one-time-code"
       :type="type"
       :title="title"
       :value="modelValue"
@@ -65,7 +66,7 @@ export default {
   width: 100%;
   height: fit-content;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 input {
@@ -113,12 +114,15 @@ input:focus {
   border: 2px solid var(--color-accent);
 }
 
-.input-icon:has(+input:focus) {
+.input-icon:has(+ input:focus) {
   opacity: 1;
   color: var(--color-accent);
 }
 
 .profile-edit-input {
-  padding: 0.3rem 1rem;
+  width: calc(100% + 1rem);
+  margin-left: -0.5rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.5rem;
 }
 </style>

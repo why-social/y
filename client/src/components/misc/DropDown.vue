@@ -1,5 +1,5 @@
 <template>
-  <b-dropdown right class="themed-drop-down icon" text="more_vert">
+  <b-dropdown end class="themed-drop-down icon" text="more_vert" data-bs-display="static">
     <b-dropdown-item
       v-for="option in options"
       :key="option"
@@ -16,10 +16,10 @@
 }
 
 .themed-drop-down > button {
-  height: 3rem;
-  width: 3rem;
+  height: 3.15rem;
+  width: 3.15rem;
   font-size: 1.5rem;
-  line-height: 65%;
+  line-height: 100%;
   background: transparent;
   text-align: center;
   border-radius: 100%;

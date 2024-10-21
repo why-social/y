@@ -1,3 +1,12 @@
+<script setup>
+import VueJwtDecode from 'vue-jwt-decode'
+import moment from 'moment'
+
+import ImageCarousel from '@/components/items/ImageCarousel.vue'
+import Button from '@/components/misc/Button.vue'
+import DropDown from '@/components/misc/DropDown.vue'
+</script>
+
 <template>
   <div thread-item ref="threadItem" @click="goToThread">
     <img
@@ -42,20 +51,23 @@
         </div>
 
         <div
-          v-if="this.viewer?.userId === this.author?._id"
+          v-if="
+            this.viewer?.userId === this.author?._id && !this.item.is_deleted
+          "
           @click.stop
           style="margin-left: auto"
         >
           <DropDown
             @edit="enableEditing"
             @delete="this.$emit('delete')"
-            :options="['Edit', 'Delete']"
+            :options="isRepost ? ['Delete'] : ['Edit', 'Delete']"
           />
         </div>
       </div>
 
       <div class="content">
         <contenteditable
+          v-if="!this.item.is_deleted"
           ref="contentText"
           id="thread-prompt-input"
           v-model="content"
@@ -63,9 +75,18 @@
           contenteditable="false"
           placeholder="Text content"
           @keyup="computeValidity"
-          :class="{ hidden: !this.content?.length && editing }"
+          :class="{ hidden: !this.content?.length && !editing }"
         >
           {{ content }}
+        </contenteditable>
+        <contenteditable
+          v-else
+          id="thread-prompt-input"
+          contenteditable="false"
+          style="opacity: 0.7"
+          class="inter-tight-regular-italic"
+        >
+          Deleted
         </contenteditable>
 
         <div
@@ -113,7 +134,7 @@
         <Button @click.stop="submitEdit" :disabled="!isValid"> Submit </Button>
       </div>
 
-      <span class="date">{{ date }}</span>
+      <span class="date">{{ date + (edited ? ' (edited)' : '')}}</span>
 
       <div class="interactions">
         <div
@@ -148,9 +169,6 @@
 </template>
 
 <script>
-import moment from 'moment'
-import VueJwtDecode from 'vue-jwt-decode'
-
 export default {
   props: ['item', 'dateFormat'],
 
@@ -163,10 +181,15 @@ export default {
       images: this.item.image_urls || [],
       likes: this.item.likes,
       comments: this.item.comments,
+      edited: this.item.is_edited,
+
       modalImageIndex: null,
       isModalOpen: false,
       isRepost: !!this.item.original_post,
 
+      isValid: false,
+      oldContent: this.item.content,
+      oldImages: [...this.item.image_urls],
       uploadedImages: [],
       deletedImages: []
     }
@@ -210,7 +233,8 @@ export default {
       this.$refs.threadItem.removeAttribute('editable')
       this.$refs.contentText.setAttribute('contenteditable', 'false')
 
-      Object.assign(this.$data, this.$options.data.call(this))
+      this.content = this.oldContent
+      this.images = [...this.oldImages]
 
       this.$refs.contentText.innerText = this.content
     },
@@ -231,6 +255,11 @@ export default {
       }
 
       this.$emit('edit', formData)
+
+      this.edited = true
+
+      this.oldContent = this.$refs.contentText.innerText
+      this.oldImages = [...this.images]
 
       this.uploadedImages = []
       this.deletedImages = []
@@ -261,20 +290,24 @@ export default {
 
       this.computeValidity()
     },
-    uploadImages() {
+    async uploadImages() {
       const images = Object.values(event.target.files)
 
       if (images?.length) {
-        images.forEach(async (image) => {
-          if (this.images?.length < 4 && image.size / 1024 / 1024 < 12) {
-            if (!(await this.checkForDuplicates(this.images, image))) {
-              this.uploadedImages.push(image)
-              this.images.push(URL.createObjectURL(image))
+        for (let image in images) {
+          image = images[image]
+
+          if (this.images?.length < 4) {
+            if (image.size / 1024 / 1024 < 12) {
+              if (!(await this.checkForDuplicates(this.images, image))) {
+                this.uploadedImages.push(image)
+                this.images.push(URL.createObjectURL(image))
+              }
+            } else {
+              window.alert('Images must not exceed 12 megabytes.')
             }
-          } else {
-            window.alert('Images must not exceed 12 megabytes.')
           }
-        })
+        }
       }
 
       this.computeValidity()
@@ -288,8 +321,9 @@ export default {
       this.modalImageIndex = null
     },
     computeValidity() {
-      this.isValid =
-        this.images?.length || this.$refs.contentText?.innerText?.length
+      this.isValid = !!(
+        this.images?.length || this.$refs.contentText?.innerText?.trim().length
+      )
     },
     async checkForDuplicates(images, toAdd) {
       const base64Image = await this.imageToBase64(toAdd)
@@ -353,8 +387,10 @@ div[thread-item] .avatar {
   border-radius: 100%;
 }
 
-div[thread-item] button {
-  padding: 0.5rem;
+div[thread-item] .edit-interactions button,
+div[thread-item] .interactions button {
+  height: 2.5rem;
+  padding: 0.5rem 0.7rem;
   font-size: 1.2rem;
 }
 
@@ -383,6 +419,9 @@ div[thread-item] .content {
 }
 
 div[thread-item] .content > contenteditable {
+  overflow-wrap: break-word;
+  hyphens: auto;
+  width: calc(100% + 1rem - 2px);
   border-radius: 0.5rem;
   margin: -0.5rem;
   padding: 0.5rem;
@@ -562,11 +601,6 @@ div[thread-item] .reposter-data:hover .handle-link {
   div[thread-item] .clickable {
     margin-right: 1rem;
   }
-
-  div[thread-item] button {
-    padding: 0.5rem;
-    font-size: 1.2rem;
-  }
 }
 
 div[thread-item] input[type='file'] {
@@ -596,6 +630,8 @@ div[thread-item] .attach-icon {
   user-select: none;
   color: var(--color-accent);
   vertical-align: center;
+  width: 1.5rem;
+  margin-left: -0.3rem;
   font-size: 2rem;
 }
 
@@ -627,6 +663,7 @@ div[thread-item][editable] [contenteditable='true'] {
 
 div[thread-item][editable] [contenteditable='true']:empty:before {
   display: unset !important;
+  position: absolute;
   content: attr(placeholder);
   cursor: text;
   opacity: 0.7;
@@ -642,6 +679,7 @@ div[thread-item][editable] .interactions {
 }
 
 div[thread-item][editable] .edit-interactions {
-  display: inherit;
+  display: flex;
+  align-items: center;
 }
 </style>

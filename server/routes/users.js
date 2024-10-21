@@ -161,7 +161,6 @@ router.get("/api/v1/users/:username/followings", async (req, res, next) => {
 		let result = (await mongoose.models["User_follows_user"].find({follower: user._id}, 'follows -_id').populate('follows', 'username -_id'))
 			.map(entry => {return entry.follows.username});
 		
-		console.log(result)
 		res.status(200).json(result);
 	} catch (err) {
 		next(err);

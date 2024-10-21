@@ -1,3 +1,11 @@
+<script setup>
+import VueJwtDecode from 'vue-jwt-decode'
+import { Api } from '@/Api'
+
+import NavigationItem from '@/components/navigation/NavigationItem.vue'
+import Button from '@/components/misc/Button.vue'
+</script>
+
 <template>
   <div id="navbar">
     <div class="nav-logo cool-font" @click="$router.push({ path: '/' })">
@@ -6,9 +14,24 @@
 
     <hr />
 
-    <NavigationItem to="/" icon="home" text="Home" />
-    <NavigationItem to="/discover" icon="search" text="Discover" id="nav-discover" />
-    <NavigationItem to="/profile/me" icon="person" text="Profile" />
+    <NavigationItem
+      to="/"
+      icon="home"
+      :class="{ filled: isHome }"
+      text="Home"
+    />
+    <NavigationItem
+      to="/discover"
+      icon="search"
+      text="Discover"
+      id="nav-discover"
+    />
+    <NavigationItem
+      to="/profile/me"
+      icon="person"
+      :class="{ filled: isProfile }"
+      text="Profile"
+    />
 
     <hr />
 
@@ -20,10 +43,10 @@
           class="nav-icon material-symbols-outlined"
           style="font-variation-settings: 'wght' 400"
         >
-          local_fire_department
+          bomb
         </span>
 
-        <span class="nav-label inter-tight-medium">LET IT BURN</span>
+        <span class="nav-label inter-tight-medium">NUKE IT</span>
       </Button>
 
       <Button @click="redirectToPost">
@@ -55,27 +78,29 @@
 </template>
 
 <script>
-import VueJwtDecode from 'vue-jwt-decode'
-import { Api } from '@/Api'
-
 export default {
   methods: {
     logout() {
       localStorage.removeItem('token')
       this.$router.push({ path: '/login' })
     },
+
     closeModal() {
       this.$refs.confirmNuke.hide('confirm-nuke')
     },
+
     async nuke() {
       this.closeModal()
-      const authHeader = { Authorization: 'Bearer ' + localStorage.getItem('token') }
+      const authHeader = {
+        Authorization: 'Bearer ' + localStorage.getItem('token')
+      }
       await Api.delete('v1/posts', { headers: authHeader })
       await Api.delete('v1/users', { headers: authHeader })
 
       await this.$nextTick()
       this.$router.go()
     },
+
     redirectToPost() {
       const route = {
         query: {
@@ -94,6 +119,14 @@ export default {
     isAdmin: () => {
       const decoded = VueJwtDecode.decode(localStorage.getItem('token'))
       return !!decoded.adminKey
+    },
+
+    isHome() {
+      return this.$route.path.startsWith('/home')
+    },
+
+    isProfile() {
+      return this.$route.path.startsWith('/profile')
     }
   }
 }
@@ -101,8 +134,11 @@ export default {
 
 <style>
 #confirm-nuke {
-  --bs-modal-header-border-color: var(--color-border) !important;
-  --bs-modal-footer-border-color: var(--color-border) !important;
+  --bs-modal-header-border-color: var(--color-background-highlight) !important;
+  --bs-modal-footer-border-color: var(--color-background-highlight) !important;
+  background: rgba(0, 0, 0, 0.6);
+  pointer-events: all;
+  backdrop-filter: blur(4px);
 }
 
 .musk-header {
@@ -119,13 +155,17 @@ export default {
 }
 
 .musk-dialog .modal-content {
-  background-color: #282828;
+  border: 1px solid var(--color-background-highlight);
+  box-shadow: 0 0 0.2rem var(--color-background-highlight),
+    0 0 1rem var(--color-background-highlight);
+  background-color: var(--color-background);
   border-radius: 1rem;
 }
 </style>
 
 <style scoped>
 #navbar {
+  pointer-events: all;
   padding: 20px;
   box-sizing: border-box;
   height: 100%;
@@ -175,6 +215,11 @@ button {
   display: none;
 }
 
+.buttons {
+  display: flex;
+  flex-direction: column;
+}
+
 .nuke {
   background: var(--bs-red);
   border: 2px solid var(--bs-red);
@@ -183,14 +228,19 @@ button {
 .nuke:hover,
 .nuke:active,
 .nuke:focus {
-  background: #df4654;
-  border: 2px solid #df4654;
+  background: var(--color-error);
+  border: 2px solid var(--color-error);
+}
+
+.filled * {
+  font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 10 !important;
 }
 
 /* god bless */
 @media (max-width: 630px) {
   #navbar {
     width: 100%;
+    min-width: 375px;
     height: fit-content;
     flex-direction: row;
     border-top: 1px solid var(--color-border);

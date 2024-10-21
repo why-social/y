@@ -1,5 +1,3 @@
-// import App from './App.vue'
-
 import { createApp } from 'vue'
 import { createBootstrap } from 'bootstrap-vue-next'
 import contenteditable from 'vue-contenteditable'

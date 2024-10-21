@@ -1,5 +1,14 @@
+<script setup>
+import { Api } from '@/Api'
+
+import Input from '@/components/misc/Input.vue'
+import Select from '@/components/misc/Select.vue'
+import Button from '@/components/misc/Button.vue'
+</script>
+
 <template>
   <form
+    style="pointer-events: all"
     @submit.prevent="onSubmit"
     class="inter-tight-regular d-flex flex-column gap-2"
   >
@@ -99,8 +108,12 @@
       />
     </div>
 
-    <div class="d-flex justify-content-center flex-column gap-2 mt-5">
-      <span class="error text-center inter-tight-regular">{{ message }}</span>
+    <div class="d-flex justify-content-center flex-column gap-2 mt-3">
+      <span
+        class="error text-center inter-tight-regular"
+        style="height: 2rem"
+        >{{ message }}</span
+      >
       <Button type="submit" class="w-100">Sign up</Button>
     </div>
 
@@ -113,8 +126,6 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-
 export default {
   data() {
     return {

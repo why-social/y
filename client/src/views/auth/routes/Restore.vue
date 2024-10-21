@@ -1,5 +1,14 @@
+<script setup>
+import { Api } from '@/Api'
+import VueJwtDecode from 'vue-jwt-decode'
+
+import Input from '@/components/misc/Input.vue'
+import Button from '@/components/misc/Button.vue'
+</script>
+
 <template>
   <form
+    style="pointer-events: all"
     @submit.prevent="onSubmit"
     class="inter-tight-regular d-flex flex-column gap-2"
   >
@@ -13,6 +22,7 @@
       required
       @input="handlePasswordChange"
     />
+
     <Input
       id="passwordConfirm"
       v-model="passwordConfirm"
@@ -21,7 +31,11 @@
       required
       @input="handlePasswordChange"
     />
-    <span class="error text-center inter-tight-regular passwordsDoNotMatch">{{ passwordConfirmTitle }}</span>
+
+    <span class="error text-center inter-tight-regular passwordsDoNotMatch">{{
+      passwordConfirmTitle
+    }}</span>
+
     <div class="d-flex justify-content-center flex-column gap-2 mt-5">
       <Button type="submit" class="w-100">Change password</Button>
     </div>
@@ -29,9 +43,6 @@
 </template>
 
 <script>
-import { Api } from '@/Api'
-import VueJwtDecode from 'vue-jwt-decode'
-
 export default {
   data() {
     return {
@@ -52,7 +63,8 @@ export default {
   },
   methods: {
     handlePasswordChange() {
-      this.passwordConfirmTitle = this.password === this.passwordConfirm ? '' : 'Passwords do not match'
+      this.passwordConfirmTitle =
+        this.password === this.passwordConfirm ? '' : 'Passwords do not match'
     },
     async onSubmit() {
       if (this.password !== this.passwordConfirm) {
@@ -87,23 +99,25 @@ export default {
       // Update user password
       await Api.put('/v1/users/' + decoded.userId, payload, {
         headers: { Authorization: this.$route.query.token }
-      }).then(res => {
-        if (res.status === 200) {
-          this.$router.push('/login')
-        }
-      }).catch((error) => {
-        if (error.response.status === 500) {
-          alert('Server error, please try again later')
-        }
-        console.error(error)
       })
+        .then((res) => {
+          if (res.status === 200) {
+            this.$router.push('/login')
+          }
+        })
+        .catch((error) => {
+          if (error.response.status === 500) {
+            alert('Server error, please try again later')
+          }
+          console.error(error)
+        })
     }
   }
 }
 </script>
 
 <style scoped>
-.passwordsDoNotMatch{
+.passwordsDoNotMatch {
   height: 1rem;
 }
 </style>
