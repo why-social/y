@@ -5,6 +5,9 @@ import VueJwtDecode from 'vue-jwt-decode'
 // 404
 import NotFound from './views/NotFound.vue'
 
+// Server unreachable
+import Unreachable from './views/Unreachable.vue'
+
 // Auth
 import Auth from './views/auth/Auth.vue'
 import Login from './views/auth/routes/Login.vue'
@@ -138,6 +141,11 @@ const routes = [
   {
     path: '/404',
     component: NotFound,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/unreachable',
+    component: Unreachable,
     meta: { requiresAuth: false }
   }
 ]

@@ -231,8 +231,6 @@ export default {
     },
 
     async saveChanges() {
-      console.log(this.editableUserData)
-
       // Check if the data has changed
       if (
         this.editableUserData.name === this.userData.name &&

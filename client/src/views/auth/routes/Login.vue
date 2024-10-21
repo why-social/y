@@ -26,8 +26,8 @@ import Button from '@/components/misc/Button.vue'
       required
     />
 
-    <div class="d-flex justify-content-center flex-column gap-2 mt-5">
-      <span class="error text-center inter-tight-regular">{{ message }}</span>
+    <div class="d-flex justify-content-center flex-column gap-2 mt-3">
+      <span class="error text-center inter-tight-regular" style="height: 2rem;">{{ message }}</span>
       <Button type="submit" class="w-100">Log in</Button>
       <Button secondary class="w-100" @click="$router.push('recover')"
         >Forgot password?</Button
