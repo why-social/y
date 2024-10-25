@@ -25,10 +25,8 @@ jobs:
         mongodb-port: 27017
         mongodb-db: whyTestDB
 
-    - run: cd server
-
     - name: Install dependencies
-      run: npm ci
+      run: cd server && npm ci
     
     - name: Run postman tests
       env:
@@ -37,5 +35,5 @@ jobs:
         ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
         ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         ADMIN_KEY: ${{ secrets.ADMIN_KEY }}
-      run: npm run ci-test
+      run: npm run ci-test --prefix server
         
