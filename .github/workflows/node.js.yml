@@ -1,0 +1,39 @@
+name: Node.js CI
+
+on: push
+
+jobs:
+  test:
+    env: 
+      MONGODB_URI: "mongodb://localhost:27017/whyTestDB"      
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.11.0
+      with:
+        mongodb-version: '7.0'
+        mongodb-port: 27017
+        mongodb-db: whyTestDB
+
+    - name: Install dependencies
+      run: cd server && npm ci
+    
+    - name: Run postman tests
+      env:
+        MJ_APIKEY_PRIVATE: ${{ secrets.MJ_APIKEY_PRIVATE }}
+        MJ_APIKEY_PUBLIC: ${{ secrets.MJ_APIKEY_PUBLIC }}
+        ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+        ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        ADMIN_KEY: ${{ secrets.ADMIN_KEY }}
+      run: npm run ci-test --prefix server
+        
