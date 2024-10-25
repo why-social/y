@@ -27,6 +27,7 @@ jobs:
       with:
         mongodb-version: ${{ matrix.mongodb-version }}
         mongodb-port: 27017
+        mongodb-db: whyTestDB
     
     - name: Run postman tests
       env:
