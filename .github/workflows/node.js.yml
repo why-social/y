@@ -3,32 +3,14 @@ name: Node.js CI
 on: push
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x, 22.x]
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Setup node
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - name: Install dependencies
-      run: |
-        cd server
-        npm install
-
   test:
     env: 
       MONGODB_URI: "mongodb://mongo:27017/whyTestDB"      
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        mongodb-version: ['6.0', '7.0', '8.0']
-    needs: [build]
+        node-version: [20.x, 22.x]
+        mongodb-version: ['7.0', '8.0']
     steps:
     - name: Start MongoDB
       uses: supercharge/mongodb-github-action@1.11.0
@@ -36,11 +18,20 @@ jobs:
         mongodb-version: ${{ matrix.mongodb-version }}
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
     - name: Run postman tests
       env:
         MJ_APIKEY_PRIVATE: ${{ secrets.MJ_APIKEY_PRIVATE }}
         MJ_APIKEY_PUBLIC: ${{ secrets.MJ_APIKEY_PUBLIC }}
+        ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+        ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        ADMIN_KEY: ${{ secrets.ADMIN_KEY }}
       run: |
         cd server
+        npm ci
         npm run ci-test
         
