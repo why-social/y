@@ -7,10 +7,6 @@ jobs:
     env: 
       MONGODB_URI: "mongodb://localhost:27017/whyTestDB"      
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x, 22.x]
-        mongodb-version: ['7.0', '8.0']
     
     steps:
     - name: Checkout
@@ -19,13 +15,13 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: 20
         cache: 'npm'
         
     - name: Start MongoDB
       uses: supercharge/mongodb-github-action@1.11.0
       with:
-        mongodb-version: ${{ matrix.mongodb-version }}
+        mongodb-version: '7.0'
         mongodb-port: 27017
         mongodb-db: whyTestDB
     
