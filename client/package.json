@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "axios": "^1.7.4",
+    "backend-frontend": "file:..",
     "bootstrap": "^5.3.3",
     "bootstrap-vue-next": "^0.24.9",
     "moment": "^2.30.1",
