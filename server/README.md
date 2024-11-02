@@ -4,16 +4,17 @@ This [ExpressJS](https://expressjs.com/) template provides the basic infrastruct
 
 ## Server Structure
 
-| File        | Purpose           | What you do?  |
-| ------------- | ------------- | ----- |
-| [README.md](./README.md) | Everything about the server | **READ ME** carefully! |
-| [app.js](./app.js) | JavaScript entry point for Express application | Import new routes/controllers |
-| `controllers/` | Implementation of Express endpoints | Define new route handlers |
-| `models/` | [Mongoose](https://mongoosejs.com/) models | Define data schema |
-| [tests/server.postman_collection.json](tests/server.postman_collection.json) | [Postman test scripts](https://learning.postman.com/docs/postman/scripts/test-scripts/) | Replace with your exported Postman test collection |
-| [docs/FAQ.md](docs/FAQ.md) | List of FAQs | Find answers to common questions |
-| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | List of problems and solutions | Find solutions for common error messages |
-| [package.json](package.json) | Project meta-information | — |
+| File                                                                         | Purpose           |
+| ---------------------------------------------------------------------------- | ------------- |
+| `db/database.js`                                                             | [Mongoose](https://mongoosejs.com/) DB and models creation |
+| `middleware/`                                                                | Express endpoint middleware |
+| `routes/`                                                                    | Implementation of Express endpoints |
+| [tests/server.postman_collection.json](tests/server.postman_collection.json) | Postman test scripts |
+| `uploads/`                                                                   | Media uploaded to the server |
+| `utils/`                                                                     | Code utilities |
+| [.env_example](./.env_example)                                               | Example .env file |
+| [app.js](./app.js)                                                           | JavaScript entry point for Express application |
+| [package.json](package.json)                                                 | Project meta-information |
 
 > NOTE: The (mandatory) exercises are essential for understanding this template and will *save* you time!
 
@@ -27,13 +28,20 @@ Optional: Learn how to create such a project template in this [tutorial](https:/
 
 ## Project setup
 
-Make sure, you are in the server directory `cd server`
-
-Installs all project dependencies specified in [package.json](./package.json).
-
+### Install dependencies
 ```bash
+cd server
 npm install
 ```
+
+### .env
+A .env file following the [example](./.env_example) must be created.
+- ADMIN_KEY - key for admin-only actions.
+- ADMIN_PASSWORD - password for admin account.
+- ADMIN_EMAIL - email for admin account.
+- MJ_APIKEY_PUBLIC - MailJet public API key.
+- MJ_APIKEY_PRIVATE - MailJet private API key.
+
 
 ## Start the server with auto-restarts for development
 
@@ -46,35 +54,15 @@ npm run dev
 ## Start the server
 
 ```bash
-npm start
+npm run start
 ```
 
 ## Run the Postman Tests
 
-Starts a new server on another port (default `3001`) and runs the `server` postman test collection against a test database (default `serverTestDB`).
+Starts a new server on another port (default `3001`) and runs the `server` postman test collection against a test database (default `whyTestDB`).
 
 ```bash
-npm test
+npm run test
 ```
 
-> The test database is dropped before each test execution. Adjust your tests to support this clean state.
-
-## Postman Tests
-
-We use the API testing tool Postman to define example HTTP requests and test assertions. Your tests will be automatically executed in GitLab pipelines whenever you push to the `master` branch. Try to do that as often as possible.
-
-* [Set up Postman for your project](./docs/POSTMAN.md)
-
-> Remember to **export and commit** any test changes back to `tests/server.postman_collection.json` and make sure `npm test` succeeds for your final submission!
-
-## Error Handling
-
-* [Error Handling in Node.js](https://www.joyent.com/node-js/production/design/errors)
-* [Error Handling in Express.js](https://expressjs.com/en/guide/error-handling.html)
-
-## Debugging with VSCode
-
-1. Set a breakpoint by clicking on the left side of a line number
-2. Click *Run > Start Debugging* (Choose the "Debug Server" config if you opened the combined workspace)
-
-> Learn more in the [VSCode Debugging Docs](https://code.visualstudio.com/docs/editor/debugging).
+> The test database is dropped before each test execution.
