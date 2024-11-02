@@ -4,7 +4,6 @@
   "description": "Y is a Twitter (X) clone built for Web and Mobile Engineering (DIT342)",
   "main": "server/app.js",
   "scripts": {
-    "postinstall": "npm install --prefix server && npm install --prefix client && npm run build --prefix client",
     "prod": "cross-env NODE_ENV=production MONGODB_URI=mongodb://localhost:27017/whyDB VITE_API_ENDPOINT=http://localhost:3000/api npm run build --prefix client && cross-env NODE_ENV=production MONGODB_URI=mongodb://localhost:27017/whyDB VITE_API_ENDPOINT=http://localhost:3000/api npm run start --prefix server"
   },
   "engines": {
