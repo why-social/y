@@ -159,3 +159,7 @@ Open the `server` and `client` in separate VSCode workspaces or open the combine
     - DELETE /api/v1/comments/:id
     - DELETE /api/v1/comments/:comment_id/likes/:user_id
 </details>
+
+### Entity-Relationship (ER) Diagram
+
+![ER Diagram](./images/er_diagram.png)
